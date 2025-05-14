@@ -8,7 +8,7 @@ export function CTASection() {
           <div className="flex flex-col md:flex-row">
             <div 
               className="md:w-1/2 h-64 md:h-auto bg-cover bg-center" 
-              style={{backgroundImage: "url('https://images.pexels.com/photos/2570139/pexels-photo-2570139.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1')"}}
+              style={{backgroundImage: "url('https://images.unsplash.com/photo-1508098682722-e99c643e7f0b?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1470&q=80')"}}
             ></div>
             
             <div className="md:w-1/2 p-8 md:p-12 flex flex-col justify-center">

@@ -28,7 +28,7 @@ export function FeaturedGame({ game }: FeaturedGameProps) {
       <div 
         className="h-48 md:h-64 bg-cover bg-center relative" 
         style={{ 
-          backgroundImage: "url('https://images.pexels.com/photos/2346/sport-american-football-ball-rush.jpg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1')" 
+          backgroundImage: "url('https://images.unsplash.com/photo-1566577739112-5180d4bf9390?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1526&q=80')" 
         }}
       >
         <div className="absolute inset-0 bg-gradient-to-t from-surface to-transparent"></div>
