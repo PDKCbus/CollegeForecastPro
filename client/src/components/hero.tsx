@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 export function Hero() {
   return (
     <section className="relative">
-      <div className="h-80 bg-cover bg-center relative" style={{backgroundImage: "url('https://images.pexels.com/photos/3657154/pexels-photo-3657154.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1')"}}>
+      <div className="h-80 bg-cover bg-center relative" style={{backgroundImage: "url('https://images.pexels.com/photos/163452/basketball-dunk-scored-points-163452.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1')"}}>
         <div className="absolute inset-0 bg-gradient-to-b from-background/20 to-background"></div>
         <div className="container mx-auto px-4 h-full flex items-center relative z-10">
           <div className="max-w-2xl">
