@@ -28,7 +28,7 @@ export function FeaturedGame({ game }: FeaturedGameProps) {
       <div 
         className="h-48 md:h-64 bg-cover bg-center relative" 
         style={{ 
-          backgroundImage: "url('https://images.pexels.com/photos/4578665/pexels-photo-4578665.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1')" 
+          backgroundImage: "url('https://images.pexels.com/photos/3621104/pexels-photo-3621104.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1')" 
         }}
       >
         <div className="absolute inset-0 bg-gradient-to-t from-surface to-transparent"></div>
