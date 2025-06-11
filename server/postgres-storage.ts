@@ -178,14 +178,7 @@ export class PostgresStorage implements IStorage {
   }
 
   async createPrediction(prediction: InsertPrediction): Promise<Prediction> {
-    // Ensure all optional fields are explicitly null instead of undefined
-    const cleanPrediction = {
-      ...prediction,
-      confidence: prediction.confidence ?? null,
-      predictedSpread: prediction.predictedSpread ?? null,
-      predictedTotal: prediction.predictedTotal ?? null,
-      notes: prediction.notes ?? null,
-    };
+    const cleanPrediction = cleanPredictionData(prediction);
     const result = await db.insert(predictions).values(cleanPrediction).returning();
     return result[0];
   }
@@ -219,17 +212,7 @@ export class PostgresStorage implements IStorage {
   }
 
   async createSentimentAnalysis(sentiment: InsertSentimentAnalysis): Promise<SentimentAnalysis> {
-    // Ensure all optional fields are explicitly null instead of undefined
-    const cleanSentiment = {
-      ...sentiment,
-      gameId: sentiment.gameId ?? null,
-      teamId: sentiment.teamId ?? null,
-      positiveCount: sentiment.positiveCount ?? 0,
-      negativeCount: sentiment.negativeCount ?? 0,
-      neutralCount: sentiment.neutralCount ?? 0,
-      totalTweets: sentiment.totalTweets ?? 0,
-      keywords: sentiment.keywords ?? null,
-    };
+    const cleanSentiment = cleanSentimentData(sentiment);
     const result = await db.insert(sentimentAnalysis).values(cleanSentiment).returning();
     return result[0];
   }

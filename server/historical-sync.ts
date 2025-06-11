@@ -1,5 +1,6 @@
 import { storage } from './storage';
 import type { InsertGame, InsertTeam } from '../shared/schema';
+import { cleanGameData, cleanTeamData } from './data-cleaner';
 
 interface CFBDGame {
   id: number;
@@ -218,15 +219,15 @@ export class HistoricalDataSync {
             startDate: new Date(game.start_date),
             season: game.season,
             week: game.week,
-            stadium: game.venue ?? null,
-            location: game.venue ?? null,
-            spread: spread ?? null,
-            overUnder: overUnder ?? null,
-            homeTeamScore: game.home_points ?? null,
-            awayTeamScore: game.away_points ?? null,
-            completed: (game.home_points !== undefined && game.away_points !== undefined) ?? false,
+            stadium: game.venue || null,
+            location: game.venue || null,
+            spread: spread || null,
+            overUnder: overUnder || null,
+            homeTeamScore: game.home_points || null,
+            awayTeamScore: game.away_points || null,
+            completed: Boolean(game.home_points !== undefined && game.away_points !== undefined),
             isFeatured: false,
-            isConferenceGame: game.conference_game ?? false,
+            isConferenceGame: Boolean(game.conference_game),
             isRivalryGame: false,
           };
 
