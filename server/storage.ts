@@ -2,7 +2,8 @@ import {
   users, 
   teams, 
   games, 
-  predictions, 
+  predictions,
+  sentimentAnalysis, 
   type User, 
   type InsertUser, 
   type Team, 
@@ -10,7 +11,9 @@ import {
   type Game, 
   type InsertGame, 
   type Prediction, 
-  type InsertPrediction, 
+  type InsertPrediction,
+  type SentimentAnalysis,
+  type InsertSentimentAnalysis, 
   type GameWithTeams
 } from "@shared/schema";
 
@@ -46,6 +49,13 @@ export interface IStorage {
   getPredictionsByGame(gameId: number): Promise<Prediction[]>;
   createPrediction(prediction: InsertPrediction): Promise<Prediction>;
   updatePrediction(id: number, prediction: Partial<Prediction>): Promise<Prediction | undefined>;
+  
+  // Sentiment Analysis operations
+  getSentimentAnalysis(id: number): Promise<SentimentAnalysis | undefined>;
+  getSentimentByGame(gameId: number): Promise<SentimentAnalysis[]>;
+  getSentimentByTeam(teamId: number): Promise<SentimentAnalysis[]>;
+  createSentimentAnalysis(sentiment: InsertSentimentAnalysis): Promise<SentimentAnalysis>;
+  updateSentimentAnalysis(id: number, sentiment: Partial<SentimentAnalysis>): Promise<SentimentAnalysis | undefined>;
 }
 
 export class MemStorage implements IStorage {
@@ -53,20 +63,24 @@ export class MemStorage implements IStorage {
   private teams: Map<number, Team>;
   private games: Map<number, Game>;
   private predictions: Map<number, Prediction>;
+  private sentiments: Map<number, SentimentAnalysis>;
   private userCurrentId: number;
   private teamCurrentId: number;
   private gameCurrentId: number;
   private predictionCurrentId: number;
+  private sentimentCurrentId: number;
 
   constructor() {
     this.users = new Map();
     this.teams = new Map();
     this.games = new Map();
     this.predictions = new Map();
+    this.sentiments = new Map();
     this.userCurrentId = 1;
     this.teamCurrentId = 1;
     this.gameCurrentId = 1;
     this.predictionCurrentId = 1;
+    this.sentimentCurrentId = 1;
     
     // Initialize with some sample teams
     this.initializeTeams();
