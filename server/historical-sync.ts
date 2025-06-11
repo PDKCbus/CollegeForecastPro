@@ -1,6 +1,7 @@
 import { storage } from './storage';
 import type { InsertGame, InsertTeam } from '../shared/schema';
 import { cleanGameData, cleanTeamData } from './data-cleaner';
+import { directSQLStorage } from './direct-sql-storage';
 
 interface CFBDGame {
   id: number;
@@ -232,21 +233,10 @@ export class HistoricalDataSync {
           };
 
           try {
-            console.log(`Processing game ${game.id}: ${game.away_team} @ ${game.home_team}`);
-            const cleanedGameData = cleanGameData(gameData);
-            
-            // Additional validation before insertion
-            if (!cleanedGameData.homeTeamId || !cleanedGameData.awayTeamId) {
-              throw new Error(`Invalid team IDs: home=${cleanedGameData.homeTeamId}, away=${cleanedGameData.awayTeamId}`);
-            }
-            
-            await storage.createGame(cleanedGameData);
+            // Use direct SQL insertion to bypass Drizzle ORM undefined value issues
+            await directSQLStorage.createGameDirect(gameData);
           } catch (gameError) {
-            console.error(`Error processing game ${game.id}:`, {
-              error: gameError,
-              gameData: JSON.stringify(gameData, null, 2),
-              cleanedData: JSON.stringify(cleanGameData, null, 2)
-            });
+            console.error(`Error processing game ${game.id}: ${game.away_team} @ ${game.home_team}:`, gameError);
             continue; // Skip this game and continue with others
           }
           processedCount++;
