@@ -52,6 +52,20 @@ export const predictions = pgTable("predictions", {
   notes: text("notes"),
 });
 
+export const sentimentAnalysis = pgTable("sentiment_analysis", {
+  id: serial("id").primaryKey(),
+  gameId: integer("game_id").references(() => games.id),
+  teamId: integer("team_id").references(() => teams.id),
+  sentimentScore: real("sentiment_score").notNull(), // -1 to 1
+  positiveCount: integer("positive_count").default(0).notNull(),
+  negativeCount: integer("negative_count").default(0).notNull(),
+  neutralCount: integer("neutral_count").default(0).notNull(),
+  totalTweets: integer("total_tweets").default(0).notNull(),
+  keywords: text("keywords").array(),
+  lastUpdated: timestamp("last_updated", { withTimezone: true }).defaultNow().notNull(),
+  analysisType: text("analysis_type").notNull() // 'team' or 'game'
+});
+
 // Insert schemas
 export const insertUserSchema = createInsertSchema(users).pick({
   username: true,
@@ -68,6 +82,11 @@ export const insertPredictionSchema = createInsertSchema(predictions).omit({
   id: true,
 });
 
+export const insertSentimentAnalysisSchema = createInsertSchema(sentimentAnalysis).omit({
+  id: true,
+  lastUpdated: true,
+});
+
 // Types
 export type InsertUser = z.infer<typeof insertUserSchema>;
 export type User = typeof users.$inferSelect;
@@ -80,6 +99,9 @@ export type Game = typeof games.$inferSelect;
 
 export type InsertPrediction = z.infer<typeof insertPredictionSchema>;
 export type Prediction = typeof predictions.$inferSelect;
+
+export type InsertSentimentAnalysis = z.infer<typeof insertSentimentAnalysisSchema>;
+export type SentimentAnalysis = typeof sentimentAnalysis.$inferSelect;
 
 // Custom combined types for frontend use
 export type GameWithTeams = Game & {
