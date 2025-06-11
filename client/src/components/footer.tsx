@@ -66,7 +66,7 @@ export function Footer() {
         
         <div className="border-t border-surface-light pt-8 flex flex-col md:flex-row justify-between items-center">
           <div className="text-white/60 text-sm mb-4 md:mb-0">
-            &copy; {new Date().getFullYear()} Rickie's Picks. All rights reserved.
+            &copy; {new Date().getFullYear()} Rick's Picks. All rights reserved.
           </div>
           <div className="flex space-x-6">
             <a href="#" className="text-white/60 hover:text-white text-sm transition-colors">Privacy Policy</a>
