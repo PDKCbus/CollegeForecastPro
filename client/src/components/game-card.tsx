@@ -79,8 +79,9 @@ export function GameCard({ game }: GameCardProps) {
                 <div className="text-white/60 text-xs">SPREAD</div>
                 <div className="font-bold text-white">{getSpreadDisplay()}</div>
                 {game.prediction?.notes && game.prediction.notes.includes('SPREAD:') && (
-                  <div className="text-xs text-accent mt-1">
-                    Rick: {game.prediction.notes.split('|')[0].replace('SPREAD:', '').trim()}
+                  <div className="text-xs mt-1">
+                    <span className="text-accent">Rick:</span>
+                    <span className="text-white/80"> {game.prediction.notes.split('|')[0].replace('SPREAD:', '').trim()}</span>
                   </div>
                 )}
               </div>
@@ -88,8 +89,9 @@ export function GameCard({ game }: GameCardProps) {
                 <div className="text-white/60 text-xs">O/U</div>
                 <div className="font-bold text-white">{game.overUnder?.toFixed(1) || "N/A"}</div>
                 {game.prediction?.notes && game.prediction.notes.includes('O/U:') && (
-                  <div className="text-xs text-accent mt-1">
-                    Rick: {game.prediction.notes.split('|')[1]?.replace('O/U:', '').trim() || 'No pick'}
+                  <div className="text-xs mt-1">
+                    <span className="text-accent">Rick:</span>
+                    <span className="text-white/80"> {game.prediction.notes.split('|')[1]?.replace('O/U:', '').trim() || 'No pick'}</span>
                   </div>
                 )}
               </div>
