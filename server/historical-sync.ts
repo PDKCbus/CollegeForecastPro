@@ -125,13 +125,13 @@ export class HistoricalDataSync {
     // Create new team
     const newTeam: InsertTeam = {
       name: teamName,
-      abbreviation: teamData?.abbreviation || teamName.substring(0, 4).toUpperCase(),
-      mascot: teamData?.mascot || null,
-      conference: teamData?.conference || null,
-      division: teamData?.division || null,
-      color: teamData?.color || null,
-      altColor: teamData?.alt_color || null,
-      logoUrl: teamData?.logos?.[0] || null,
+      abbreviation: teamData?.abbreviation ?? teamName.substring(0, 4).toUpperCase(),
+      mascot: teamData?.mascot ?? null,
+      conference: teamData?.conference ?? null,
+      division: teamData?.division ?? null,
+      color: teamData?.color ?? null,
+      altColor: teamData?.alt_color ?? null,
+      logoUrl: teamData?.logos?.[0] ?? null,
       rank: null,
       wins: null,
       losses: null,
@@ -220,13 +220,14 @@ export class HistoricalDataSync {
             week: game.week,
             stadium: game.venue || null,
             location: game.venue || null,
-            spread,
-            overUnder,
+            spread: spread,
+            overUnder: overUnder,
             homeTeamScore: game.home_points || null,
             awayTeamScore: game.away_points || null,
             completed: game.home_points !== undefined && game.away_points !== undefined,
             isFeatured: false,
-            notes: game.notes || null,
+            isConferenceGame: game.conference_game || false,
+            isRivalryGame: false,
           };
 
           await storage.createGame(gameData);
