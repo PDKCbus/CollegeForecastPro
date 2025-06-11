@@ -81,28 +81,30 @@ export class PostgresStorage implements IStorage {
 
   async getUpcomingGames(limit = 10, offset = 0): Promise<GameWithTeams[]> {
     const now = new Date();
-    const results = await db
-      .select({
-        game: games,
-        homeTeam: teams,
-        awayTeam: teams,
-        prediction: predictions
-      })
+    const gameResults = await db.select()
       .from(games)
-      .leftJoin(teams.as('homeTeam'), eq(games.homeTeamId, teams.id))
-      .leftJoin(teams.as('awayTeam'), eq(games.awayTeamId, teams.id))
-      .leftJoin(predictions, eq(predictions.gameId, games.id))
       .where(gte(games.startDate, now))
       .orderBy(asc(games.startDate))
       .limit(limit)
       .offset(offset);
 
-    return results.map(row => ({
-      ...row.game,
-      homeTeam: row.homeTeam!,
-      awayTeam: row.awayTeam!,
-      prediction: row.prediction || undefined
-    }));
+    const gamesWithTeams: GameWithTeams[] = [];
+    for (const game of gameResults) {
+      const homeTeam = await this.getTeam(game.homeTeamId);
+      const awayTeam = await this.getTeam(game.awayTeamId);
+      const predictions = await this.getPredictionsByGame(game.id);
+
+      if (homeTeam && awayTeam) {
+        gamesWithTeams.push({
+          ...game,
+          homeTeam,
+          awayTeam,
+          prediction: predictions[0] || undefined
+        });
+      }
+    }
+
+    return gamesWithTeams;
   }
 
   async getHistoricalGames(
@@ -112,40 +114,41 @@ export class PostgresStorage implements IStorage {
     conference?: string
   ): Promise<GameWithTeams[]> {
     const now = new Date();
-    let query = db
-      .select({
-        game: games,
-        homeTeam: teams,
-        awayTeam: teams,
-        prediction: predictions
-      })
-      .from(games)
-      .leftJoin(teams.as('homeTeam'), eq(games.homeTeamId, teams.id))
-      .leftJoin(teams.as('awayTeam'), eq(games.awayTeamId, teams.id))
-      .leftJoin(predictions, eq(predictions.gameId, games.id))
-      .where(lte(games.startDate, now));
+    let queryConditions = [lte(games.startDate, now)];
 
     // Apply filters
     if (season) {
-      query = query.where(eq(games.season, season));
+      queryConditions.push(eq(games.season, season));
     }
     if (week) {
-      query = query.where(eq(games.week, week));
+      queryConditions.push(eq(games.week, week));
     }
     if (teamId) {
-      query = query.where(
-        or(eq(games.homeTeamId, teamId), eq(games.awayTeamId, teamId))
-      );
+      queryConditions.push(or(eq(games.homeTeamId, teamId), eq(games.awayTeamId, teamId)));
     }
 
-    const results = await query.orderBy(desc(games.startDate));
+    const gameResults = await db.select()
+      .from(games)
+      .where(queryConditions.length > 0 ? and(...queryConditions) : undefined)
+      .orderBy(desc(games.startDate));
 
-    return results.map(row => ({
-      ...row.game,
-      homeTeam: row.homeTeam!,
-      awayTeam: row.awayTeam!,
-      prediction: row.prediction || undefined
-    }));
+    const gamesWithTeams: GameWithTeams[] = [];
+    for (const game of gameResults) {
+      const homeTeam = await this.getTeam(game.homeTeamId);
+      const awayTeam = await this.getTeam(game.awayTeamId);
+      const predictions = await this.getPredictionsByGame(game.id);
+
+      if (homeTeam && awayTeam) {
+        gamesWithTeams.push({
+          ...game,
+          homeTeam,
+          awayTeam,
+          prediction: predictions[0] || undefined
+        });
+      }
+    }
+
+    return gamesWithTeams;
   }
 
   async createGame(game: InsertGame): Promise<Game> {
