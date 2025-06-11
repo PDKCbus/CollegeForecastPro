@@ -31,20 +31,14 @@ export function Header() {
             <div className="text-white font-bold text-2xl">PICKS</div>
           </Link>
           <div className="hidden md:flex ml-8 space-x-1">
-            <Link href="/">
-              <a className={`px-4 py-2 font-medium rounded-md hover:bg-surface transition-colors ${currentTab === "upcoming" ? "text-white" : "text-white/60"}`}>
-                Upcoming Games
-              </a>
+            <Link href="/" className={`px-4 py-2 font-medium rounded-md hover:bg-surface transition-colors ${currentTab === "upcoming" ? "text-white" : "text-white/60"}`}>
+              Upcoming Games
             </Link>
-            <Link href="/historical">
-              <a className={`px-4 py-2 font-medium rounded-md hover:bg-surface transition-colors ${currentTab === "historical" ? "text-white" : "text-white/60"}`}>
-                Historical Games
-              </a>
+            <Link href="/historical" className={`px-4 py-2 font-medium rounded-md hover:bg-surface transition-colors ${currentTab === "historical" ? "text-white" : "text-white/60"}`}>
+              Historical Games
             </Link>
-            <Link href="/analysis">
-              <a className={`px-4 py-2 font-medium rounded-md hover:bg-surface transition-colors ${currentTab === "analysis" ? "text-white" : "text-white/60"}`}>
-                Analysis
-              </a>
+            <Link href="/analysis" className={`px-4 py-2 font-medium rounded-md hover:bg-surface transition-colors ${currentTab === "analysis" ? "text-white" : "text-white/60"}`}>
+              Analysis
             </Link>
           </div>
         </div>
@@ -79,20 +73,14 @@ export function Header() {
       {/* Mobile navigation menu */}
       <div className={`md:hidden bg-surface absolute w-full border-b border-surface-light animate-fade-in ${isMobileMenuOpen ? 'block' : 'hidden'}`}>
         <div className="container mx-auto px-4 py-3 flex flex-col space-y-2">
-          <Link href="/">
-            <a className={`px-4 py-3 font-medium text-left rounded-md hover:bg-surface-light transition-colors ${currentTab === "upcoming" ? "text-white" : "text-white/60"}`} onClick={() => setIsMobileMenuOpen(false)}>
-              Upcoming Games
-            </a>
+          <Link href="/" className={`px-4 py-3 font-medium text-left rounded-md hover:bg-surface-light transition-colors ${currentTab === "upcoming" ? "text-white" : "text-white/60"}`} onClick={() => setIsMobileMenuOpen(false)}>
+            Upcoming Games
           </Link>
-          <Link href="/historical">
-            <a className={`px-4 py-3 font-medium text-left rounded-md hover:bg-surface-light transition-colors ${currentTab === "historical" ? "text-white" : "text-white/60"}`} onClick={() => setIsMobileMenuOpen(false)}>
-              Historical Games
-            </a>
+          <Link href="/historical" className={`px-4 py-3 font-medium text-left rounded-md hover:bg-surface-light transition-colors ${currentTab === "historical" ? "text-white" : "text-white/60"}`} onClick={() => setIsMobileMenuOpen(false)}>
+            Historical Games
           </Link>
-          <Link href="/analysis">
-            <a className={`px-4 py-3 font-medium text-left rounded-md hover:bg-surface-light transition-colors ${currentTab === "analysis" ? "text-white" : "text-white/60"}`} onClick={() => setIsMobileMenuOpen(false)}>
-              Analysis
-            </a>
+          <Link href="/analysis" className={`px-4 py-3 font-medium text-left rounded-md hover:bg-surface-light transition-colors ${currentTab === "analysis" ? "text-white" : "text-white/60"}`} onClick={() => setIsMobileMenuOpen(false)}>
+            Analysis
           </Link>
           <div className="flex items-center space-x-2 px-4 py-3">
             <button className="flex-1 bg-surface-light text-white/80 p-2 rounded-md">
