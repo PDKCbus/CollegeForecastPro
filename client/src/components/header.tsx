@@ -15,6 +15,8 @@ export function Header() {
         return "historical";
       case "/analysis":
         return "analysis";
+      case "/data":
+        return "data";
       default:
         return "upcoming";
     }
@@ -39,6 +41,9 @@ export function Header() {
             </Link>
             <Link href="/analysis" className={`px-4 py-2 font-medium rounded-md hover:bg-surface transition-colors ${currentTab === "analysis" ? "text-white" : "text-white/60"}`}>
               Analysis
+            </Link>
+            <Link href="/data" className={`px-4 py-2 font-medium rounded-md hover:bg-surface transition-colors ${currentTab === "data" ? "text-white" : "text-white/60"}`}>
+              Data Sync
             </Link>
           </div>
         </div>
@@ -81,6 +86,9 @@ export function Header() {
           </Link>
           <Link href="/analysis" className={`px-4 py-3 font-medium text-left rounded-md hover:bg-surface-light transition-colors ${currentTab === "analysis" ? "text-white" : "text-white/60"}`} onClick={() => setIsMobileMenuOpen(false)}>
             Analysis
+          </Link>
+          <Link href="/data" className={`px-4 py-3 font-medium text-left rounded-md hover:bg-surface-light transition-colors ${currentTab === "data" ? "text-white" : "text-white/60"}`} onClick={() => setIsMobileMenuOpen(false)}>
+            Data Sync
           </Link>
           <div className="flex items-center space-x-2 px-4 py-3">
             <button className="flex-1 bg-surface-light text-white/80 p-2 rounded-md">

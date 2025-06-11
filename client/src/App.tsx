@@ -9,6 +9,7 @@ import Home from "@/pages/home";
 import Historical from "@/pages/historical";
 import Analysis from "@/pages/analysis";
 import Sentiment from "@/pages/sentiment";
+import DataAnalysis from "@/pages/data-analysis";
 import NotFound from "@/pages/not-found";
 
 function Router() {
@@ -18,6 +19,7 @@ function Router() {
       <Route path="/historical" component={Historical} />
       <Route path="/analysis" component={Analysis} />
       <Route path="/sentiment" component={Sentiment} />
+      <Route path="/data" component={DataAnalysis} />
       <Route component={NotFound} />
     </Switch>
   );
