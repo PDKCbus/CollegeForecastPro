@@ -142,7 +142,7 @@ export class PostgresStorage implements IStorage {
 
     const gameResults = await db.select()
       .from(games)
-      .where(queryConditions.length > 0 ? and(...queryConditions) : undefined)
+      .where(queryConditions.length > 0 ? and(...queryConditions) : sql`true`)
       .orderBy(desc(games.startDate));
 
     const gamesWithTeams: GameWithTeams[] = [];
@@ -242,7 +242,18 @@ export class PostgresStorage implements IStorage {
   }
 
   async createSentimentAnalysis(sentiment: InsertSentimentAnalysis): Promise<SentimentAnalysis> {
-    const result = await db.insert(sentimentAnalysis).values(sentiment).returning();
+    // Ensure all optional fields are explicitly null instead of undefined
+    const cleanSentiment = {
+      ...sentiment,
+      gameId: sentiment.gameId ?? null,
+      teamId: sentiment.teamId ?? null,
+      positiveCount: sentiment.positiveCount ?? 0,
+      negativeCount: sentiment.negativeCount ?? 0,
+      neutralCount: sentiment.neutralCount ?? 0,
+      totalTweets: sentiment.totalTweets ?? 0,
+      keywords: sentiment.keywords ?? null,
+    };
+    const result = await db.insert(sentimentAnalysis).values(cleanSentiment).returning();
     return result[0];
   }
 
