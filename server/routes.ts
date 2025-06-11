@@ -5,6 +5,11 @@ import { z } from "zod";
 import { insertGameSchema, insertTeamSchema, insertPredictionSchema } from "@shared/schema";
 
 export async function registerRoutes(app: Express): Promise<Server> {
+  // Test endpoint
+  app.get("/api/test", (req, res) => {
+    res.json({ message: "API is working", timestamp: new Date().toISOString() });
+  });
+
   // Teams API
   app.get("/api/teams", async (req, res) => {
     try {
@@ -221,7 +226,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         }
 
         // Find betting lines for this game
-        const gameLines = lines.find(line => 
+        const gameLines = lines.find((line: any) => 
           line.homeTeam === game.home_team && line.awayTeam === game.away_team
         );
 
@@ -253,7 +258,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       });
     } catch (error) {
       console.error("Error syncing CFB data:", error);
-      res.status(500).json({ message: "Failed to sync college football data", error: error.message });
+      res.status(500).json({ message: "Failed to sync college football data", error: String(error) });
     }
   });
 

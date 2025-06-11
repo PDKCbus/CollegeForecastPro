@@ -98,8 +98,9 @@ export class MemStorage implements IStorage {
   }
 
   async getTeamByName(name: string): Promise<Team | undefined> {
+    if (!name) return undefined;
     return Array.from(this.teams.values()).find(
-      (team) => team.name.toLowerCase() === name.toLowerCase(),
+      (team) => team.name?.toLowerCase() === name.toLowerCase(),
     );
   }
 
