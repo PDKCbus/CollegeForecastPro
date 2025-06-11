@@ -286,6 +286,43 @@ export class MemStorage implements IStorage {
     return updatedPrediction;
   }
 
+  // Sentiment Analysis operations
+  async getSentimentAnalysis(id: number): Promise<SentimentAnalysis | undefined> {
+    return this.sentiments.get(id);
+  }
+
+  async getSentimentByGame(gameId: number): Promise<SentimentAnalysis[]> {
+    return Array.from(this.sentiments.values()).filter(sentiment => sentiment.gameId === gameId);
+  }
+
+  async getSentimentByTeam(teamId: number): Promise<SentimentAnalysis[]> {
+    return Array.from(this.sentiments.values()).filter(sentiment => sentiment.teamId === teamId);
+  }
+
+  async createSentimentAnalysis(insertSentiment: InsertSentimentAnalysis): Promise<SentimentAnalysis> {
+    const id = this.sentimentCurrentId++;
+    const sentiment: SentimentAnalysis = { 
+      ...insertSentiment, 
+      id,
+      lastUpdated: new Date()
+    };
+    this.sentiments.set(id, sentiment);
+    return sentiment;
+  }
+
+  async updateSentimentAnalysis(id: number, sentimentUpdate: Partial<SentimentAnalysis>): Promise<SentimentAnalysis | undefined> {
+    const existingSentiment = this.sentiments.get(id);
+    if (!existingSentiment) return undefined;
+    
+    const updatedSentiment = { 
+      ...existingSentiment, 
+      ...sentimentUpdate,
+      lastUpdated: new Date()
+    };
+    this.sentiments.set(id, updatedSentiment);
+    return updatedSentiment;
+  }
+
   // Helper methods to initialize sample data
   private initializeTeams() {
     const sampleTeams: InsertTeam[] = [
