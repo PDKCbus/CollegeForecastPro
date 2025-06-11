@@ -191,6 +191,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       const games = await gamesResponse.json();
+      console.log(`Found ${games.length} games for 2025 Week 1`);
       
       // Fetch betting lines for these games
       const linesResponse = await fetch("https://api.collegefootballdata.com/lines?year=2025&week=1&seasonType=regular", {
@@ -202,6 +203,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       let lines = [];
       if (linesResponse.ok) {
         lines = await linesResponse.json();
+        console.log(`Found ${lines.length} betting lines`);
       } else {
         console.log("Lines API Error:", await linesResponse.text());
       }
@@ -209,6 +211,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Process first 10 games with real data
       const processedGames = [];
       const gamesToProcess = games.slice(0, 10);
+      console.log(`Processing ${gamesToProcess.length} games`);
 
       // Rick's picks pool for random assignment
       const ricksPicks = [
