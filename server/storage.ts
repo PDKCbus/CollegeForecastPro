@@ -560,6 +560,32 @@ export class MemStorage implements IStorage {
         rank: null,
         wins: 8,
         losses: 4
+      },
+      { 
+        name: "Marshall",
+        abbreviation: "MARS",
+        mascot: "Thundering Herd",
+        conference: "Sun Belt",
+        division: null,
+        color: "#00B04F",
+        altColor: "#FFFFFF",
+        logoUrl: "https://cdn.freebiesupply.com/logos/large/2x/marshall-thundering-herd-logo-png-transparent.png",
+        rank: null,
+        wins: 7,
+        losses: 6
+      },
+      { 
+        name: "Georgia Tech",
+        abbreviation: "GT",
+        mascot: "Yellow Jackets",
+        conference: "ACC",
+        division: "Coastal",
+        color: "#B3A369",
+        altColor: "#003057",
+        logoUrl: "https://cdn.freebiesupply.com/logos/large/2x/georgia-tech-yellow-jackets-logo-png-transparent.png",
+        rank: null,
+        wins: 5,
+        losses: 7
       }
     ];
 
@@ -583,15 +609,15 @@ export class MemStorage implements IStorage {
     const nextSaturday = new Date(startOfWeek);
     nextSaturday.setDate(startOfWeek.getDate() + 5); // Saturday
     
-    // Featured game: Georgia vs Clemson (Chick-fil-A Kickoff Game)
+    // Featured game: Georgia vs Marshall
     this.createGame({
       homeTeamId: getTeamIdByName("Georgia"),
-      awayTeamId: getTeamIdByName("Clemson"),
+      awayTeamId: getTeamIdByName("Marshall"),
       startDate: new Date("2025-08-30T19:30:00Z"),
-      stadium: "Mercedes-Benz Stadium",
-      location: "Atlanta, GA",
-      spread: -7.5,
-      overUnder: 52.5,
+      stadium: "Sanford Stadium",
+      location: "Athens, GA",
+      spread: -35.5,
+      overUnder: 58.5,
       season: 2025,
       week: 1,
       isConferenceGame: false,
@@ -652,14 +678,14 @@ export class MemStorage implements IStorage {
         isConference: false
       },
       {
-        homeTeam: "TCU",
-        awayTeam: "Stanford",
+        homeTeam: "Clemson",
+        awayTeam: "Georgia Tech",
         date: new Date("2025-08-30T19:30:00Z"),
-        spread: -6.5,
-        overUnder: 58.5,
-        stadium: "Amon G. Carter Stadium",
-        location: "Fort Worth, TX",
-        isConference: false
+        spread: -13.5,
+        overUnder: 55.5,
+        stadium: "Memorial Stadium",
+        location: "Clemson, SC",
+        isConference: true
       },
       {
         homeTeam: "Washington",
