@@ -89,14 +89,16 @@ export default function Historical() {
       <div className="mb-8 bg-surface-light rounded-lg p-6">
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-xl font-bold text-white">Rick's Overall Record</h2>
-          <Button
-            onClick={() => syncHistoricalMutation.mutate()}
-            disabled={syncHistoricalMutation.isPending}
-            variant="outline"
-            size="sm"
-          >
-            {syncHistoricalMutation.isPending ? "Loading..." : "Load Historical Data"}
-          </Button>
+          {import.meta.env.DEV && (
+            <Button
+              onClick={() => syncHistoricalMutation.mutate()}
+              disabled={syncHistoricalMutation.isPending}
+              variant="outline"
+              size="sm"
+            >
+              {syncHistoricalMutation.isPending ? "Loading..." : "Load Historical Data"}
+            </Button>
+          )}
         </div>
         
         {recordLoading ? (
