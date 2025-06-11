@@ -164,6 +164,99 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Fetch real college football data
+  app.post("/api/sync-cfb-data", async (req, res) => {
+    try {
+      const apiKey = process.env.CFBD_API_KEY;
+      if (!apiKey) {
+        return res.status(500).json({ message: "CFBD API key not configured" });
+      }
+
+      // Fetch 2025 Week 1 games
+      const gamesResponse = await fetch("https://api.collegefootballdata.com/games?year=2025&week=1&seasonType=regular", {
+        headers: {
+          "Authorization": `Bearer ${apiKey}`
+        }
+      });
+
+      if (!gamesResponse.ok) {
+        throw new Error(`Failed to fetch games: ${gamesResponse.statusText}`);
+      }
+
+      const games = await gamesResponse.json();
+      
+      // Fetch betting lines for these games
+      const linesResponse = await fetch("https://api.collegefootballdata.com/lines?year=2025&week=1&seasonType=regular", {
+        headers: {
+          "Authorization": `Bearer ${apiKey}`
+        }
+      });
+
+      const lines = linesResponse.ok ? await linesResponse.json() : [];
+
+      // Process first 10 games
+      const processedGames = [];
+      const gamesToProcess = games.slice(0, 10);
+
+      for (const game of gamesToProcess) {
+        // Create or get teams
+        let homeTeam = await storage.getTeamByName(game.home_team);
+        if (!homeTeam) {
+          homeTeam = await storage.createTeam({
+            name: game.home_team,
+            abbreviation: game.home_team.substring(0, 4).toUpperCase(),
+            conference: game.home_conference || "Independent",
+            logoUrl: `https://logos.sportslogos.net/logos/list_by_team/30/${game.home_team.replace(/\s+/g, '_')}/logo.gif`
+          });
+        }
+
+        let awayTeam = await storage.getTeamByName(game.away_team);
+        if (!awayTeam) {
+          awayTeam = await storage.createTeam({
+            name: game.away_team,
+            abbreviation: game.away_team.substring(0, 4).toUpperCase(),
+            conference: game.away_conference || "Independent",
+            logoUrl: `https://logos.sportslogos.net/logos/list_by_team/30/${game.away_team.replace(/\s+/g, '_')}/logo.gif`
+          });
+        }
+
+        // Find betting lines for this game
+        const gameLines = lines.find(line => 
+          line.homeTeam === game.home_team && line.awayTeam === game.away_team
+        );
+
+        const spread = gameLines?.lines?.[0]?.spread;
+        const overUnder = gameLines?.lines?.[0]?.overUnder;
+
+        // Create game
+        const newGame = await storage.createGame({
+          homeTeamId: homeTeam.id,
+          awayTeamId: awayTeam.id,
+          startDate: new Date(game.start_date),
+          stadium: game.venue,
+          location: game.venue_id ? `${game.venue}` : undefined,
+          spread: spread || null,
+          overUnder: overUnder || null,
+          season: 2025,
+          week: 1,
+          isConferenceGame: game.conference_game || false,
+          completed: false,
+          isFeatured: processedGames.length === 0 // Make first game featured
+        });
+
+        processedGames.push(newGame);
+      }
+
+      res.json({ 
+        message: `Successfully synced ${processedGames.length} games`,
+        games: processedGames 
+      });
+    } catch (error) {
+      console.error("Error syncing CFB data:", error);
+      res.status(500).json({ message: "Failed to sync college football data", error: error.message });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }
