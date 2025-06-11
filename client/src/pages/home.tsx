@@ -34,7 +34,11 @@ export default function Home() {
   });
 
   const syncMutation = useMutation({
-    mutationFn: () => apiRequest("/api/sync-cfb-data", { method: "POST" }),
+    mutationFn: async () => {
+      const response = await fetch("/api/sync-cfb-data", { method: "POST" });
+      if (!response.ok) throw new Error("Sync failed");
+      return response.json();
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/games/upcoming"] });
       queryClient.invalidateQueries({ queryKey: ["/api/games/1"] });
@@ -87,7 +91,17 @@ export default function Home() {
         )}
         
         {/* Games Grid Section */}
-        <h2 className="text-2xl font-bold mb-6">Upcoming Games</h2>
+        <div className="flex justify-between items-center mb-6">
+          <h2 className="text-2xl font-bold">Upcoming Games</h2>
+          <Button 
+            onClick={() => syncMutation.mutate()}
+            disabled={syncMutation.isPending}
+            variant="outline"
+            className="bg-accent/10 border-accent/20 text-accent hover:bg-accent/20"
+          >
+            {syncMutation.isPending ? "Syncing..." : "Sync Real Data"}
+          </Button>
+        </div>
         
         {isLoading ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
