@@ -1,4 +1,4 @@
-import { eq, and, desc, asc, gte, lte, or } from 'drizzle-orm';
+import { eq, and, desc, asc, gte, lte, or, sql } from 'drizzle-orm';
 import { db } from './db';
 import { users, teams, games, predictions, sentimentAnalysis } from '../shared/schema';
 import type {
@@ -9,6 +9,7 @@ import type {
   SentimentAnalysis, InsertSentimentAnalysis
 } from '../shared/schema';
 import type { IStorage } from './storage';
+import { cleanTeamData, cleanGameData, cleanPredictionData, cleanSentimentData } from './data-cleaner';
 
 export class PostgresStorage implements IStorage {
   // User operations
@@ -43,19 +44,7 @@ export class PostgresStorage implements IStorage {
   }
 
   async createTeam(team: InsertTeam): Promise<Team> {
-    // Ensure all optional fields are explicitly null instead of undefined
-    const cleanTeam = {
-      ...team,
-      mascot: team.mascot ?? null,
-      conference: team.conference ?? null,
-      division: team.division ?? null,
-      color: team.color ?? null,
-      altColor: team.altColor ?? null,
-      logoUrl: team.logoUrl ?? null,
-      rank: team.rank ?? null,
-      wins: team.wins ?? null,
-      losses: team.losses ?? null,
-    };
+    const cleanTeam = cleanTeamData(team);
     const result = await db.insert(teams).values(cleanTeam).returning();
     return result[0];
   }
@@ -165,19 +154,7 @@ export class PostgresStorage implements IStorage {
   }
 
   async createGame(game: InsertGame): Promise<Game> {
-    // Ensure all optional fields are explicitly null instead of undefined
-    const cleanGame = {
-      ...game,
-      location: game.location ?? null,
-      stadium: game.stadium ?? null,
-      spread: game.spread ?? null,
-      overUnder: game.overUnder ?? null,
-      homeTeamScore: game.homeTeamScore ?? null,
-      awayTeamScore: game.awayTeamScore ?? null,
-      isFeatured: game.isFeatured ?? null,
-      isConferenceGame: game.isConferenceGame ?? false,
-      isRivalryGame: game.isRivalryGame ?? false,
-    };
+    const cleanGame = cleanGameData(game);
     const result = await db.insert(games).values(cleanGame).returning();
     return result[0];
   }

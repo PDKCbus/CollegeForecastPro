@@ -208,8 +208,8 @@ export class HistoricalDataSync {
           if (bettingLine?.lines && bettingLine.lines.length > 0) {
             // Use the first available line (could be improved to get consensus)
             const line = bettingLine.lines[0];
-            spread = line.spread || null;
-            overUnder = line.over_under || null;
+            spread = line.spread ?? null;
+            overUnder = line.over_under ?? null;
           }
 
           const gameData: InsertGame = {
