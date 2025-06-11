@@ -9,6 +9,7 @@ export function TabNavigation() {
     if (path === "/") return "upcoming";
     if (path === "/historical") return "historical";
     if (path === "/analysis") return "analysis";
+    if (path === "/sentiment") return "sentiment";
     return "upcoming";
   };
   
@@ -24,6 +25,9 @@ export function TabNavigation() {
         break;
       case "analysis":
         setLocation("/analysis");
+        break;
+      case "sentiment":
+        setLocation("/sentiment");
         break;
       default:
         setLocation("/");
@@ -42,6 +46,7 @@ export function TabNavigation() {
             <SelectItem value="upcoming" className="text-white">Upcoming Games</SelectItem>
             <SelectItem value="historical" className="text-white">Historical Games</SelectItem>
             <SelectItem value="analysis" className="text-white">Analysis</SelectItem>
+            <SelectItem value="sentiment" className="text-white">Twitter Sentiment</SelectItem>
           </SelectContent>
         </Select>
       </div>
@@ -64,6 +69,12 @@ export function TabNavigation() {
           <Link href="/analysis" className={`px-6 py-4 font-medium relative ${currentTab === "analysis" ? "text-white" : "text-white/60"}`}>
             Analysis
             {currentTab === "analysis" && (
+              <span className="absolute bottom-0 left-0 w-full h-0.5 bg-accent"></span>
+            )}
+          </Link>
+          <Link href="/sentiment" className={`px-6 py-4 font-medium relative ${currentTab === "sentiment" ? "text-white" : "text-white/60"}`}>
+            Twitter Sentiment
+            {currentTab === "sentiment" && (
               <span className="absolute bottom-0 left-0 w-full h-0.5 bg-accent"></span>
             )}
           </Link>
