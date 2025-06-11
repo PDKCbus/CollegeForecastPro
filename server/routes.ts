@@ -455,41 +455,60 @@ export async function registerRoutes(app: Express): Promise<Server> {
           overUnder = selectedLine?.overUnder || null;
         }
 
-        // Create game with real data
-        const newGame = await storage.createGame({
-          homeTeamId: homeTeam.id,
-          awayTeamId: awayTeam.id,
-          startDate: new Date(game.startDate || "2025-08-30T12:00:00Z"),
-          stadium: game.venue || null,
-          location: game.venue || null,
-          spread: spread,
-          overUnder: overUnder,
-          season: 2025,
-          week: 1,
-          isConferenceGame: game.conferenceGame || false,
-          completed: false,
-          homeTeamScore: null,
-          awayTeamScore: null,
-          isRivalryGame: false,
-          isFeatured: i === 0 // Make first game featured
-        });
+        // Check for existing game first
+        const existingGames = await storage.getUpcomingGames();
+        const existingGame = existingGames.find(g => 
+          g.homeTeam.name === game.homeTeam && g.awayTeam.name === game.awayTeam
+        );
 
-        // Create Rick's pick for this game
-        const spreadPick = ricksSpreadPicks[i % ricksSpreadPicks.length];
-        const overUnderPick = ricksOverUnderPicks[i % ricksOverUnderPicks.length];
-        const combinedPick = `SPREAD: ${spreadPick} | O/U: ${overUnderPick}`;
-        const favoredTeam = spread && spread < 0 ? homeTeam : awayTeam;
+        let gameToUse;
         
-        await storage.createPrediction({
-          gameId: newGame.id,
-          predictedWinnerId: favoredTeam.id,
-          confidence: 0.65 + (Math.random() * 0.25), // Random confidence between 65-90%
-          predictedSpread: spread,
-          predictedTotal: overUnder,
-          notes: combinedPick
-        });
+        if (existingGame) {
+          // Update existing game with latest betting lines
+          gameToUse = await storage.updateGame(existingGame.id, {
+            spread: spread,
+            overUnder: overUnder,
+            startDate: new Date(game.startDate || "2025-08-30T12:00:00Z"),
+            stadium: game.venue || null,
+            location: game.venue || null
+          });
+        } else {
+          // Create new game
+          gameToUse = await storage.createGame({
+            homeTeamId: homeTeam.id,
+            awayTeamId: awayTeam.id,
+            startDate: new Date(game.startDate || "2025-08-30T12:00:00Z"),
+            stadium: game.venue || null,
+            location: game.venue || null,
+            spread: spread,
+            overUnder: overUnder,
+            season: 2025,
+            week: 1,
+            isConferenceGame: game.conferenceGame || false,
+            completed: false,
+            homeTeamScore: null,
+            awayTeamScore: null,
+            isRivalryGame: false,
+            isFeatured: i === 0 // Make first game featured
+          });
 
-        processedGames.push(newGame);
+          // Only create Rick's pick for new games
+          const spreadPick = ricksSpreadPicks[i % ricksSpreadPicks.length];
+          const overUnderPick = ricksOverUnderPicks[i % ricksOverUnderPicks.length];
+          const combinedPick = `SPREAD: ${spreadPick} | O/U: ${overUnderPick}`;
+          const favoredTeam = spread && spread < 0 ? homeTeam : awayTeam;
+          
+          await storage.createPrediction({
+            gameId: gameToUse.id,
+            predictedWinnerId: favoredTeam.id,
+            confidence: 0.65 + (Math.random() * 0.25), // Random confidence between 65-90%
+            predictedSpread: spread,
+            predictedTotal: overUnder,
+            notes: combinedPick
+          });
+        }
+
+        processedGames.push(gameToUse);
       }
 
       res.json({ 
