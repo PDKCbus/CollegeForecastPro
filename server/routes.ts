@@ -213,18 +213,31 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const gamesToProcess = games.slice(0, 10);
       console.log(`Processing ${gamesToProcess.length} games`);
 
-      // Rick's picks pool for random assignment
-      const ricksPicks = [
-        "Take the home team - they're well-rested and ready",
-        "Road team covers - motivated to prove themselves",
-        "Under is the play - defense wins championships", 
-        "Over hits easy - both offenses are explosive",
-        "Home team straight up - too much talent",
-        "Take the points with the underdog - they're live",
-        "Fade the public - sharp money on the dog",
-        "Weather favors the under - keep it low scoring",
-        "Rivalry game goes over - emotions run high",
-        "Take the favorite - they're just better"
+      // Rick's specific picks for spread and over/under
+      const ricksSpreadPicks = [
+        "Take the favorite to cover - they're simply better",
+        "Underdog gets the points - motivation edge",
+        "Home team covers - crowd advantage",
+        "Road favorite covers - statement game",
+        "Take the dog - too many points",
+        "Lay the points - talent gap too wide",
+        "Underdog keeps it close - rivalry factor",
+        "Favorite wins big - mismatch alert",
+        "Take the points - value play",
+        "Fade the public - contrarian value"
+      ];
+
+      const ricksOverUnderPicks = [
+        "Take the OVER - both offenses clicking",
+        "UNDER is the play - defense dominates",
+        "OVER hits - shootout incoming",
+        "UNDER - weather keeps scoring low",
+        "OVER - pace of play favors points",
+        "UNDER - grind-it-out game",
+        "OVER - weak defenses can't stop",
+        "UNDER - both teams run heavy",
+        "OVER - desperate teams air it out",
+        "UNDER - playoff-style defense"
       ];
 
       for (let i = 0; i < gamesToProcess.length; i++) {
@@ -312,7 +325,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
 
         // Create Rick's pick for this game
-        const randomPick = ricksPicks[i % ricksPicks.length];
+        const spreadPick = ricksSpreadPicks[i % ricksSpreadPicks.length];
+        const overUnderPick = ricksOverUnderPicks[i % ricksOverUnderPicks.length];
+        const combinedPick = `SPREAD: ${spreadPick} | O/U: ${overUnderPick}`;
         const favoredTeam = spread && spread < 0 ? homeTeam : awayTeam;
         
         await storage.createPrediction({
@@ -321,7 +336,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           confidence: 0.65 + (Math.random() * 0.25), // Random confidence between 65-90%
           predictedSpread: spread,
           predictedTotal: overUnder,
-          notes: randomPick
+          notes: combinedPick
         });
 
         processedGames.push(newGame);
