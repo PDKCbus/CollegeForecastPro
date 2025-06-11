@@ -1,8 +1,9 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
+import { sentimentService } from "./sentiment";
 import { z } from "zod";
-import { insertGameSchema, insertTeamSchema, insertPredictionSchema } from "@shared/schema";
+import { insertGameSchema, insertTeamSchema, insertPredictionSchema, insertSentimentAnalysisSchema } from "@shared/schema";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Test endpoint
@@ -594,6 +595,78 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error calculating Rick's record:", error);
       res.status(500).json({ message: "Failed to calculate Rick's record" });
+    }
+  });
+
+  // Sentiment Analysis API
+  app.get("/api/sentiment/team/:teamId", async (req, res) => {
+    try {
+      const teamId = parseInt(req.params.teamId);
+      if (isNaN(teamId)) {
+        return res.status(400).json({ message: "Invalid team ID" });
+      }
+
+      const sentiments = await storage.getSentimentByTeam(teamId);
+      res.json(sentiments);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to fetch team sentiment" });
+    }
+  });
+
+  app.get("/api/sentiment/game/:gameId", async (req, res) => {
+    try {
+      const gameId = parseInt(req.params.gameId);
+      if (isNaN(gameId)) {
+        return res.status(400).json({ message: "Invalid game ID" });
+      }
+
+      const sentiments = await storage.getSentimentByGame(gameId);
+      res.json(sentiments);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to fetch game sentiment" });
+    }
+  });
+
+  app.post("/api/sentiment/analyze-team/:teamId", async (req, res) => {
+    try {
+      const teamId = parseInt(req.params.teamId);
+      if (isNaN(teamId)) {
+        return res.status(400).json({ message: "Invalid team ID" });
+      }
+
+      await sentimentService.analyzeTeamSentiment(teamId);
+      const sentiments = await storage.getSentimentByTeam(teamId);
+      res.json({ message: "Team sentiment analysis completed", data: sentiments });
+    } catch (error) {
+      res.status(500).json({ message: "Failed to analyze team sentiment" });
+    }
+  });
+
+  app.post("/api/sentiment/analyze-game/:gameId", async (req, res) => {
+    try {
+      const gameId = parseInt(req.params.gameId);
+      if (isNaN(gameId)) {
+        return res.status(400).json({ message: "Invalid game ID" });
+      }
+
+      await sentimentService.analyzeGameSentiment(gameId);
+      const sentiments = await storage.getSentimentByGame(gameId);
+      res.json({ message: "Game sentiment analysis completed", data: sentiments });
+    } catch (error) {
+      res.status(500).json({ message: "Failed to analyze game sentiment" });
+    }
+  });
+
+  app.post("/api/sentiment/analyze-all", async (req, res) => {
+    try {
+      // Run sentiment analysis for all upcoming games in the background
+      sentimentService.analyzeAllUpcomingGames().catch(error => {
+        console.error("Background sentiment analysis error:", error);
+      });
+      
+      res.json({ message: "Sentiment analysis started for all upcoming games" });
+    } catch (error) {
+      res.status(500).json({ message: "Failed to start sentiment analysis" });
     }
   });
 
