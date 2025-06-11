@@ -21,19 +21,33 @@ export function cleanTeamData(team: InsertTeam): InsertTeam {
 }
 
 export function cleanGameData(game: InsertGame): InsertGame {
-  return {
-    ...game,
-    stadium: game.stadium ?? null,
-    location: game.location ?? null,
-    spread: game.spread ?? null,
-    overUnder: game.overUnder ?? null,
-    homeTeamScore: game.homeTeamScore ?? null,
-    awayTeamScore: game.awayTeamScore ?? null,
-    isFeatured: game.isFeatured ?? false,
-    isConferenceGame: game.isConferenceGame ?? false,
-    isRivalryGame: game.isRivalryGame ?? false,
-    completed: game.completed ?? false,
+  // Ensure all fields are explicitly typed and cleaned
+  const cleaned = {
+    homeTeamId: Number(game.homeTeamId),
+    awayTeamId: Number(game.awayTeamId),
+    startDate: game.startDate instanceof Date ? game.startDate : new Date(game.startDate),
+    season: Number(game.season),
+    week: Number(game.week),
+    stadium: typeof game.stadium === 'string' ? game.stadium : null,
+    location: typeof game.location === 'string' ? game.location : null,
+    spread: typeof game.spread === 'number' ? game.spread : null,
+    overUnder: typeof game.overUnder === 'number' ? game.overUnder : null,
+    homeTeamScore: typeof game.homeTeamScore === 'number' ? game.homeTeamScore : null,
+    awayTeamScore: typeof game.awayTeamScore === 'number' ? game.awayTeamScore : null,
+    completed: Boolean(game.completed),
+    isFeatured: Boolean(game.isFeatured),
+    isConferenceGame: Boolean(game.isConferenceGame),
+    isRivalryGame: Boolean(game.isRivalryGame),
   };
+
+  // Remove any undefined values
+  Object.keys(cleaned).forEach(key => {
+    if (cleaned[key as keyof typeof cleaned] === undefined) {
+      delete cleaned[key as keyof typeof cleaned];
+    }
+  });
+
+  return cleaned as InsertGame;
 }
 
 export function cleanPredictionData(prediction: InsertPrediction): InsertPrediction {

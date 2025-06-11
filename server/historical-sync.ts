@@ -231,7 +231,24 @@ export class HistoricalDataSync {
             isRivalryGame: false,
           };
 
-          await storage.createGame(gameData);
+          try {
+            console.log(`Processing game ${game.id}: ${game.away_team} @ ${game.home_team}`);
+            const cleanedGameData = cleanGameData(gameData);
+            
+            // Additional validation before insertion
+            if (!cleanedGameData.homeTeamId || !cleanedGameData.awayTeamId) {
+              throw new Error(`Invalid team IDs: home=${cleanedGameData.homeTeamId}, away=${cleanedGameData.awayTeamId}`);
+            }
+            
+            await storage.createGame(cleanedGameData);
+          } catch (gameError) {
+            console.error(`Error processing game ${game.id}:`, {
+              error: gameError,
+              gameData: JSON.stringify(gameData, null, 2),
+              cleanedData: JSON.stringify(cleanGameData, null, 2)
+            });
+            continue; // Skip this game and continue with others
+          }
           processedCount++;
 
           if (processedCount % 100 === 0) {
