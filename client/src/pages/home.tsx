@@ -6,15 +6,18 @@ import { GameCard } from "@/components/game-card";
 import { FeatureHighlights } from "@/components/feature-highlights";
 import { CTASection } from "@/components/cta-section";
 import { Button } from "@/components/ui/button";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation } from "@tanstack/react-query";
 import { useState } from "react";
 import { FilterOption } from "@/lib/types";
+import { apiRequest, queryClient } from "@/lib/queryClient";
+import { useToast } from "@/hooks/use-toast";
 
 export default function Home() {
-  const [selectedWeek, setSelectedWeek] = useState("Week 10");
+  const [selectedWeek, setSelectedWeek] = useState("Week 1");
   const [activeFilter, setActiveFilter] = useState("all");
+  const { toast } = useToast();
   
-  const weeks = ["Week 10", "Week 9", "Week 8", "Week 7", "Week 6"];
+  const weeks = ["Week 1", "Week 2", "Week 3", "Week 4", "Week 5"];
   
   const filterOptions: FilterOption[] = [
     { label: "All Games", value: "all", isActive: activeFilter === "all" },
@@ -22,12 +25,31 @@ export default function Home() {
     { label: "Conference", value: "conference", isActive: activeFilter === "conference" }
   ];
   
-  const { data: upcomingGames, isLoading } = useQuery({
+  const { data: upcomingGames = [], isLoading } = useQuery({
     queryKey: ["/api/games/upcoming"],
   });
   
   const { data: featuredGame, isLoading: isFeaturedLoading } = useQuery({
     queryKey: ["/api/games/1"],
+  });
+
+  const syncMutation = useMutation({
+    mutationFn: () => apiRequest("/api/sync-cfb-data", { method: "POST" }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/games/upcoming"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/games/1"] });
+      toast({
+        title: "Data Synced Successfully",
+        description: "Real betting lines and Rick's picks have been updated from College Football Data API.",
+      });
+    },
+    onError: () => {
+      toast({
+        title: "Sync Failed", 
+        description: "Unable to fetch latest data. Please try again.",
+        variant: "destructive",
+      });
+    }
   });
   
   const handleWeekChange = (week: string) => {
