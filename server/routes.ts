@@ -2,6 +2,7 @@ import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { sentimentService } from "./sentiment";
+import { historicalSync } from "./historical-sync";
 import { z } from "zod";
 import { insertGameSchema, insertTeamSchema, insertPredictionSchema, insertSentimentAnalysisSchema } from "@shared/schema";
 
@@ -864,6 +865,57 @@ export async function registerRoutes(app: Express): Promise<Server> {
       console.error("Sync current week data error:", error);
     }
   }
+
+  // Historical Data Sync API
+  app.post("/api/historical/sync", async (req, res) => {
+    try {
+      const { startYear = 2009, endYear = 2024 } = req.body;
+      
+      // Start the historical sync in the background
+      historicalSync.syncHistoricalData(startYear, endYear).catch(error => {
+        console.error("Historical sync background error:", error);
+      });
+      
+      res.json({ 
+        message: `Historical data sync started for ${startYear}-${endYear}`,
+        estimatedGames: (endYear - startYear + 1) * 800 // Rough estimate
+      });
+    } catch (error) {
+      res.status(500).json({ message: "Failed to start historical sync" });
+    }
+  });
+
+  app.get("/api/historical/progress", async (req, res) => {
+    try {
+      const progress = await historicalSync.getProgress();
+      res.json(progress);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to get sync progress" });
+    }
+  });
+
+  app.post("/api/historical/sync-teams", async (req, res) => {
+    try {
+      await historicalSync.syncAllTeams();
+      res.json({ message: "All FBS teams synced successfully" });
+    } catch (error) {
+      res.status(500).json({ message: "Failed to sync teams" });
+    }
+  });
+
+  app.post("/api/historical/sync-season/:year", async (req, res) => {
+    try {
+      const year = parseInt(req.params.year);
+      if (isNaN(year) || year < 2000 || year > 2025) {
+        return res.status(400).json({ message: "Invalid year" });
+      }
+
+      await historicalSync.syncGamesForSeason(year);
+      res.json({ message: `${year} season synced successfully` });
+    } catch (error) {
+      res.status(500).json({ message: `Failed to sync ${req.params.year} season` });
+    }
+  });
 
   // Start auto-sync scheduler
   setInterval(autoSync, GAME_CHECK_INTERVAL);
