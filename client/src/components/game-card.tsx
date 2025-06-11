@@ -2,13 +2,21 @@ import { GameWithTeams } from "@/lib/types";
 import { SentimentDisplay } from "./sentiment-display";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Calendar, Clock, MapPin } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { Calendar, Clock, MapPin, MoreHorizontal, Twitter, TrendingUp, TrendingDown } from "lucide-react";
+import { useQuery, useMutation } from "@tanstack/react-query";
+import { useState } from "react";
+import type { SentimentAnalysis } from "@shared/schema";
 
 interface GameCardProps {
   game: GameWithTeams;
 }
 
 export function GameCard({ game }: GameCardProps) {
+  const [sentimentDialogOpen, setSentimentDialogOpen] = useState(false);
+
   const formatDate = (dateString: Date) => {
     const date = new Date(dateString);
     return date.toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' });
@@ -19,9 +27,61 @@ export function GameCard({ game }: GameCardProps) {
     return date.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
   };
 
+  // Fetch sentiment data for this game
+  const { data: sentimentData = [] } = useQuery<SentimentAnalysis[]>({
+    queryKey: ['/api/sentiment/game', game.id],
+    queryFn: async () => {
+      const response = await fetch(`/api/sentiment/game/${game.id}`);
+      if (!response.ok) throw new Error('Failed to fetch sentiment');
+      return response.json();
+    },
+  });
+
+  // Mutation to analyze game sentiment
+  const analyzeSentimentMutation = useMutation({
+    mutationFn: async () => {
+      const response = await fetch(`/api/sentiment/analyze-game/${game.id}`, { method: 'POST' });
+      if (!response.ok) throw new Error('Failed to analyze sentiment');
+      return response.json();
+    },
+  });
+
   const formatTeamRecord = (wins: number, losses: number) => {
     return `${wins}-${losses}`;
   };
+
+  const getTwitterFavorite = () => {
+    if (!sentimentData || sentimentData.length === 0) {
+      return null;
+    }
+
+    const latestSentiment = sentimentData[0];
+    const sentimentScore = latestSentiment.sentimentScore;
+    
+    // Determine which team Twitter favors based on sentiment score
+    // Positive sentiment favors home team, negative favors away team
+    if (sentimentScore > 0.1) {
+      return {
+        team: game.homeTeam,
+        confidence: Math.min(Math.abs(sentimentScore) * 100, 85),
+        sentiment: 'positive'
+      };
+    } else if (sentimentScore < -0.1) {
+      return {
+        team: game.awayTeam,
+        confidence: Math.min(Math.abs(sentimentScore) * 100, 85),
+        sentiment: 'negative'
+      };
+    } else {
+      return {
+        team: null,
+        confidence: 50,
+        sentiment: 'neutral'
+      };
+    }
+  };
+
+  const twitterFavorite = getTwitterFavorite();
 
   const getSpreadDisplay = () => {
     if (game.spread === null || game.spread === undefined) return "N/A";
@@ -100,13 +160,27 @@ export function GameCard({ game }: GameCardProps) {
                 )}
               </div>
             </div>
-            <button className="text-white/70 hover:text-white">
-              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-more-horizontal">
-                <circle cx="12" cy="12" r="1" />
-                <circle cx="19" cy="12" r="1" />
-                <circle cx="5" cy="12" r="1" />
-              </svg>
-            </button>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" size="sm" className="text-white/70 hover:text-white h-8 w-8 p-0">
+                  <MoreHorizontal className="h-4 w-4" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="bg-surface border-surface-light">
+                <DropdownMenuItem 
+                  onClick={() => {
+                    if (sentimentData.length === 0) {
+                      analyzeSentimentMutation.mutate();
+                    }
+                    setSentimentDialogOpen(true);
+                  }}
+                  className="text-white hover:bg-surface-light cursor-pointer"
+                >
+                  <Twitter className="mr-2 h-4 w-4" />
+                  See what Twitter/X thinks
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
           
           {game.prediction?.confidence && (
@@ -121,6 +195,122 @@ export function GameCard({ game }: GameCardProps) {
           )}
         </div>
       </div>
+
+      {/* Twitter Sentiment Dialog */}
+      <Dialog open={sentimentDialogOpen} onOpenChange={setSentimentDialogOpen}>
+        <DialogContent className="bg-surface border-surface-light text-white max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Twitter className="h-5 w-5 text-blue-400" />
+              What Twitter/X Thinks
+            </DialogTitle>
+          </DialogHeader>
+          
+          <div className="space-y-4">
+            {analyzeSentimentMutation.isPending ? (
+              <div className="text-center py-6">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-accent mx-auto mb-2"></div>
+                <div className="text-white/70">Analyzing Twitter sentiment...</div>
+              </div>
+            ) : sentimentData.length === 0 ? (
+              <div className="text-center py-6">
+                <Twitter className="h-12 w-12 text-white/40 mx-auto mb-3" />
+                <div className="text-white/70 mb-4">No sentiment data available yet</div>
+                <Button 
+                  onClick={() => analyzeSentimentMutation.mutate()}
+                  className="bg-blue-500 hover:bg-blue-600"
+                >
+                  <Twitter className="mr-2 h-4 w-4" />
+                  Analyze Twitter Sentiment
+                </Button>
+              </div>
+            ) : twitterFavorite ? (
+              <div className="space-y-4">
+                {/* Game Matchup */}
+                <div className="text-center">
+                  <div className="text-sm text-white/70 mb-2">
+                    {game.awayTeam.abbreviation} @ {game.homeTeam.abbreviation}
+                  </div>
+                  <div className="text-xs text-white/50">
+                    {formatDate(game.startDate)} • {formatTime(game.startDate)} ET
+                  </div>
+                </div>
+
+                {/* Twitter Favorite */}
+                {twitterFavorite.sentiment === 'neutral' ? (
+                  <div className="text-center py-4">
+                    <div className="w-16 h-16 bg-surface-light rounded-full flex items-center justify-center mx-auto mb-3">
+                      <span className="text-2xl">🤷</span>
+                    </div>
+                    <div className="font-semibold text-lg">Too Close to Call</div>
+                    <div className="text-white/70 text-sm">
+                      Twitter sentiment is evenly split
+                    </div>
+                  </div>
+                ) : (
+                  <div className="text-center py-4">
+                    <div className="flex items-center justify-center mb-3">
+                      <img 
+                        src={twitterFavorite.team?.logoUrl || ""} 
+                        alt={twitterFavorite.team?.name}
+                        className="w-16 h-16 object-contain"
+                      />
+                    </div>
+                    <div className="font-semibold text-lg mb-1">
+                      Twitter Favors {twitterFavorite.team?.name}
+                    </div>
+                    <div className="flex items-center justify-center gap-1 mb-2">
+                      {twitterFavorite.sentiment === 'positive' ? (
+                        <TrendingUp className="h-4 w-4 text-green-400" />
+                      ) : (
+                        <TrendingDown className="h-4 w-4 text-red-400" />
+                      )}
+                      <span className="text-white/70 text-sm">
+                        {Math.round(twitterFavorite.confidence)}% confidence
+                      </span>
+                    </div>
+                    <div className="text-xs text-white/50">
+                      Based on recent Twitter activity and sentiment analysis
+                    </div>
+                  </div>
+                )}
+
+                {/* Sentiment Stats */}
+                {sentimentData[0] && (
+                  <div className="bg-surface-light rounded-lg p-3">
+                    <div className="text-sm font-medium mb-2">Sentiment Breakdown</div>
+                    <div className="grid grid-cols-3 gap-2 text-xs">
+                      <div className="text-center">
+                        <div className="text-green-400 font-medium">
+                          {sentimentData[0].positiveCount}
+                        </div>
+                        <div className="text-white/60">Positive</div>
+                      </div>
+                      <div className="text-center">
+                        <div className="text-white/70 font-medium">
+                          {sentimentData[0].neutralCount}
+                        </div>
+                        <div className="text-white/60">Neutral</div>
+                      </div>
+                      <div className="text-center">
+                        <div className="text-red-400 font-medium">
+                          {sentimentData[0].negativeCount}
+                        </div>
+                        <div className="text-white/60">Negative</div>
+                      </div>
+                    </div>
+                    <div className="mt-2 pt-2 border-t border-surface text-center">
+                      <div className="text-xs text-white/50">
+                        {sentimentData[0].totalTweets} tweets analyzed
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
+            ) : null}
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
