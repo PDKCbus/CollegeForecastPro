@@ -214,18 +214,19 @@ export class HistoricalDataSync {
             overUnder = line.over_under ?? null;
           }
 
+          // Ensure all values are properly converted from undefined to null
           const gameData: InsertGame = {
             homeTeamId,
             awayTeamId,
             startDate: new Date(game.start_date),
             season: game.season,
             week: game.week,
-            stadium: game.venue || null,
-            location: game.venue || null,
-            spread: spread || null,
-            overUnder: overUnder || null,
-            homeTeamScore: game.home_points || null,
-            awayTeamScore: game.away_points || null,
+            stadium: game.venue ? game.venue : null,
+            location: game.venue ? game.venue : null,
+            spread: spread !== undefined && spread !== null ? spread : null,
+            overUnder: overUnder !== undefined && overUnder !== null ? overUnder : null,
+            homeTeamScore: game.home_points !== undefined && game.home_points !== null ? game.home_points : null,
+            awayTeamScore: game.away_points !== undefined && game.away_points !== null ? game.away_points : null,
             completed: Boolean(game.home_points !== undefined && game.away_points !== undefined),
             isFeatured: false,
             isConferenceGame: Boolean(game.conference_game),
