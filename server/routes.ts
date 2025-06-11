@@ -206,20 +206,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
       for (const game of gamesToProcess) {
         // Create or get teams
         let homeTeam = await storage.getTeamByName(game.home_team);
-        if (!homeTeam) {
+        if (!homeTeam && game.home_team) {
           homeTeam = await storage.createTeam({
             name: game.home_team,
-            abbreviation: game.home_team.substring(0, 4).toUpperCase(),
+            abbreviation: game.home_team.substring(0, Math.min(4, game.home_team.length)).toUpperCase(),
             conference: game.home_conference || "Independent",
             logoUrl: `https://logos.sportslogos.net/logos/list_by_team/30/${game.home_team.replace(/\s+/g, '_')}/logo.gif`
           });
         }
 
         let awayTeam = await storage.getTeamByName(game.away_team);
-        if (!awayTeam) {
+        if (!awayTeam && game.away_team) {
           awayTeam = await storage.createTeam({
             name: game.away_team,
-            abbreviation: game.away_team.substring(0, 4).toUpperCase(),
+            abbreviation: game.away_team.substring(0, Math.min(4, game.away_team.length)).toUpperCase(),
             conference: game.away_conference || "Independent",
             logoUrl: `https://logos.sportslogos.net/logos/list_by_team/30/${game.away_team.replace(/\s+/g, '_')}/logo.gif`
           });

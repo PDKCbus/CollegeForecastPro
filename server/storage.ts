@@ -479,19 +479,19 @@ export class MemStorage implements IStorage {
     const nextSaturday = new Date(startOfWeek);
     nextSaturday.setDate(startOfWeek.getDate() + 5); // Saturday
     
-    // Featured game: Ohio State vs Michigan
+    // Featured game: Georgia vs Clemson (Chick-fil-A Kickoff Game)
     this.createGame({
-      homeTeamId: getTeamIdByName("Ohio State"),
-      awayTeamId: getTeamIdByName("Michigan"),
-      startDate: new Date(nextSaturday.getFullYear(), nextSaturday.getMonth(), nextSaturday.getDate() + 14, 12, 0), // 12:00 PM in 2 weeks
-      stadium: "Ohio Stadium",
-      location: "Columbus, OH",
-      spread: -2.5,
-      overUnder: 45.5,
-      season: 2023,
-      week: 12,
-      isConferenceGame: true,
-      isRivalryGame: true,
+      homeTeamId: getTeamIdByName("Georgia"),
+      awayTeamId: getTeamIdByName("Clemson"),
+      startDate: new Date("2025-08-30T19:30:00Z"),
+      stadium: "Mercedes-Benz Stadium",
+      location: "Atlanta, GA",
+      spread: -7.5,
+      overUnder: 52.5,
+      season: 2025,
+      week: 1,
+      isConferenceGame: false,
+      isRivalryGame: false,
       isFeatured: true
     });
 
