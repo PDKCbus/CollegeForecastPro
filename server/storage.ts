@@ -285,7 +285,7 @@ export class MemStorage implements IStorage {
         altColor: "#666666",
         logoUrl: "https://cdn.freebiesupply.com/logos/large/2x/ohio-state-buckeyes-logo-png-transparent.png",
         rank: 2,
-        wins: 9,
+        wins: 0,
         losses: 0
       },
       { 
@@ -298,8 +298,8 @@ export class MemStorage implements IStorage {
         altColor: "#FFCB05",
         logoUrl: "https://cdn.freebiesupply.com/logos/large/2x/michigan-wolverines-logo-png-transparent.png",
         rank: 3,
-        wins: 8,
-        losses: 1
+        wins: 0,
+        losses: 0
       },
       { 
         name: "Alabama",
@@ -311,8 +311,8 @@ export class MemStorage implements IStorage {
         altColor: "#FFFFFF",
         logoUrl: "https://cdn.freebiesupply.com/logos/large/2x/alabama-crimson-tide-logo-png-transparent.png",
         rank: 9,
-        wins: 7,
-        losses: 2
+        wins: 0,
+        losses: 0
       },
       { 
         name: "Ole Miss",
@@ -324,8 +324,8 @@ export class MemStorage implements IStorage {
         altColor: "#14213D",
         logoUrl: "https://cdn.freebiesupply.com/logos/large/2x/ole-miss-rebels-logo-png-transparent.png",
         rank: 11,
-        wins: 8,
-        losses: 1
+        wins: 0,
+        losses: 0
       },
       { 
         name: "LSU",
@@ -337,8 +337,8 @@ export class MemStorage implements IStorage {
         altColor: "#FDD023",
         logoUrl: "https://cdn.freebiesupply.com/logos/large/2x/lsu-tigers-logo-png-transparent.png",
         rank: 7,
-        wins: 7,
-        losses: 2
+        wins: 0,
+        losses: 0
       },
       { 
         name: "Arkansas",
@@ -350,8 +350,8 @@ export class MemStorage implements IStorage {
         altColor: "#FFFFFF",
         logoUrl: "https://cdn.freebiesupply.com/logos/large/2x/arkansas-razorbacks-logo-png-transparent.png",
         rank: null,
-        wins: 5,
-        losses: 4
+        wins: 0,
+        losses: 0
       },
       { 
         name: "Clemson",
@@ -363,8 +363,8 @@ export class MemStorage implements IStorage {
         altColor: "#522D80",
         logoUrl: "https://cdn.freebiesupply.com/logos/large/2x/clemson-tigers-logo-png-transparent.png",
         rank: 10,
-        wins: 8,
-        losses: 1
+        wins: 0,
+        losses: 0
       },
       { 
         name: "Louisville",
@@ -376,8 +376,8 @@ export class MemStorage implements IStorage {
         altColor: "#000000",
         logoUrl: "https://cdn.freebiesupply.com/logos/large/2x/louisville-cardinals-logo-png-transparent.png",
         rank: null,
-        wins: 6,
-        losses: 3
+        wins: 0,
+        losses: 0
       },
       { 
         name: "Texas",
@@ -389,8 +389,8 @@ export class MemStorage implements IStorage {
         altColor: "#FFFFFF",
         logoUrl: "https://cdn.freebiesupply.com/logos/large/2x/texas-longhorns-logo-png-transparent.png",
         rank: null,
-        wins: 6,
-        losses: 3
+        wins: 0,
+        losses: 0
       },
       { 
         name: "TCU",
@@ -402,7 +402,7 @@ export class MemStorage implements IStorage {
         altColor: "#A3A9AC",
         logoUrl: "https://cdn.freebiesupply.com/logos/large/2x/tcu-horned-frogs-logo-png-transparent.png",
         rank: 4,
-        wins: 9,
+        wins: 0,
         losses: 0
       },
       { 
@@ -415,7 +415,7 @@ export class MemStorage implements IStorage {
         altColor: "#000000",
         logoUrl: "https://cdn.freebiesupply.com/logos/large/2x/georgia-bulldogs-logo-png-transparent.png",
         rank: 1,
-        wins: 9,
+        wins: 0,
         losses: 0
       },
       { 
@@ -428,8 +428,8 @@ export class MemStorage implements IStorage {
         altColor: "#FFFFFF",
         logoUrl: "https://cdn.freebiesupply.com/logos/large/2x/mississippi-state-bulldogs-logo-png-transparent.png",
         rank: null,
-        wins: 6,
-        losses: 3
+        wins: 0,
+        losses: 0
       },
       { 
         name: "Oregon",
@@ -441,8 +441,8 @@ export class MemStorage implements IStorage {
         altColor: "#FEE123",
         logoUrl: "https://cdn.freebiesupply.com/logos/large/2x/oregon-ducks-logo-png-transparent.png",
         rank: 6,
-        wins: 8,
-        losses: 1
+        wins: 0,
+        losses: 0
       },
       { 
         name: "Washington",
@@ -454,8 +454,8 @@ export class MemStorage implements IStorage {
         altColor: "#B7A57A",
         logoUrl: "https://cdn.freebiesupply.com/logos/large/2x/washington-huskies-logo-png-transparent.png",
         rank: null,
-        wins: 7,
-        losses: 2
+        wins: 0,
+        losses: 0
       },
       { 
         name: "Wisconsin",
@@ -467,8 +467,8 @@ export class MemStorage implements IStorage {
         altColor: "#FFFFFF",
         logoUrl: "https://cdn.freebiesupply.com/logos/large/2x/wisconsin-badgers-logo-png-transparent.png",
         rank: null,
-        wins: 6,
-        losses: 6
+        wins: 0,
+        losses: 0
       },
       { 
         name: "USC",
@@ -480,8 +480,8 @@ export class MemStorage implements IStorage {
         altColor: "#FFCC00",
         logoUrl: "https://cdn.freebiesupply.com/logos/large/2x/usc-trojans-logo-png-transparent.png",
         rank: null,
-        wins: 8,
-        losses: 4
+        wins: 0,
+        losses: 0
       },
       { 
         name: "Fresno State",
@@ -493,8 +493,8 @@ export class MemStorage implements IStorage {
         altColor: "#003479",
         logoUrl: "https://cdn.freebiesupply.com/logos/large/2x/fresno-state-bulldogs-logo-png-transparent.png",
         rank: null,
-        wins: 9,
-        losses: 4
+        wins: 0,
+        losses: 0
       },
       { 
         name: "Idaho",
@@ -506,8 +506,8 @@ export class MemStorage implements IStorage {
         altColor: "#000000",
         logoUrl: "https://cdn.freebiesupply.com/logos/large/2x/idaho-vandals-logo-png-transparent.png",
         rank: null,
-        wins: 7,
-        losses: 5
+        wins: 0,
+        losses: 0
       },
       { 
         name: "Stanford",
@@ -519,8 +519,8 @@ export class MemStorage implements IStorage {
         altColor: "#FFFFFF",
         logoUrl: "https://cdn.freebiesupply.com/logos/large/2x/stanford-cardinal-logo-png-transparent.png",
         rank: null,
-        wins: 3,
-        losses: 9
+        wins: 0,
+        losses: 0
       },
       { 
         name: "Weber State",
@@ -532,8 +532,8 @@ export class MemStorage implements IStorage {
         altColor: "#FFFFFF",
         logoUrl: "https://cdn.freebiesupply.com/logos/large/2x/weber-state-wildcats-logo-png-transparent.png",
         rank: null,
-        wins: 11,
-        losses: 3
+        wins: 0,
+        losses: 0
       },
       { 
         name: "UTEP",
@@ -545,8 +545,8 @@ export class MemStorage implements IStorage {
         altColor: "#041E42",
         logoUrl: "https://cdn.freebiesupply.com/logos/large/2x/utep-miners-logo-png-transparent.png",
         rank: null,
-        wins: 5,
-        losses: 7
+        wins: 0,
+        losses: 0
       },
       { 
         name: "Austin Peay",
@@ -558,8 +558,8 @@ export class MemStorage implements IStorage {
         altColor: "#FFFFFF",
         logoUrl: "https://cdn.freebiesupply.com/logos/large/2x/austin-peay-governors-logo-png-transparent.png",
         rank: null,
-        wins: 8,
-        losses: 4
+        wins: 0,
+        losses: 0
       },
       { 
         name: "Marshall",
@@ -571,8 +571,8 @@ export class MemStorage implements IStorage {
         altColor: "#FFFFFF",
         logoUrl: "https://cdn.freebiesupply.com/logos/large/2x/marshall-thundering-herd-logo-png-transparent.png",
         rank: null,
-        wins: 7,
-        losses: 6
+        wins: 0,
+        losses: 0
       },
       { 
         name: "Georgia Tech",
@@ -584,8 +584,8 @@ export class MemStorage implements IStorage {
         altColor: "#003057",
         logoUrl: "https://cdn.freebiesupply.com/logos/large/2x/georgia-tech-yellow-jackets-logo-png-transparent.png",
         rank: null,
-        wins: 5,
-        losses: 7
+        wins: 0,
+        losses: 0
       }
     ];
 

@@ -169,7 +169,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Fetch real college football data
+  // Fetch real college football data with betting lines and Rick's picks
   app.post("/api/sync-cfb-data", async (req, res) => {
     try {
       const apiKey = process.env.CFBD_API_KEY;
@@ -185,7 +185,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       });
 
       if (!gamesResponse.ok) {
-        throw new Error(`Failed to fetch games: ${gamesResponse.statusText}`);
+        const errorText = await gamesResponse.text();
+        console.log("Games API Error:", errorText);
+        return res.status(500).json({ message: "Failed to fetch games from CFBD API", error: errorText });
       }
 
       const games = await gamesResponse.json();
@@ -197,63 +199,133 @@ export async function registerRoutes(app: Express): Promise<Server> {
         }
       });
 
-      const lines = linesResponse.ok ? await linesResponse.json() : [];
+      let lines = [];
+      if (linesResponse.ok) {
+        lines = await linesResponse.json();
+      } else {
+        console.log("Lines API Error:", await linesResponse.text());
+      }
 
-      // Process first 10 games
+      // Process first 10 games with real data
       const processedGames = [];
       const gamesToProcess = games.slice(0, 10);
 
-      for (const game of gamesToProcess) {
-        // Create or get teams
-        let homeTeam = await storage.getTeamByName(game.home_team);
-        if (!homeTeam && game.home_team) {
-          homeTeam = await storage.createTeam({
-            name: game.home_team,
-            abbreviation: game.home_team.substring(0, Math.min(4, game.home_team.length)).toUpperCase(),
-            conference: game.home_conference || "Independent",
-            logoUrl: `https://logos.sportslogos.net/logos/list_by_team/30/${game.home_team.replace(/\s+/g, '_')}/logo.gif`
-          });
+      // Rick's picks pool for random assignment
+      const ricksPicks = [
+        "Take the home team - they're well-rested and ready",
+        "Road team covers - motivated to prove themselves",
+        "Under is the play - defense wins championships", 
+        "Over hits easy - both offenses are explosive",
+        "Home team straight up - too much talent",
+        "Take the points with the underdog - they're live",
+        "Fade the public - sharp money on the dog",
+        "Weather favors the under - keep it low scoring",
+        "Rivalry game goes over - emotions run high",
+        "Take the favorite - they're just better"
+      ];
+
+      for (let i = 0; i < gamesToProcess.length; i++) {
+        const game = gamesToProcess[i];
+        
+        // Create or get teams (safely handle undefined values)
+        let homeTeam = null;
+        let awayTeam = null;
+
+        if (game.homeTeam) {
+          homeTeam = await storage.getTeamByName(game.homeTeam);
+          if (!homeTeam) {
+            homeTeam = await storage.createTeam({
+              name: game.homeTeam,
+              abbreviation: game.homeTeam.substring(0, Math.min(4, game.homeTeam.length)).toUpperCase(),
+              conference: game.homeConference || "Independent",
+              logoUrl: `https://logos.sportslogos.net/logos/list_by_team/30/${game.homeTeam.replace(/\s+/g, '_')}/logo.gif`,
+              mascot: null,
+              division: null,
+              color: null,
+              altColor: null,
+              rank: null,
+              wins: 0,
+              losses: 0
+            });
+          }
         }
 
-        let awayTeam = await storage.getTeamByName(game.away_team);
-        if (!awayTeam && game.away_team) {
-          awayTeam = await storage.createTeam({
-            name: game.away_team,
-            abbreviation: game.away_team.substring(0, Math.min(4, game.away_team.length)).toUpperCase(),
-            conference: game.away_conference || "Independent",
-            logoUrl: `https://logos.sportslogos.net/logos/list_by_team/30/${game.away_team.replace(/\s+/g, '_')}/logo.gif`
-          });
+        if (game.away_team) {
+          awayTeam = await storage.getTeamByName(game.away_team);
+          if (!awayTeam) {
+            awayTeam = await storage.createTeam({
+              name: game.away_team,
+              abbreviation: game.away_team.substring(0, Math.min(4, game.away_team.length)).toUpperCase(),
+              conference: game.away_conference || "Independent",
+              logoUrl: `https://logos.sportslogos.net/logos/list_by_team/30/${game.away_team.replace(/\s+/g, '_')}/logo.gif`,
+              mascot: null,
+              division: null,
+              color: null,
+              altColor: null,
+              rank: null,
+              wins: 0,
+              losses: 0
+            });
+          }
         }
 
-        // Find betting lines for this game
+        if (!homeTeam || !awayTeam) continue;
+
+        // Find DraftKings betting lines for this game
         const gameLines = lines.find((line: any) => 
           line.homeTeam === game.home_team && line.awayTeam === game.away_team
         );
 
-        const spread = gameLines?.lines?.[0]?.spread;
-        const overUnder = gameLines?.lines?.[0]?.overUnder;
+        let spread = null;
+        let overUnder = null;
 
-        // Create game
+        if (gameLines && gameLines.lines) {
+          // Prefer DraftKings, fallback to any available line
+          const draftKingsLine = gameLines.lines.find((l: any) => l.provider === "DraftKings");
+          const anyLine = gameLines.lines[0];
+          
+          const selectedLine = draftKingsLine || anyLine;
+          spread = selectedLine?.spread || null;
+          overUnder = selectedLine?.overUnder || null;
+        }
+
+        // Create game with real data
         const newGame = await storage.createGame({
           homeTeamId: homeTeam.id,
           awayTeamId: awayTeam.id,
-          startDate: new Date(game.start_date),
-          stadium: game.venue,
-          location: game.venue_id ? `${game.venue}` : undefined,
-          spread: spread || null,
-          overUnder: overUnder || null,
+          startDate: new Date(game.start_date || "2025-08-30T12:00:00Z"),
+          stadium: game.venue || null,
+          location: game.venue || null,
+          spread: spread,
+          overUnder: overUnder,
           season: 2025,
           week: 1,
           isConferenceGame: game.conference_game || false,
           completed: false,
-          isFeatured: processedGames.length === 0 // Make first game featured
+          homeTeamScore: null,
+          awayTeamScore: null,
+          isRivalryGame: false,
+          isFeatured: i === 0 // Make first game featured
+        });
+
+        // Create Rick's pick for this game
+        const randomPick = ricksPicks[i % ricksPicks.length];
+        const favoredTeam = spread && spread < 0 ? homeTeam : awayTeam;
+        
+        await storage.createPrediction({
+          gameId: newGame.id,
+          predictedWinnerId: favoredTeam.id,
+          confidence: 0.65 + (Math.random() * 0.25), // Random confidence between 65-90%
+          predictedSpread: spread,
+          predictedTotal: overUnder,
+          notes: randomPick
         });
 
         processedGames.push(newGame);
       }
 
       res.json({ 
-        message: `Successfully synced ${processedGames.length} games`,
+        message: `Successfully synced ${processedGames.length} games with real betting lines and Rick's picks`,
         games: processedGames 
       });
     } catch (error) {
