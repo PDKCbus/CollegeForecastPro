@@ -43,7 +43,20 @@ export class PostgresStorage implements IStorage {
   }
 
   async createTeam(team: InsertTeam): Promise<Team> {
-    const result = await db.insert(teams).values(team).returning();
+    // Ensure all optional fields are explicitly null instead of undefined
+    const cleanTeam = {
+      ...team,
+      mascot: team.mascot ?? null,
+      conference: team.conference ?? null,
+      division: team.division ?? null,
+      color: team.color ?? null,
+      altColor: team.altColor ?? null,
+      logoUrl: team.logoUrl ?? null,
+      rank: team.rank ?? null,
+      wins: team.wins ?? null,
+      losses: team.losses ?? null,
+    };
+    const result = await db.insert(teams).values(cleanTeam).returning();
     return result[0];
   }
 
@@ -152,7 +165,20 @@ export class PostgresStorage implements IStorage {
   }
 
   async createGame(game: InsertGame): Promise<Game> {
-    const result = await db.insert(games).values(game).returning();
+    // Ensure all optional fields are explicitly null instead of undefined
+    const cleanGame = {
+      ...game,
+      location: game.location ?? null,
+      stadium: game.stadium ?? null,
+      spread: game.spread ?? null,
+      overUnder: game.overUnder ?? null,
+      homeTeamScore: game.homeTeamScore ?? null,
+      awayTeamScore: game.awayTeamScore ?? null,
+      isFeatured: game.isFeatured ?? null,
+      isConferenceGame: game.isConferenceGame ?? false,
+      isRivalryGame: game.isRivalryGame ?? false,
+    };
+    const result = await db.insert(games).values(cleanGame).returning();
     return result[0];
   }
 
@@ -175,7 +201,15 @@ export class PostgresStorage implements IStorage {
   }
 
   async createPrediction(prediction: InsertPrediction): Promise<Prediction> {
-    const result = await db.insert(predictions).values(prediction).returning();
+    // Ensure all optional fields are explicitly null instead of undefined
+    const cleanPrediction = {
+      ...prediction,
+      confidence: prediction.confidence ?? null,
+      predictedSpread: prediction.predictedSpread ?? null,
+      predictedTotal: prediction.predictedTotal ?? null,
+      notes: prediction.notes ?? null,
+    };
+    const result = await db.insert(predictions).values(cleanPrediction).returning();
     return result[0];
   }
 
