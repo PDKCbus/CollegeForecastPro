@@ -28,7 +28,7 @@ export function Header() {
         <div className="flex items-center">
           <Link href="/" className="flex items-center space-x-2">
             <div className="text-accent font-bold text-2xl">RICK'S</div>
-            <div className="text-white font-bold text-2xl">PICKS</div>
+            <div className="text-accent font-bold text-2xl">PICKS</div>
           </Link>
           <div className="hidden md:flex ml-8 space-x-1">
             <Link href="/" className={`px-4 py-2 font-medium rounded-md hover:bg-surface transition-colors ${currentTab === "upcoming" ? "text-white" : "text-white/60"}`}>
