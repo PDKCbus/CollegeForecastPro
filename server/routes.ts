@@ -238,7 +238,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
               name: game.homeTeam,
               abbreviation: game.homeTeam.substring(0, Math.min(4, game.homeTeam.length)).toUpperCase(),
               conference: game.homeConference || "Independent",
-              logoUrl: `https://logos.sportslogos.net/logos/list_by_team/30/${game.homeTeam.replace(/\s+/g, '_')}/logo.gif`,
+              logoUrl: `https://a.espncdn.com/i/teamlogos/ncaa/500/${game.homeId}.png`,
               mascot: null,
               division: null,
               color: null,
@@ -250,14 +250,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
           }
         }
 
-        if (game.away_team) {
-          awayTeam = await storage.getTeamByName(game.away_team);
+        if (game.awayTeam) {
+          awayTeam = await storage.getTeamByName(game.awayTeam);
           if (!awayTeam) {
             awayTeam = await storage.createTeam({
-              name: game.away_team,
-              abbreviation: game.away_team.substring(0, Math.min(4, game.away_team.length)).toUpperCase(),
-              conference: game.away_conference || "Independent",
-              logoUrl: `https://logos.sportslogos.net/logos/list_by_team/30/${game.away_team.replace(/\s+/g, '_')}/logo.gif`,
+              name: game.awayTeam,
+              abbreviation: game.awayTeam.substring(0, Math.min(4, game.awayTeam.length)).toUpperCase(),
+              conference: game.awayConference || "Independent",
+              logoUrl: `https://a.espncdn.com/i/teamlogos/ncaa/500/${game.awayId}.png`,
               mascot: null,
               division: null,
               color: null,
@@ -273,7 +273,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
         // Find DraftKings betting lines for this game
         const gameLines = lines.find((line: any) => 
-          line.homeTeam === game.home_team && line.awayTeam === game.away_team
+          line.homeTeam === game.homeTeam && line.awayTeam === game.awayTeam
         );
 
         let spread = null;
@@ -293,14 +293,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
         const newGame = await storage.createGame({
           homeTeamId: homeTeam.id,
           awayTeamId: awayTeam.id,
-          startDate: new Date(game.start_date || "2025-08-30T12:00:00Z"),
+          startDate: new Date(game.startDate || "2025-08-30T12:00:00Z"),
           stadium: game.venue || null,
           location: game.venue || null,
           spread: spread,
           overUnder: overUnder,
           season: 2025,
           week: 1,
-          isConferenceGame: game.conference_game || false,
+          isConferenceGame: game.conferenceGame || false,
           completed: false,
           homeTeamScore: null,
           awayTeamScore: null,
