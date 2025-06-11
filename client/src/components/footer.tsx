@@ -36,10 +36,10 @@ export function Footer() {
             <div>
               <h4 className="text-white font-bold mb-4">Navigation</h4>
               <ul className="space-y-2">
-                <li><Link href="/"><a className="text-white/70 hover:text-white transition-colors">Home</a></Link></li>
-                <li><Link href="/"><a className="text-white/70 hover:text-white transition-colors">Upcoming Games</a></Link></li>
-                <li><Link href="/historical"><a className="text-white/70 hover:text-white transition-colors">Historical Games</a></Link></li>
-                <li><Link href="/analysis"><a className="text-white/70 hover:text-white transition-colors">Analysis</a></Link></li>
+                <li><Link href="/" className="text-white/70 hover:text-white transition-colors">Home</Link></li>
+                <li><Link href="/" className="text-white/70 hover:text-white transition-colors">Upcoming Games</Link></li>
+                <li><Link href="/historical" className="text-white/70 hover:text-white transition-colors">Historical Games</Link></li>
+                <li><Link href="/analysis" className="text-white/70 hover:text-white transition-colors">Analysis</Link></li>
               </ul>
             </div>
             

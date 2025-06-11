@@ -456,6 +456,110 @@ export class MemStorage implements IStorage {
         rank: null,
         wins: 7,
         losses: 2
+      },
+      { 
+        name: "Wisconsin",
+        abbreviation: "WISC",
+        mascot: "Badgers",
+        conference: "Big Ten",
+        division: "West",
+        color: "#C5050C",
+        altColor: "#FFFFFF",
+        logoUrl: "https://cdn.freebiesupply.com/logos/large/2x/wisconsin-badgers-logo-png-transparent.png",
+        rank: null,
+        wins: 6,
+        losses: 6
+      },
+      { 
+        name: "USC",
+        abbreviation: "USC",
+        mascot: "Trojans",
+        conference: "Pac-12",
+        division: "South",
+        color: "#990000",
+        altColor: "#FFCC00",
+        logoUrl: "https://cdn.freebiesupply.com/logos/large/2x/usc-trojans-logo-png-transparent.png",
+        rank: null,
+        wins: 8,
+        losses: 4
+      },
+      { 
+        name: "Fresno State",
+        abbreviation: "FRES",
+        mascot: "Bulldogs",
+        conference: "Mountain West",
+        division: null,
+        color: "#E31837",
+        altColor: "#003479",
+        logoUrl: "https://cdn.freebiesupply.com/logos/large/2x/fresno-state-bulldogs-logo-png-transparent.png",
+        rank: null,
+        wins: 9,
+        losses: 4
+      },
+      { 
+        name: "Idaho",
+        abbreviation: "IDHO",
+        mascot: "Vandals",
+        conference: "FCS Big Sky",
+        division: null,
+        color: "#FFCC00",
+        altColor: "#000000",
+        logoUrl: "https://cdn.freebiesupply.com/logos/large/2x/idaho-vandals-logo-png-transparent.png",
+        rank: null,
+        wins: 7,
+        losses: 5
+      },
+      { 
+        name: "Stanford",
+        abbreviation: "STAN",
+        mascot: "Cardinal",
+        conference: "Pac-12",
+        division: "North",
+        color: "#8C1515",
+        altColor: "#FFFFFF",
+        logoUrl: "https://cdn.freebiesupply.com/logos/large/2x/stanford-cardinal-logo-png-transparent.png",
+        rank: null,
+        wins: 3,
+        losses: 9
+      },
+      { 
+        name: "Weber State",
+        abbreviation: "WEB",
+        mascot: "Wildcats",
+        conference: "FCS Big Sky",
+        division: null,
+        color: "#663399",
+        altColor: "#FFFFFF",
+        logoUrl: "https://cdn.freebiesupply.com/logos/large/2x/weber-state-wildcats-logo-png-transparent.png",
+        rank: null,
+        wins: 11,
+        losses: 3
+      },
+      { 
+        name: "UTEP",
+        abbreviation: "UTEP",
+        mascot: "Miners",
+        conference: "Conference USA",
+        division: null,
+        color: "#FF8200",
+        altColor: "#041E42",
+        logoUrl: "https://cdn.freebiesupply.com/logos/large/2x/utep-miners-logo-png-transparent.png",
+        rank: null,
+        wins: 5,
+        losses: 7
+      },
+      { 
+        name: "Austin Peay",
+        abbreviation: "APSU",
+        mascot: "Governors",
+        conference: "FCS ASUN",
+        division: null,
+        color: "#C8102E",
+        altColor: "#FFFFFF",
+        logoUrl: "https://cdn.freebiesupply.com/logos/large/2x/austin-peay-governors-logo-png-transparent.png",
+        rank: null,
+        wins: 8,
+        losses: 4
       }
     ];
 
@@ -495,67 +599,97 @@ export class MemStorage implements IStorage {
       isFeatured: true
     });
 
-    // Regular upcoming games
+    // Real 2025 Week 1 College Football Games
     const upcomingGames = [
       {
+        homeTeam: "Texas",
+        awayTeam: "Ohio State",
+        date: new Date("2025-08-30T12:00:00Z"),
+        spread: 3.5,
+        overUnder: 56.5,
+        stadium: "Darrell K Royal Stadium",
+        location: "Austin, TX",
+        isConference: false
+      },
+      {
         homeTeam: "Alabama",
-        awayTeam: "Ole Miss",
-        date: new Date(nextSaturday.getFullYear(), nextSaturday.getMonth(), nextSaturday.getDate(), 15, 30), // 3:30 PM
-        spread: -2.5,
-        overUnder: 64.5,
+        awayTeam: "Wisconsin",
+        date: new Date("2025-08-30T15:30:00Z"),
+        spread: -14.5,
+        overUnder: 47.5,
         stadium: "Bryant-Denny Stadium",
         location: "Tuscaloosa, AL",
-        isConference: true
+        isConference: false
       },
       {
-        homeTeam: "Arkansas",
-        awayTeam: "LSU",
-        date: new Date(nextSaturday.getFullYear(), nextSaturday.getMonth(), nextSaturday.getDate(), 19, 0), // 7:00 PM
-        spread: 3.5,
+        homeTeam: "LSU",
+        awayTeam: "USC",
+        date: new Date("2025-08-31T19:00:00Z"),
+        spread: 2.5,
+        overUnder: 65.5,
+        stadium: "Tiger Stadium",
+        location: "Baton Rouge, LA",
+        isConference: false
+      },
+      {
+        homeTeam: "Michigan",
+        awayTeam: "Fresno State",
+        date: new Date("2025-08-30T12:00:00Z"),
+        spread: -17.5,
+        overUnder: 44.5,
+        stadium: "Michigan Stadium",
+        location: "Ann Arbor, MI",
+        isConference: false
+      },
+      {
+        homeTeam: "Oregon",
+        awayTeam: "Idaho",
+        date: new Date("2025-08-30T22:00:00Z"),
+        spread: -35.5,
         overUnder: 62.5,
-        stadium: "Razorback Stadium",
-        location: "Fayetteville, AR",
-        isConference: true
-      },
-      {
-        homeTeam: "Louisville",
-        awayTeam: "Clemson",
-        date: new Date(nextSaturday.getFullYear(), nextSaturday.getMonth(), nextSaturday.getDate(), 12, 0), // 12:00 PM
-        spread: 7.0,
-        overUnder: 51.5,
-        stadium: "Cardinal Stadium",
-        location: "Louisville, KY",
-        isConference: true
+        stadium: "Autzen Stadium",
+        location: "Eugene, OR",
+        isConference: false
       },
       {
         homeTeam: "TCU",
-        awayTeam: "Texas",
-        date: new Date(nextSaturday.getFullYear(), nextSaturday.getMonth(), nextSaturday.getDate(), 19, 30), // 7:30 PM
-        spread: -7.0,
-        overUnder: 64.5,
+        awayTeam: "Stanford",
+        date: new Date("2025-08-30T19:30:00Z"),
+        spread: -6.5,
+        overUnder: 58.5,
         stadium: "Amon G. Carter Stadium",
         location: "Fort Worth, TX",
-        isConference: true
-      },
-      {
-        homeTeam: "Mississippi State",
-        awayTeam: "Georgia",
-        date: new Date(nextSaturday.getFullYear(), nextSaturday.getMonth(), nextSaturday.getDate(), 16, 0), // 4:00 PM
-        spread: 16.5,
-        overUnder: 53.5,
-        stadium: "Davis Wade Stadium",
-        location: "Starkville, MS",
-        isConference: true
+        isConference: false
       },
       {
         homeTeam: "Washington",
-        awayTeam: "Oregon",
-        date: new Date(nextSaturday.getFullYear(), nextSaturday.getMonth(), nextSaturday.getDate(), 15, 30), // 3:30 PM
-        spread: 13.5,
-        overUnder: 72.5,
+        awayTeam: "Weber State",
+        date: new Date("2025-08-30T15:30:00Z"),
+        spread: -21.5,
+        overUnder: 51.5,
         stadium: "Husky Stadium",
         location: "Seattle, WA",
-        isConference: true
+        isConference: false
+      },
+      {
+        homeTeam: "Arkansas",
+        awayTeam: "UTEP",
+        date: new Date("2025-08-30T16:00:00Z"),
+        spread: -24.5,
+        overUnder: 56.5,
+        stadium: "Razorback Stadium",
+        location: "Fayetteville, AR",
+        isConference: false
+      },
+      {
+        homeTeam: "Louisville",
+        awayTeam: "Austin Peay",
+        date: new Date("2025-08-30T17:00:00Z"),
+        spread: -28.5,
+        overUnder: 59.5,
+        stadium: "Cardinal Stadium",
+        location: "Louisville, KY",
+        isConference: false
       }
     ];
 
@@ -568,8 +702,8 @@ export class MemStorage implements IStorage {
         location: game.location,
         spread: game.spread,
         overUnder: game.overUnder,
-        season: 2023,
-        week: 10,
+        season: 2025,
+        week: 1,
         isConferenceGame: game.isConference,
         isRivalryGame: false,
         isFeatured: false
