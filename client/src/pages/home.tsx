@@ -93,14 +93,16 @@ export default function Home() {
         {/* Games Grid Section */}
         <div className="flex justify-between items-center mb-6">
           <h2 className="text-2xl font-bold">Upcoming Games</h2>
-          <Button 
-            onClick={() => syncMutation.mutate()}
-            disabled={syncMutation.isPending}
-            variant="outline"
-            className="bg-accent/10 border-accent/20 text-accent hover:bg-accent/20"
-          >
-            {syncMutation.isPending ? "Syncing..." : "Sync Real Data"}
-          </Button>
+          {import.meta.env.DEV && (
+            <Button 
+              onClick={() => syncMutation.mutate()}
+              disabled={syncMutation.isPending}
+              variant="outline"
+              className="bg-accent/10 border-accent/20 text-accent hover:bg-accent/20"
+            >
+              {syncMutation.isPending ? "Syncing..." : "Sync Real Data"}
+            </Button>
+          )}
         </div>
         
         {isLoading ? (
