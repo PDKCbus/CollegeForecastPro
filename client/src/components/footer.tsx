@@ -7,7 +7,7 @@ export function Footer() {
         <div className="flex flex-col md:flex-row justify-between mb-12">
           <div className="mb-8 md:mb-0">
             <div className="flex items-center mb-4">
-              <div className="text-accent font-bold text-xl mr-1">RICKIE'S</div>
+              <div className="text-accent font-bold text-xl mr-1">RICK'S</div>
               <div className="text-white font-bold text-xl">PICKS</div>
             </div>
             <p className="text-white/60 max-w-xs mb-6">Advanced college football analytics and predictions to give you the edge.</p>
