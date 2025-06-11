@@ -502,6 +502,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Get auto-sync status
+  app.get("/api/sync-status", async (req, res) => {
+    const now = Date.now();
+    const nextRegularSync = lastSyncTime + SYNC_INTERVAL;
+    const nextGameCheck = lastGameCheckTime + GAME_CHECK_INTERVAL;
+    
+    res.json({
+      lastSyncTime: new Date(lastSyncTime).toISOString(),
+      nextRegularSync: new Date(nextRegularSync).toISOString(),
+      nextGameCheck: new Date(nextGameCheck).toISOString(),
+      minutesUntilNextSync: Math.ceil((nextRegularSync - now) / (60 * 1000)),
+      isActive: true
+    });
+  });
+
   // Get Rick's overall record statistics
   app.get("/api/ricks-record", async (req, res) => {
     try {
@@ -562,6 +577,207 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(500).json({ message: "Failed to calculate Rick's record" });
     }
   });
+
+  // Auto-sync scheduler with smart caching
+  let lastSyncTime = 0;
+  let lastGameCheckTime = 0;
+  const SYNC_INTERVAL = 4 * 60 * 60 * 1000; // 4 hours
+  const PRE_GAME_SYNC_BUFFER = 60 * 60 * 1000; // 1 hour before games
+  const GAME_CHECK_INTERVAL = 15 * 60 * 1000; // Check for upcoming games every 15 minutes
+
+  async function autoSync() {
+    try {
+      const now = Date.now();
+      
+      // Regular 4-hour sync with smart caching
+      if (now - lastSyncTime > SYNC_INTERVAL) {
+        console.log("Auto-syncing: Regular 4-hour update");
+        await syncCurrentWeekData();
+        lastSyncTime = now;
+      }
+      
+      // Check for games starting within 1 hour
+      if (now - lastGameCheckTime > GAME_CHECK_INTERVAL) {
+        const upcomingGames = await storage.getUpcomingGames(50);
+        const oneHourFromNow = new Date(now + PRE_GAME_SYNC_BUFFER);
+        
+        const gamesWithinHour = upcomingGames.filter(game => {
+          const gameTime = new Date(game.startDate);
+          return gameTime <= oneHourFromNow && gameTime > new Date(now);
+        });
+        
+        if (gamesWithinHour.length > 0) {
+          console.log(`Auto-syncing: ${gamesWithinHour.length} games starting within 1 hour`);
+          await syncCurrentWeekData();
+          lastSyncTime = now;
+        }
+        
+        lastGameCheckTime = now;
+      }
+    } catch (error) {
+      console.error("Auto-sync error:", error);
+    }
+  }
+
+  async function syncCurrentWeekData() {
+    const apiKey = process.env.CFBD_API_KEY;
+    if (!apiKey) return;
+
+    try {
+      // Fetch current week games and betting lines
+      const [gamesResponse, linesResponse] = await Promise.all([
+        fetch(`https://api.collegefootballdata.com/games?year=2025&week=1&seasonType=regular`, {
+          headers: { "Authorization": `Bearer ${apiKey}` }
+        }),
+        fetch(`https://api.collegefootballdata.com/lines?year=2025&week=1&seasonType=regular`, {
+          headers: { "Authorization": `Bearer ${apiKey}` }
+        })
+      ]);
+
+      if (gamesResponse.ok && linesResponse.ok) {
+        const games = await gamesResponse.json();
+        const lines = await linesResponse.json();
+        
+        console.log(`Auto-sync: Processing ${games.length} games with ${lines.length} betting lines`);
+        
+        // Rick's current picks for Week 1
+        const ricksSpreadPicks = [
+          "Take the favorite to cover - they're simply better",
+          "Underdog has value here - take the points",
+          "Home field advantage matters - take the home team",
+          "Road favorite rolls - lay the points",
+          "Too many points - take the dog",
+          "Chalk play - favorite covers easily",
+          "Rivalry game stays close - take points",
+          "Blowout spot - lay the number",
+          "Backdoor cover potential - take dog",
+          "Defense wins - under the total"
+        ];
+
+        const ricksOverUnderPicks = [
+          "Take the OVER - both offenses clicking",
+          "Take the UNDER - defensive battle",
+          "OVER looks good - shootout potential", 
+          "UNDER is the play - weather/pace",
+          "OVER - fast pace and weak defenses",
+          "UNDER - grind it out game",
+          "OVER - desperation points late",
+          "UNDER - elite defenses show up",
+          "OVER - rivalry games get wild",
+          "UNDER - run heavy game script"
+        ];
+
+        let processedCount = 0;
+        
+        for (let i = 0; i < Math.min(games.length, 10); i++) {
+          const game = games[i];
+          
+          // Find or create teams
+          let homeTeam = await storage.getTeamByName(game.homeTeam);
+          if (!homeTeam && game.homeTeam) {
+            homeTeam = await storage.createTeam({
+              name: game.homeTeam,
+              abbreviation: game.homeTeam.substring(0, 4).toUpperCase(),
+              conference: game.homeConference || "Independent",
+              logoUrl: `https://a.espncdn.com/i/teamlogos/ncaa/500/${game.homeId}.png`,
+              mascot: null, division: null, color: null, altColor: null,
+              rank: null, wins: 0, losses: 0
+            });
+          }
+
+          let awayTeam = await storage.getTeamByName(game.awayTeam);
+          if (!awayTeam && game.awayTeam) {
+            awayTeam = await storage.createTeam({
+              name: game.awayTeam,
+              abbreviation: game.awayTeam.substring(0, 4).toUpperCase(),
+              conference: game.awayConference || "Independent",
+              logoUrl: `https://a.espncdn.com/i/teamlogos/ncaa/500/${game.awayId}.png`,
+              mascot: null, division: null, color: null, altColor: null,
+              rank: null, wins: 0, losses: 0
+            });
+          }
+
+          if (!homeTeam || !awayTeam) continue;
+
+          // Find betting lines
+          const gameLines = lines.find((line: any) => 
+            line.homeTeam === game.homeTeam && line.awayTeam === game.awayTeam
+          );
+
+          let spread = null;
+          let overUnder = null;
+
+          if (gameLines && gameLines.lines) {
+            const draftKingsLine = gameLines.lines.find((l: any) => l.provider === "DraftKings");
+            const anyLine = gameLines.lines[0];
+            const selectedLine = draftKingsLine || anyLine;
+            spread = selectedLine?.spread || null;
+            overUnder = selectedLine?.overUnder || null;
+          }
+
+          // Update existing game or create new one
+          const existingGames = await storage.getUpcomingGames();
+          const existingGame = existingGames.find(g => 
+            g.homeTeam.name === game.homeTeam && g.awayTeam.name === game.awayTeam
+          );
+
+          if (existingGame) {
+            // Update existing game with latest betting lines
+            await storage.updateGame(existingGame.id, {
+              spread: spread,
+              overUnder: overUnder,
+              startDate: new Date(game.startDate || "2025-08-30T12:00:00Z"),
+            });
+          } else {
+            // Create new game
+            const newGame = await storage.createGame({
+              homeTeamId: homeTeam.id,
+              awayTeamId: awayTeam.id,
+              startDate: new Date(game.startDate || "2025-08-30T12:00:00Z"),
+              stadium: game.venue || null,
+              location: game.venue || null,
+              spread: spread,
+              overUnder: overUnder,
+              season: 2025,
+              week: 1,
+              isConferenceGame: game.conferenceGame || false,
+              completed: false,
+              homeTeamScore: null,
+              awayTeamScore: null,
+              isRivalryGame: false,
+              isFeatured: i === 0
+            });
+
+            // Add Rick's picks
+            const spreadPick = ricksSpreadPicks[i % ricksSpreadPicks.length];
+            const overUnderPick = ricksOverUnderPicks[i % ricksOverUnderPicks.length];
+            const combinedPick = `SPREAD: ${spreadPick} | O/U: ${overUnderPick}`;
+
+            await storage.createPrediction({
+              gameId: newGame.id,
+              predictedWinnerId: spread && spread < 0 ? homeTeam.id : awayTeam.id,
+              confidence: 0.65 + (Math.random() * 0.25),
+              predictedSpread: spread,
+              predictedTotal: overUnder,
+              notes: combinedPick
+            });
+          }
+
+          processedCount++;
+        }
+        
+        console.log(`Auto-sync completed: ${processedCount} games processed`);
+      }
+    } catch (error) {
+      console.error("Sync current week data error:", error);
+    }
+  }
+
+  // Start auto-sync scheduler
+  setInterval(autoSync, GAME_CHECK_INTERVAL);
+  
+  // Initial sync on server start
+  setTimeout(autoSync, 5000);
 
   const httpServer = createServer(app);
   return httpServer;
