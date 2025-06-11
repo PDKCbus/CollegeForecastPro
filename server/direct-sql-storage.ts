@@ -17,7 +17,15 @@ export class DirectSQLStorage {
   
   async createGameDirect(game: InsertGame): Promise<{ id: number }> {
     try {
-      const result = await this.sql`
+      // Build SQL string manually to avoid all parameter binding issues
+      const stadium = game.stadium ? `'${game.stadium.replace(/'/g, "''")}'` : 'NULL';
+      const location = game.location ? `'${game.location.replace(/'/g, "''")}'` : 'NULL';
+      const spread = game.spread !== null && game.spread !== undefined ? game.spread : 'NULL';
+      const overUnder = game.overUnder !== null && game.overUnder !== undefined ? game.overUnder : 'NULL';
+      const homeScore = game.homeTeamScore !== null && game.homeTeamScore !== undefined ? game.homeTeamScore : 'NULL';
+      const awayScore = game.awayTeamScore !== null && game.awayTeamScore !== undefined ? game.awayTeamScore : 'NULL';
+      
+      const rawSQL = `
         INSERT INTO games (
           home_team_id, away_team_id, start_date, season, week,
           stadium, location, spread, over_under, home_team_score, away_team_score,
@@ -25,15 +33,15 @@ export class DirectSQLStorage {
         ) VALUES (
           ${game.homeTeamId},
           ${game.awayTeamId}, 
-          ${game.startDate},
+          '${game.startDate.toISOString()}',
           ${game.season},
           ${game.week},
-          ${game.stadium || null},
-          ${game.location || null},
-          ${game.spread || null},
-          ${game.overUnder || null},
-          ${game.homeTeamScore || null},
-          ${game.awayTeamScore || null},
+          ${stadium},
+          ${location},
+          ${spread},
+          ${overUnder},
+          ${homeScore},
+          ${awayScore},
           ${game.completed || false},
           ${game.isConferenceGame || false},
           ${game.isRivalryGame || false},
@@ -41,6 +49,7 @@ export class DirectSQLStorage {
         ) RETURNING id
       `;
       
+      const result = await this.sql.unsafe(rawSQL);
       return { id: Number(result[0].id) };
     } catch (error) {
       console.error('Direct SQL insertion failed:', error);
