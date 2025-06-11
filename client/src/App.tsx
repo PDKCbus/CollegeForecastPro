@@ -8,6 +8,7 @@ import { Footer } from "@/components/footer";
 import Home from "@/pages/home";
 import Historical from "@/pages/historical";
 import Analysis from "@/pages/analysis";
+import Sentiment from "@/pages/sentiment";
 import NotFound from "@/pages/not-found";
 
 function Router() {
@@ -16,6 +17,7 @@ function Router() {
       <Route path="/" component={Home} />
       <Route path="/historical" component={Historical} />
       <Route path="/analysis" component={Analysis} />
+      <Route path="/sentiment" component={Sentiment} />
       <Route component={NotFound} />
     </Switch>
   );

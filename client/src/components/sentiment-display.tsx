@@ -18,12 +18,20 @@ export function SentimentDisplay({ gameId, teamId, title }: SentimentDisplayProp
   
   const { data: sentiments, isLoading } = useQuery<SentimentAnalysis[]>({
     queryKey: ['sentiment', gameId ? 'game' : 'team', gameId || teamId],
-    queryFn: () => apiRequest(endpoint),
+    queryFn: async () => {
+      const response = await fetch(endpoint);
+      if (!response.ok) throw new Error('Failed to fetch sentiment');
+      return response.json();
+    },
     refetchInterval: 300000, // Refetch every 5 minutes
   });
 
   const analyzeMutation = useMutation({
-    mutationFn: () => apiRequest(analyzeEndpoint, { method: 'POST' }),
+    mutationFn: async () => {
+      const response = await fetch(analyzeEndpoint, { method: 'POST' });
+      if (!response.ok) throw new Error('Failed to analyze sentiment');
+      return response.json();
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ 
         queryKey: ['sentiment', gameId ? 'game' : 'team', gameId || teamId] 

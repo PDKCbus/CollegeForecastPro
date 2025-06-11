@@ -1,4 +1,8 @@
 import { GameWithTeams } from "@/lib/types";
+import { SentimentDisplay } from "./sentiment-display";
+import { Card, CardContent } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Calendar, Clock, MapPin } from "lucide-react";
 
 interface GameCardProps {
   game: GameWithTeams;
