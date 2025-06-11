@@ -884,13 +884,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const { startYear = 2009, endYear = 2024 } = req.body;
       
       // Start the historical sync in the background
-      historicalSync.syncHistoricalData(startYear, endYear).catch(error => {
-        console.error("Historical sync background error:", error);
+      setImmediate(async () => {
+        try {
+          console.log(`🚀 Starting comprehensive historical data collection: ${startYear}-${endYear}`);
+          await historicalSync.syncHistoricalData(startYear, endYear);
+          console.log(`✅ Historical data collection completed: ${endYear - startYear + 1} seasons processed`);
+        } catch (error) {
+          console.error("❌ Historical sync background error:", error);
+        }
       });
       
       res.json({ 
         message: `Historical data sync started for ${startYear}-${endYear}`,
-        estimatedGames: (endYear - startYear + 1) * 800 // Rough estimate
+        estimatedGames: (endYear - startYear + 1) * 800,
+        status: 'processing'
       });
     } catch (error) {
       res.status(500).json({ message: "Failed to start historical sync" });
