@@ -49,29 +49,23 @@ export function TabNavigation() {
       {/* Desktop Tab Navigation */}
       <div className="hidden md:block mb-8">
         <div className="flex items-center border-b border-surface-light relative">
-          <Link href="/">
-            <a className="px-6 py-4 font-semibold relative">
-              Upcoming Games
-              {currentTab === "upcoming" && (
-                <span className="absolute bottom-0 left-0 w-full h-0.5 bg-accent"></span>
-              )}
-            </a>
+          <Link href="/" className="px-6 py-4 font-semibold relative">
+            Upcoming Games
+            {currentTab === "upcoming" && (
+              <span className="absolute bottom-0 left-0 w-full h-0.5 bg-accent"></span>
+            )}
           </Link>
-          <Link href="/historical">
-            <a className={`px-6 py-4 font-medium relative ${currentTab === "historical" ? "text-white" : "text-white/60"}`}>
-              Historical Games
-              {currentTab === "historical" && (
-                <span className="absolute bottom-0 left-0 w-full h-0.5 bg-accent"></span>
-              )}
-            </a>
+          <Link href="/historical" className={`px-6 py-4 font-medium relative ${currentTab === "historical" ? "text-white" : "text-white/60"}`}>
+            Historical Games
+            {currentTab === "historical" && (
+              <span className="absolute bottom-0 left-0 w-full h-0.5 bg-accent"></span>
+            )}
           </Link>
-          <Link href="/analysis">
-            <a className={`px-6 py-4 font-medium relative ${currentTab === "analysis" ? "text-white" : "text-white/60"}`}>
-              Analysis
-              {currentTab === "analysis" && (
-                <span className="absolute bottom-0 left-0 w-full h-0.5 bg-accent"></span>
-              )}
-            </a>
+          <Link href="/analysis" className={`px-6 py-4 font-medium relative ${currentTab === "analysis" ? "text-white" : "text-white/60"}`}>
+            Analysis
+            {currentTab === "analysis" && (
+              <span className="absolute bottom-0 left-0 w-full h-0.5 bg-accent"></span>
+            )}
           </Link>
         </div>
       </div>
