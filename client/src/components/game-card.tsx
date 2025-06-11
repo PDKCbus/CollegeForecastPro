@@ -78,10 +78,20 @@ export function GameCard({ game }: GameCardProps) {
               <div className="text-center px-2 py-1 bg-surface-light rounded text-sm">
                 <div className="text-white/60 text-xs">SPREAD</div>
                 <div className="font-bold text-white">{getSpreadDisplay()}</div>
+                {game.prediction?.notes && game.prediction.notes.includes('SPREAD:') && (
+                  <div className="text-xs text-accent mt-1">
+                    Rick: {game.prediction.notes.split('|')[0].replace('SPREAD:', '').trim()}
+                  </div>
+                )}
               </div>
               <div className="text-center px-2 py-1 bg-surface-light rounded text-sm">
                 <div className="text-white/60 text-xs">O/U</div>
                 <div className="font-bold text-white">{game.overUnder?.toFixed(1) || "N/A"}</div>
+                {game.prediction?.notes && game.prediction.notes.includes('O/U:') && (
+                  <div className="text-xs text-accent mt-1">
+                    Rick: {game.prediction.notes.split('|')[1]?.replace('O/U:', '').trim() || 'No pick'}
+                  </div>
+                )}
               </div>
             </div>
             <button className="text-white/70 hover:text-white">
@@ -93,17 +103,14 @@ export function GameCard({ game }: GameCardProps) {
             </button>
           </div>
           
-          {game.prediction?.notes && (
-            <div className="bg-accent/10 border border-accent/20 rounded-lg p-3">
-              <div className="flex items-center space-x-2 mb-1">
-                <div className="text-accent font-semibold text-sm">Rick's Pick</div>
-                {game.prediction?.confidence && (
-                  <div className="text-xs text-white/60">
-                    {Math.round(game.prediction.confidence * 100)}% confidence
-                  </div>
-                )}
+          {game.prediction?.confidence && (
+            <div className="bg-accent/10 border border-accent/20 rounded-lg p-2">
+              <div className="text-center">
+                <div className="text-accent font-semibold text-sm">Rick's Confidence</div>
+                <div className="text-xs text-white/60">
+                  {Math.round(game.prediction.confidence * 100)}% confident
+                </div>
               </div>
-              <div className="text-sm text-white/80">{game.prediction.notes}</div>
             </div>
           )}
         </div>
