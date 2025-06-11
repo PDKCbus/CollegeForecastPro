@@ -6,18 +6,28 @@ import type { InsertGame, InsertTeam, InsertPrediction, InsertSentimentAnalysis 
  */
 
 export function cleanTeamData(team: InsertTeam): InsertTeam {
-  return {
-    ...team,
-    mascot: team.mascot ?? null,
-    conference: team.conference ?? null,
-    division: team.division ?? null,
-    color: team.color ?? null,
-    altColor: team.altColor ?? null,
-    logoUrl: team.logoUrl ?? null,
-    rank: team.rank ?? null,
-    wins: team.wins ?? null,
-    losses: team.losses ?? null,
+  const cleaned = {
+    name: String(team.name || ''),
+    abbreviation: String(team.abbreviation || ''),
+    mascot: typeof team.mascot === 'string' ? team.mascot : null,
+    conference: typeof team.conference === 'string' ? team.conference : null,
+    division: typeof team.division === 'string' ? team.division : null,
+    color: typeof team.color === 'string' ? team.color : null,
+    altColor: typeof team.altColor === 'string' ? team.altColor : null,
+    logoUrl: typeof team.logoUrl === 'string' ? team.logoUrl : null,
+    rank: typeof team.rank === 'number' ? team.rank : null,
+    wins: typeof team.wins === 'number' ? team.wins : null,
+    losses: typeof team.losses === 'number' ? team.losses : null,
   };
+
+  // Remove any undefined values
+  Object.keys(cleaned).forEach(key => {
+    if (cleaned[key as keyof typeof cleaned] === undefined) {
+      delete cleaned[key as keyof typeof cleaned];
+    }
+  });
+
+  return cleaned as InsertTeam;
 }
 
 export function cleanGameData(game: InsertGame): InsertGame {

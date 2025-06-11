@@ -171,6 +171,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Debug endpoint for testing game insertion
+  app.post('/api/debug/test-insertion', async (_req, res) => {
+    try {
+      const { debugGameInsertion } = await import('./debug-insertion');
+      const result = await debugGameInsertion();
+      res.json({ success: true, result });
+    } catch (error) {
+      console.error('Debug insertion failed:', error);
+      res.status(500).json({ success: false, error: error instanceof Error ? error.message : 'Unknown error' });
+    }
+  });
+
   // Fetch historical games for Rick's record tracking
   app.post("/api/sync-historical-data", async (req, res) => {
     try {
