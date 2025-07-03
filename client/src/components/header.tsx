@@ -15,6 +15,8 @@ export function Header() {
         return "historical";
       case "/analysis":
         return "analysis";
+      case "/game-analysis":
+        return "game-analysis";
       case "/data":
         return "data";
       default:
@@ -41,6 +43,9 @@ export function Header() {
             </Link>
             <Link href="/analysis" className={`px-4 py-2 font-medium rounded-md hover:bg-surface transition-colors ${currentTab === "analysis" ? "text-white" : "text-white/60"}`}>
               Analysis
+            </Link>
+            <Link href="/game-analysis" className={`px-4 py-2 font-medium rounded-md hover:bg-surface transition-colors ${currentTab === "game-analysis" ? "text-white" : "text-white/60"}`}>
+              Game Analysis
             </Link>
             <Link href="/data" className={`px-4 py-2 font-medium rounded-md hover:bg-surface transition-colors ${currentTab === "data" ? "text-white" : "text-white/60"}`}>
               Data Sync
@@ -86,6 +91,9 @@ export function Header() {
           </Link>
           <Link href="/analysis" className={`px-4 py-3 font-medium text-left rounded-md hover:bg-surface-light transition-colors ${currentTab === "analysis" ? "text-white" : "text-white/60"}`} onClick={() => setIsMobileMenuOpen(false)}>
             Analysis
+          </Link>
+          <Link href="/game-analysis" className={`px-4 py-3 font-medium text-left rounded-md hover:bg-surface-light transition-colors ${currentTab === "game-analysis" ? "text-white" : "text-white/60"}`} onClick={() => setIsMobileMenuOpen(false)}>
+            Game Analysis
           </Link>
           <Link href="/data" className={`px-4 py-3 font-medium text-left rounded-md hover:bg-surface-light transition-colors ${currentTab === "data" ? "text-white" : "text-white/60"}`} onClick={() => setIsMobileMenuOpen(false)}>
             Data Sync
