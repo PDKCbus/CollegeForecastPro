@@ -45,12 +45,14 @@ export default function GameAnalysis() {
   const [selectedGameId, setSelectedGameId] = useState<string>("");
   const [location] = useLocation();
 
-  // Extract game ID from URL parameters
+  // Extract game ID from URL parameters and scroll to top
   useEffect(() => {
     const urlParams = new URLSearchParams(window.location.search);
     const gameParam = urlParams.get('game');
     if (gameParam) {
       setSelectedGameId(gameParam);
+      // Scroll to top when loading a new game
+      window.scrollTo(0, 0);
     }
   }, [location]); // Include location dependency to trigger on navigation
 
@@ -309,22 +311,23 @@ export default function GameAnalysis() {
             />
           </div>
 
-          <Tabs defaultValue="analytics" className="w-full">
-            <TabsList className="grid w-full grid-cols-4">
-              <TabsTrigger value="analytics">Team Analytics</TabsTrigger>
-              <TabsTrigger value="stats">Advanced Stats</TabsTrigger>
-              <TabsTrigger value="factors">Key Factors</TabsTrigger>
-              <TabsTrigger value="recommendation">Recommendation</TabsTrigger>
-            </TabsList>
+          <div className="mt-8">
+            <Tabs defaultValue="analytics" className="w-full">
+              <TabsList className="grid w-full grid-cols-4">
+                <TabsTrigger value="analytics">Team Analytics</TabsTrigger>
+                <TabsTrigger value="stats">Advanced Stats</TabsTrigger>
+                <TabsTrigger value="factors">Key Factors</TabsTrigger>
+                <TabsTrigger value="recommendation">Recommendation</TabsTrigger>
+              </TabsList>
 
-            <TabsContent value="analytics" className="space-y-6">
+            <TabsContent value="analytics" className="space-y-6 mt-6">
               <Card>
-                <CardHeader>
-                  <CardTitle>Team Analytics Comparison</CardTitle>
-                  <CardDescription>
-                    Side-by-side comparison of team performance metrics
-                  </CardDescription>
-                </CardHeader>
+                  <CardHeader>
+                    <CardTitle>Team Analytics Comparison</CardTitle>
+                    <CardDescription>
+                      Side-by-side comparison of team performance metrics
+                    </CardDescription>
+                  </CardHeader>
                 <CardContent className="space-y-6">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div>
@@ -526,7 +529,8 @@ export default function GameAnalysis() {
                 </CardContent>
               </Card>
             </TabsContent>
-          </Tabs>
+            </Tabs>
+          </div>
         </div>
       )}
 
