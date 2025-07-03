@@ -63,16 +63,25 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Games API
   app.get("/api/games/upcoming", async (req, res) => {
     try {
-      const limit = req.query.limit ? parseInt(req.query.limit as string) : 10;
+      const limit = req.query.limit ? parseInt(req.query.limit as string) : 50;
       const offset = req.query.offset ? parseInt(req.query.offset as string) : 0;
+      const week = req.query.week ? parseInt(req.query.week as string) : undefined;
       
-      if (isNaN(limit) || isNaN(offset)) {
-        return res.status(400).json({ message: "Invalid limit or offset" });
+      if (isNaN(limit) || isNaN(offset) || (req.query.week && isNaN(week!))) {
+        return res.status(400).json({ message: "Invalid limit, offset, or week parameter" });
       }
 
-      const games = await storage.getUpcomingGames(limit, offset);
-      res.json(games);
+      // If week is specified, get historical games for current season with that week
+      if (week) {
+        const currentSeason = 2025;
+        const games = await storage.getHistoricalGames(currentSeason, week, undefined, undefined);
+        res.json(games);
+      } else {
+        const games = await storage.getUpcomingGames(limit, offset);
+        res.json(games);
+      }
     } catch (error) {
+      console.error("Error fetching upcoming games:", error);
       res.status(500).json({ message: "Failed to fetch upcoming games" });
     }
   });
@@ -148,7 +157,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.get("/api/games/featured", async (req, res) => {
     try {
-      const allUpcomingGames = await storage.getUpcomingGames(50, 0);
+      const week = req.query.week ? parseInt(req.query.week as string) : undefined;
+      
+      // Get games for specific week or all upcoming games
+      let allUpcomingGames;
+      if (week) {
+        const currentSeason = 2025;
+        allUpcomingGames = await storage.getHistoricalGames(currentSeason, week, undefined, undefined);
+      } else {
+        allUpcomingGames = await storage.getUpcomingGames(50, 0);
+      }
       
       if (allUpcomingGames.length === 0) {
         return res.status(404).json({ message: "No upcoming games found" });
