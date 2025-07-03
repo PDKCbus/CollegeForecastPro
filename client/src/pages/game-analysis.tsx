@@ -49,15 +49,19 @@ export default function GameAnalysis() {
   useEffect(() => {
     const urlParams = new URLSearchParams(window.location.search);
     const gameParam = urlParams.get('game');
-    console.log('Game Analysis: URL param game =', gameParam);
     if (gameParam) {
-      console.log('Setting selectedGameId to:', gameParam);
       setSelectedGameId(gameParam);
     }
   }, [location]); // Include location dependency to trigger on navigation
 
   const { data: upcomingGames = [] } = useQuery<GameWithTeams[]>({
     queryKey: ['/api/games/upcoming'],
+  });
+
+  // Also try to fetch the specific game if not found in upcoming games
+  const { data: specificGame } = useQuery<GameWithTeams>({
+    queryKey: [`/api/games/${selectedGameId}`],
+    enabled: !!selectedGameId && !upcomingGames.find(game => game.id.toString() === selectedGameId),
   });
 
   const { data: gameAnalysis } = useQuery<{
@@ -72,11 +76,7 @@ export default function GameAnalysis() {
     enabled: !!selectedGameId,
   });
 
-  const selectedGame = upcomingGames.find(game => game.id.toString() === selectedGameId);
-  
-  console.log('Available games:', upcomingGames.map(g => ({ id: g.id, homeTeam: g.homeTeam.name, awayTeam: g.awayTeam.name })));
-  console.log('Selected game ID:', selectedGameId);
-  console.log('Selected game found:', selectedGame);
+  const selectedGame = upcomingGames.find(game => game.id.toString() === selectedGameId) || specificGame;
 
   // Generate mock analytics for demonstration
   const generateMockAnalytics = () => {
