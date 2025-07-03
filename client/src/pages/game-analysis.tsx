@@ -6,8 +6,9 @@ import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { TrendingUp, TrendingDown, Target, BarChart3, Trophy, Activity, Zap, Brain } from "lucide-react";
+import { TrendingUp, TrendingDown, Target, BarChart3, Trophy, Activity, Zap, Brain, ArrowLeft, Home } from "lucide-react";
 import { GameWithTeams } from "@/lib/types";
+import { Link } from "wouter";
 
 interface PredictiveMetrics {
   winProbability: number;
@@ -65,7 +66,7 @@ export default function GameAnalysis() {
     awayTeamStats: AdvancedStats;
     historicalH2H: any[];
   }>({
-    queryKey: ['/api/games/analysis', selectedGameId],
+    queryKey: [`/api/games/analysis/${selectedGameId}`],
     enabled: !!selectedGameId,
   });
 
@@ -153,21 +154,31 @@ export default function GameAnalysis() {
     return 'text-red-600';
   };
 
-  const MetricCard = ({ title, value, unit = "", icon: Icon, trend }: {
+  const MetricCard = ({ title, value, unit = "", icon: Icon, trend, teamLogo }: {
     title: string;
     value: number | string;
     unit?: string;
     icon: any;
     trend?: 'up' | 'down' | 'neutral';
+    teamLogo?: string;
   }) => (
     <Card>
       <CardContent className="p-4">
         <div className="flex items-center justify-between">
-          <div>
+          <div className="flex-1">
             <p className="text-sm font-medium text-muted-foreground">{title}</p>
-            <p className="text-2xl font-bold">
-              {value}{unit}
-            </p>
+            <div className="flex items-center space-x-2">
+              <p className="text-2xl font-bold">
+                {value}{unit}
+              </p>
+              {teamLogo && (
+                <img 
+                  src={teamLogo} 
+                  alt="Favored team" 
+                  className="w-8 h-8 object-contain"
+                />
+              )}
+            </div>
           </div>
           <div className="flex items-center space-x-2">
             <Icon className="h-4 w-4 text-muted-foreground" />
@@ -212,9 +223,17 @@ export default function GameAnalysis() {
   return (
     <div className="container mx-auto p-6 space-y-6">
       <div className="flex flex-col space-y-4">
-        <div className="flex items-center space-x-2">
-          <Brain className="h-6 w-6" />
-          <h1 className="text-3xl font-bold">Game Analysis Dashboard</h1>
+        <div className="flex items-center justify-between">
+          <div className="flex items-center space-x-2">
+            <Brain className="h-6 w-6" />
+            <h1 className="text-3xl font-bold">Game Analysis Dashboard</h1>
+          </div>
+          <Link href="/">
+            <button className="flex items-center space-x-2 px-4 py-2 bg-surface hover:bg-surface-light rounded-lg transition-colors">
+              <Home className="h-4 w-4" />
+              <span>Back to Home</span>
+            </button>
+          </Link>
         </div>
         
         <div className="flex items-center space-x-4">
@@ -264,6 +283,7 @@ export default function GameAnalysis() {
               unit="%"
               icon={Target}
               trend="up"
+              teamLogo={analysis.predictiveMetrics.winProbability > 50 ? selectedGame.homeTeam?.logoUrl : selectedGame.awayTeam?.logoUrl}
             />
             <MetricCard
               title="Confidence"
