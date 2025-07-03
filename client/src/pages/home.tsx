@@ -45,7 +45,7 @@ export default function Home() {
   });
   
   const { data: featuredGame, isLoading: isFeaturedLoading } = useQuery<GameWithTeams>({
-    queryKey: ["/api/games/1"],
+    queryKey: ["/api/games/featured"],
   });
 
   const syncMutation = useMutation({
@@ -56,7 +56,7 @@ export default function Home() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/games/upcoming"] });
-      queryClient.invalidateQueries({ queryKey: ["/api/games/1"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/games/featured"] });
       toast({
         title: "Data Synced Successfully",
         description: "Real betting lines and Rick's picks have been updated from College Football Data API.",
@@ -94,6 +94,22 @@ export default function Home() {
           onFilterChange={handleFilterChange}
         />
         
+        {/* Game of the Week Section */}
+        <div className="mb-2">
+          <h2 className="text-3xl font-bold bg-gradient-to-r from-accent to-primary bg-clip-text text-transparent flex items-center gap-3">
+            <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-trophy text-accent">
+              <path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/>
+              <path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/>
+              <path d="M4 22h16"/>
+              <path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"/>
+              <path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"/>
+              <path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"/>
+            </svg>
+            Game of the Week
+          </h2>
+          <p className="text-white/60 mb-6">The marquee matchup selected by our algorithm based on rankings, rivalries, and playoff implications</p>
+        </div>
+
         {/* Featured Game */}
         {isFeaturedLoading ? (
           <div className="h-64 w-full bg-surface rounded-xl animate-pulse"></div>
@@ -101,7 +117,7 @@ export default function Home() {
           <FeaturedGame game={featuredGame as any} />
         ) : (
           <div className="mb-8 bg-surface rounded-xl p-6 text-center">
-            <p className="text-white/60">Featured game not available</p>
+            <p className="text-white/60">Game of the week not available</p>
           </div>
         )}
         
