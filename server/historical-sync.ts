@@ -1,7 +1,7 @@
 import { storage } from './storage';
 import type { InsertGame, InsertTeam } from '../shared/schema';
 import { cleanGameData, cleanTeamData } from './data-cleaner';
-import { directSQLStorage } from './direct-sql-storage';
+import { nativeSQLStorage } from './native-sql-storage';
 
 interface CFBDGame {
   id: number;
@@ -234,8 +234,8 @@ export class HistoricalDataSync {
           };
 
           try {
-            // Use direct SQL insertion to bypass Drizzle ORM undefined value issues
-            await directSQLStorage.createGameDirect(gameData);
+            // Use native PostgreSQL client to bypass all undefined value restrictions
+            await nativeSQLStorage.createGameNative(gameData);
           } catch (gameError) {
             console.error(`Error processing game ${game.id}: ${game.away_team} @ ${game.home_team}:`, gameError);
             continue; // Skip this game and continue with others

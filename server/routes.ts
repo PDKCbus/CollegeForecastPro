@@ -3,6 +3,7 @@ import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { sentimentService } from "./sentiment";
 import { historicalSync } from "./historical-sync";
+import { comprehensiveDataSync } from "./comprehensive-data-sync";
 import { z } from "zod";
 import { insertGameSchema, insertTeamSchema, insertPredictionSchema, insertSentimentAnalysisSchema } from "@shared/schema";
 
@@ -931,6 +932,62 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       await historicalSync.syncGamesForSeason(year);
       res.json({ message: `${year} season synced successfully` });
+    } catch (error) {
+      res.status(500).json({ message: `Failed to sync ${req.params.year} season` });
+    }
+  });
+
+  // Comprehensive Data Collection API
+  app.post("/api/comprehensive/sync", async (req, res) => {
+    try {
+      const { startYear = 2009, endYear = 2024 } = req.body;
+      
+      // Start comprehensive sync in background
+      setImmediate(async () => {
+        try {
+          console.log(`🚀 Starting comprehensive data collection: ${startYear}-${endYear}`);
+          await comprehensiveDataSync.syncComprehensiveData(startYear, endYear);
+          console.log(`✅ Comprehensive data collection completed`);
+        } catch (error) {
+          console.error("❌ Comprehensive sync failed:", error);
+        }
+      });
+      
+      res.json({ 
+        message: `Comprehensive data collection started for ${startYear}-${endYear}`,
+        includes: ['Games', 'Team Season Stats', 'Players', 'Player Statistics'],
+        estimatedGames: (endYear - startYear + 1) * 800,
+        status: 'processing'
+      });
+    } catch (error) {
+      res.status(500).json({ message: "Failed to start comprehensive sync" });
+    }
+  });
+
+  app.post("/api/comprehensive/sync-season/:year", async (req, res) => {
+    try {
+      const year = parseInt(req.params.year);
+      if (isNaN(year) || year < 2000 || year > 2025) {
+        return res.status(400).json({ message: "Invalid year" });
+      }
+
+      // Start single season comprehensive sync
+      setImmediate(async () => {
+        try {
+          console.log(`📅 Starting comprehensive sync for ${year} season`);
+          await comprehensiveDataSync.syncAllGamesForSeason(year);
+          await comprehensiveDataSync.syncTeamSeasonStats(year);
+          console.log(`✅ Comprehensive sync completed for ${year}`);
+        } catch (error) {
+          console.error(`❌ Comprehensive sync failed for ${year}:`, error);
+        }
+      });
+
+      res.json({ 
+        message: `Comprehensive ${year} season sync started`,
+        includes: ['Games', 'Team Stats'],
+        status: 'processing'
+      });
     } catch (error) {
       res.status(500).json({ message: `Failed to sync ${req.params.year} season` });
     }
