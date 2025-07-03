@@ -91,6 +91,167 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Utility function to update team rankings (can be called weekly)
+  app.post("/api/teams/update-rankings", async (req, res) => {
+    try {
+      // Current preseason top 25 rankings for 2025 season
+      const currentRankings = {
+        'Georgia': 1,
+        'Alabama': 2, 
+        'Ohio State': 3,
+        'Michigan': 4,
+        'Oregon': 5,
+        'Penn State': 6,
+        'Texas': 7,
+        'Notre Dame': 8,
+        'Tennessee': 9,
+        'USC': 10,
+        'LSU': 11,
+        'Clemson': 12,
+        'Florida State': 13,
+        'Utah': 14,
+        'Oklahoma': 15,
+        'Wisconsin': 16,
+        'Miami': 17,
+        'North Carolina': 18,
+        'Auburn': 19,
+        'Iowa': 20,
+        'Texas A&M': 21,
+        'Kentucky': 22,
+        'Ole Miss': 23,
+        'NC State': 24,
+        'Arkansas': 25
+      };
+
+      let updatedCount = 0;
+      for (const [teamName, rank] of Object.entries(currentRankings)) {
+        try {
+          const team = await storage.getTeamByName(teamName);
+          if (team) {
+            await storage.updateTeam(team.id, { rank });
+            updatedCount++;
+          }
+        } catch (error) {
+          console.log(`Could not update ranking for ${teamName}:`, error);
+        }
+      }
+
+      res.json({ 
+        message: `Updated rankings for ${updatedCount} teams`,
+        rankings: currentRankings 
+      });
+    } catch (error) {
+      console.error("Ranking update error:", error);
+      res.status(500).json({ message: "Failed to update rankings" });
+    }
+  });
+
+  app.get("/api/games/featured", async (req, res) => {
+    try {
+      const allUpcomingGames = await storage.getUpcomingGames(50, 0);
+      
+      if (allUpcomingGames.length === 0) {
+        return res.status(404).json({ message: "No upcoming games found" });
+      }
+
+      // Smart featured game selection based on:
+      // 1. Both teams ranked in top 25
+      // 2. One team ranked top 10
+      // 3. Historical rivalries
+      // 4. Conference championship implications
+      
+      const calculateGameImportance = (game: any) => {
+        let score = 0;
+        
+        const homeRank = game.homeTeam?.rank || 999;
+        const awayRank = game.awayTeam?.rank || 999;
+        
+        // Elite matchups get massive scores
+        if (homeRank <= 25 && awayRank <= 25) {
+          score += 1000;  // Both ranked = automatic contender
+          
+          // Top 10 vs Top 10 = College GameDay material
+          if (homeRank <= 10 && awayRank <= 10) {
+            score += 500;
+            
+            // Top 5 vs Top 5 = Game of the Century
+            if (homeRank <= 5 && awayRank <= 5) {
+              score += 300;
+            }
+          }
+          
+          // Ranking differential matters - closer = better game
+          const rankDiff = Math.abs(homeRank - awayRank);
+          score += Math.max(0, 50 - rankDiff * 2); // Closer ranks = more points
+        }
+        
+        // One team highly ranked
+        const bestRank = Math.min(homeRank, awayRank);
+        if (bestRank <= 5) score += 400;
+        else if (bestRank <= 10) score += 200;
+        else if (bestRank <= 15) score += 100;
+        else if (bestRank <= 25) score += 50;
+        
+        // Conference championship implications
+        if (game.isConferenceGame) {
+          score += 150; // Conference games matter for playoff
+        }
+        
+        // Historical powerhouses and rivalry factor
+        const elitePrograms = ['Alabama', 'Georgia', 'Ohio State', 'Michigan', 'Texas', 'Oklahoma', 'LSU', 'Florida', 'Notre Dame', 'USC'];
+        const majorPrograms = ['Penn State', 'Oregon', 'Tennessee', 'Auburn', 'Clemson', 'Wisconsin', 'Iowa', 'Utah', 'Miami'];
+        
+        const homeIsElite = elitePrograms.some(name => game.homeTeam?.name?.includes(name));
+        const awayIsElite = elitePrograms.some(name => game.awayTeam?.name?.includes(name));
+        const homeIsMajor = majorPrograms.some(name => game.homeTeam?.name?.includes(name));
+        const awayIsMajor = majorPrograms.some(name => game.awayTeam?.name?.includes(name));
+        
+        if (homeIsElite && awayIsElite) {
+          score += 300; // Two blue bloods
+        } else if ((homeIsElite && awayIsMajor) || (awayIsElite && homeIsMajor)) {
+          score += 150; // Elite vs major program
+        } else if (homeIsElite || awayIsElite) {
+          score += 100; // One elite program
+        } else if (homeIsMajor && awayIsMajor) {
+          score += 75; // Two major programs
+        }
+        
+        // Primetime and weekend games get bonus
+        const gameDate = new Date(game.startDate);
+        const dayOfWeek = gameDate.getDay();
+        const hour = gameDate.getHours();
+        
+        if (dayOfWeek === 6) score += 50; // Saturday games
+        if (hour >= 19 || hour <= 23) score += 25; // Evening games (7-11 PM)
+        
+        // Season timing - early season big games get extra attention
+        if (game.week <= 4) score += 30; // Early season hype
+        
+        return score;
+      };
+      
+      // Find the most important game with detailed scoring for debugging
+      let featuredGame = allUpcomingGames[0];
+      let bestScore = 0;
+      
+      for (const game of allUpcomingGames) {
+        const currentScore = calculateGameImportance(game);
+        if (currentScore > bestScore) {
+          bestScore = currentScore;
+          featuredGame = game;
+        }
+      }
+      
+      // Log the selection for debugging (remove in production)
+      console.log(`Featured Game Selected: ${featuredGame.awayTeam.name} @ ${featuredGame.homeTeam.name} (Score: ${bestScore})`);
+      
+      res.json(featuredGame);
+    } catch (error) {
+      console.error("Featured game selection error:", error);
+      res.status(500).json({ message: "Failed to select featured game" });
+    }
+  });
+
   app.get("/api/games/:id", async (req, res) => {
     try {
       const id = parseInt(req.params.id);

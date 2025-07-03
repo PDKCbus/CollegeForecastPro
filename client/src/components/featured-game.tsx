@@ -33,7 +33,7 @@ export function FeaturedGame({ game }: FeaturedGameProps) {
       >
         <div className="absolute inset-0 bg-gradient-to-t from-surface to-transparent"></div>
         <div className="absolute top-4 left-4 bg-primary text-white px-3 py-1 rounded-md font-medium text-sm">
-          FEATURED GAME
+          GAME OF THE WEEK
         </div>
       </div>
       
