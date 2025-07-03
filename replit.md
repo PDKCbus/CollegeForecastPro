@@ -100,6 +100,14 @@ The application follows a modern full-stack architecture with clear separation o
 
 ## Changelog
 
+- July 03, 2025: **Mobile-Responsive Game Analysis Dashboard Completed**
+  - Fixed Game Analysis Dashboard navigation from homepage game cards and featured game
+  - Implemented robust game fetching for games not in upcoming list via fallback API
+  - Added automatic scroll-to-top when navigating to analysis page
+  - Enhanced mobile responsiveness: tabs use 2x2 grid on mobile, proper text sizing
+  - Improved team analytics spacing and progress bars for mobile viewing
+  - Team logos now display next to win probability for favored teams
+  - Complete predictive metrics with confidence scoring and risk assessment
 - July 03, 2025: **Game Analysis Dashboard with Predictive Metrics Completed**
   - Built comprehensive game analysis dashboard with AI-powered predictive analytics
   - Features win probability calculations, spread predictions, team analytics comparisons
