@@ -109,14 +109,38 @@ export class PostgresStorage implements IStorage {
     return gamesWithTeams;
   }
 
+  async getGamesByWeek(season: number, week: number): Promise<GameWithTeams[]> {
+    const gameResults = await db.select()
+      .from(games)
+      .where(and(eq(games.season, season), eq(games.week, week)))
+      .orderBy(desc(games.startDate));
+
+    const gamesWithTeams: GameWithTeams[] = [];
+    for (const game of gameResults) {
+      const homeTeam = await this.getTeam(game.homeTeamId);
+      const awayTeam = await this.getTeam(game.awayTeamId);
+      const predictions = await this.getPredictionsByGame(game.id);
+
+      if (homeTeam && awayTeam) {
+        gamesWithTeams.push({
+          ...game,
+          homeTeam,
+          awayTeam,
+          prediction: predictions[0] || undefined
+        });
+      }
+    }
+
+    return gamesWithTeams;
+  }
+
   async getHistoricalGames(
     season?: number,
     week?: number,
     teamId?: number,
     conference?: string
   ): Promise<GameWithTeams[]> {
-    const now = new Date();
-    let queryConditions = [lte(games.startDate, now)];
+    let queryConditions = [];
 
     // Apply filters
     if (season) {
@@ -127,6 +151,13 @@ export class PostgresStorage implements IStorage {
     }
     if (teamId) {
       queryConditions.push(or(eq(games.homeTeamId, teamId), eq(games.awayTeamId, teamId)));
+    }
+
+    // Only filter by date if we're not filtering by specific week or season
+    // This allows us to get games for specific weeks regardless of their date
+    if (!week && !season) {
+      const now = new Date();
+      queryConditions.push(lte(games.startDate, now));
     }
 
     const gameResults = await db.select()

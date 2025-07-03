@@ -63,7 +63,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Games API
   app.get("/api/games/upcoming", async (req, res) => {
     try {
-      const limit = req.query.limit ? parseInt(req.query.limit as string) : 50;
+      const limit = req.query.limit ? parseInt(req.query.limit as string) : 10;
       const offset = req.query.offset ? parseInt(req.query.offset as string) : 0;
       const week = req.query.week ? parseInt(req.query.week as string) : undefined;
       
@@ -71,11 +71,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ message: "Invalid limit, offset, or week parameter" });
       }
 
-      // If week is specified, get historical games for current season with that week
+      // If week is specified, get games for that specific week
       if (week) {
         const currentSeason = 2025;
-        const games = await storage.getHistoricalGames(currentSeason, week, undefined, undefined);
-        res.json(games);
+        const games = await storage.getGamesByWeek(currentSeason, week);
+        // Apply pagination to week-specific results
+        const paginatedGames = games.slice(offset, offset + limit);
+        res.json(paginatedGames);
       } else {
         const games = await storage.getUpcomingGames(limit, offset);
         res.json(games);

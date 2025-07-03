@@ -41,6 +41,7 @@ export interface IStorage {
     teamId?: number, 
     conference?: string
   ): Promise<GameWithTeams[]>;
+  getGamesByWeek(season: number, week: number): Promise<GameWithTeams[]>;
   createGame(game: InsertGame): Promise<Game>;
   updateGame(id: number, game: Partial<Game>): Promise<Game | undefined>;
   
@@ -797,6 +798,30 @@ export class MemStorage implements IStorage {
       predictedTotal: 45.5,
       notes: "Michigan's defense gives them the edge in this classic rivalry matchup."
     });
+  }
+
+  async getGamesByWeek(season: number, week: number): Promise<GameWithTeams[]> {
+    const gamesForWeek = Array.from(this.games.values())
+      .filter(game => game.season === season && game.week === week);
+    
+    return Promise.all(gamesForWeek.map(async game => {
+      const homeTeam = await this.getTeam(game.homeTeamId);
+      const awayTeam = await this.getTeam(game.awayTeamId);
+      
+      if (!homeTeam || !awayTeam) {
+        throw new Error(`Missing team data for game ${game.id}`);
+      }
+      
+      const predictions = Array.from(this.predictions.values())
+        .filter(p => p.gameId === game.id);
+      
+      return {
+        ...game,
+        homeTeam,
+        awayTeam,
+        prediction: predictions.length > 0 ? predictions[0] : undefined
+      };
+    }));
   }
 }
 
