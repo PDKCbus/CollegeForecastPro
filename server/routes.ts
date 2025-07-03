@@ -993,6 +993,30 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Full 15-year comprehensive sync (2009-2024)
+  app.post('/api/comprehensive/sync-all', async (_req: Request, res: Response) => {
+    try {
+      setImmediate(async () => {
+        try {
+          console.log(`📅 Starting full 15-year comprehensive sync (2009-2024)`);
+          await comprehensiveDataSync.syncComprehensiveData(2009, 2024);
+          console.log(`✅ Full 15-year comprehensive sync completed`);
+        } catch (error) {
+          console.error(`❌ Full comprehensive sync failed:`, error);
+        }
+      });
+
+      res.json({ 
+        message: 'Full 15-year comprehensive sync started (2009-2024)',
+        includes: ['Games', 'Team Stats', 'Players', 'Player Stats'],
+        status: 'processing',
+        estimated_duration: '30-60 minutes'
+      });
+    } catch (error) {
+      res.status(500).json({ message: 'Failed to start full comprehensive sync' });
+    }
+  });
+
   // Start auto-sync scheduler
   setInterval(autoSync, GAME_CHECK_INTERVAL);
   
