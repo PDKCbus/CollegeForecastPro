@@ -1,4 +1,4 @@
-import { nativeSQLStorage } from './native-sql-storage';
+import { rawPGStorage } from './raw-pg-storage';
 import { storage } from './storage';
 import type { InsertGame, InsertTeam, InsertPlayer, InsertPlayerStats, InsertTeamSeasonStats } from '../shared/schema';
 
@@ -119,13 +119,28 @@ export class ComprehensiveDataSync {
       return this.teamCache.get(teamName)!;
     }
 
-    const team = await storage.getTeamByName(teamName);
-    if (team) {
-      this.teamCache.set(teamName, team.id);
-      return team.id;
+    // Use raw PostgreSQL to check for team existence
+    const existingTeam = await rawPGStorage.getTeamByNameRaw(teamName);
+    if (existingTeam) {
+      this.teamCache.set(teamName, existingTeam.id);
+      return existingTeam.id;
     }
 
-    throw new Error(`Team not found: ${teamName}`);
+    // Create new team using raw PostgreSQL
+    const createdTeam = await rawPGStorage.createTeamRaw({
+      name: teamName || 'Unknown Team',
+      abbreviation: (teamName && teamName.length >= 3) ? teamName.substring(0, 3).toUpperCase() : 'UNK',
+      conference: 'Unknown',
+      division: null,
+      logoUrl: null,
+      color: '#000000',
+      altColor: '#FFFFFF',
+      wins: 0,
+      losses: 0,
+    });
+
+    this.teamCache.set(teamName, createdTeam.id);
+    return createdTeam.id;
   }
 
   // 1. Comprehensive Game Collection (All Schedules + Results)
@@ -148,28 +163,55 @@ export class ComprehensiveDataSync {
           const homeTeamId = await this.ensureTeamExists(game.home_team);
           const awayTeamId = await this.ensureTeamExists(game.away_team);
 
+          // Comprehensive undefined to null conversion with debugging
+          console.log(`Processing game ${game.id}: ${game.home_team} vs ${game.away_team}`);
+          console.log(`Raw game data:`, {
+            venue: game.venue,
+            home_points: game.home_points,
+            away_points: game.away_points,
+            conference_game: game.conference_game,
+            season: game.season,
+            week: game.week
+          });
+          
+          // Validate and parse date properly
+          let startDate: Date;
+          try {
+            startDate = new Date(game.start_date);
+            if (isNaN(startDate.getTime())) {
+              // If date is invalid, create a default date for the season
+              startDate = new Date(`${game.season}-09-01T12:00:00.000Z`);
+              console.log(`Invalid date for game ${game.id}, using default: ${startDate.toISOString()}`);
+            }
+          } catch (error) {
+            startDate = new Date(`${game.season}-09-01T12:00:00.000Z`);
+            console.log(`Date parsing error for game ${game.id}, using default: ${startDate.toISOString()}`);
+          }
+
           const gameData: InsertGame = {
             homeTeamId,
             awayTeamId,
-            startDate: new Date(game.start_date),
-            season: game.season,
-            week: game.week,
-            stadium: game.venue || null,
-            location: game.venue || null,
+            startDate,
+            season: game.season ?? 2020, // Default to 2020 if undefined
+            week: game.week ?? 1, // Default to week 1 if undefined
+            stadium: game.venue ?? null,
+            location: game.venue ?? null,
             spread: null, // Will be populated separately
             overUnder: null,
-            homeTeamScore: game.home_points || null,
-            awayTeamScore: game.away_points || null,
-            completed: Boolean(game.home_points !== undefined && game.away_points !== undefined),
+            homeTeamScore: game.home_points ?? null,
+            awayTeamScore: game.away_points ?? null,
+            completed: Boolean(game.home_points != null && game.away_points != null),
             isFeatured: false,
-            isConferenceGame: Boolean(game.conference_game),
+            isConferenceGame: Boolean(game.conference_game ?? false),
             isRivalryGame: false,
           };
+          
+          console.log(`Cleaned game data:`, gameData);
 
           gamesBatch.push(gameData);
 
           if (gamesBatch.length >= 50) {
-            const batchSuccess = await nativeSQLStorage.batchInsertGames(gamesBatch);
+            const batchSuccess = await rawPGStorage.batchInsertGamesRaw(gamesBatch);
             successCount += batchSuccess;
             gamesBatch.length = 0;
           }
@@ -181,7 +223,7 @@ export class ComprehensiveDataSync {
 
       // Insert remaining games
       if (gamesBatch.length > 0) {
-        const batchSuccess = await nativeSQLStorage.batchInsertGames(gamesBatch);
+        const batchSuccess = await rawPGStorage.batchInsertGamesRaw(gamesBatch);
         successCount += batchSuccess;
       }
 

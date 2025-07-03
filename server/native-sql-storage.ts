@@ -14,6 +14,11 @@ export class NativeSQLStorage {
     });
   }
 
+  // Utility function to convert undefined to null
+  private cleanValue(value: any): any {
+    return value === undefined ? null : value;
+  }
+
   async createGameNative(game: InsertGame): Promise<{ id: number }> {
     const client = await this.pool.connect();
     
@@ -27,22 +32,23 @@ export class NativeSQLStorage {
         RETURNING id
       `;
       
+      // Aggressively clean all values to ensure no undefined values
       const values = [
-        game.homeTeamId,
-        game.awayTeamId,
-        game.startDate,
-        game.season,
-        game.week,
-        game.stadium || null,
-        game.location || null,
-        game.spread || null,
-        game.overUnder || null,
-        game.homeTeamScore || null,
-        game.awayTeamScore || null,
-        game.completed || false,
-        game.isConferenceGame || false,
-        game.isRivalryGame || false,
-        game.isFeatured || false
+        this.cleanValue(game.homeTeamId),
+        this.cleanValue(game.awayTeamId),
+        this.cleanValue(game.startDate),
+        this.cleanValue(game.season),
+        this.cleanValue(game.week),
+        this.cleanValue(game.stadium),
+        this.cleanValue(game.location),
+        this.cleanValue(game.spread),
+        this.cleanValue(game.overUnder),
+        this.cleanValue(game.homeTeamScore),
+        this.cleanValue(game.awayTeamScore),
+        this.cleanValue(game.completed) !== null ? Boolean(this.cleanValue(game.completed)) : false,
+        this.cleanValue(game.isConferenceGame) !== null ? Boolean(this.cleanValue(game.isConferenceGame)) : false,
+        this.cleanValue(game.isRivalryGame) !== null ? Boolean(this.cleanValue(game.isRivalryGame)) : false,
+        this.cleanValue(game.isFeatured) !== null ? Boolean(this.cleanValue(game.isFeatured)) : false
       ];
 
       const result = await client.query(query, values);
