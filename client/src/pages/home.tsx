@@ -25,8 +25,16 @@ export default function Home() {
     { label: "Conference", value: "conference", isActive: activeFilter === "conference" }
   ];
   
+  // Extract week number from selectedWeek (e.g., "Week 2" -> "2")
+  const weekNumber = selectedWeek.replace("Week ", "");
+  
   const { data: allUpcomingGames = [], isLoading } = useQuery<GameWithTeams[]>({
-    queryKey: ["/api/games/upcoming"],
+    queryKey: ["/api/games/upcoming", weekNumber],
+    queryFn: async () => {
+      const response = await fetch(`/api/games/upcoming?week=${weekNumber}`);
+      if (!response.ok) throw new Error('Failed to fetch games');
+      return response.json();
+    }
   });
 
   // Filter games based on active filter
@@ -45,7 +53,12 @@ export default function Home() {
   });
   
   const { data: featuredGame, isLoading: isFeaturedLoading } = useQuery<GameWithTeams>({
-    queryKey: ["/api/games/featured"],
+    queryKey: ["/api/games/featured", weekNumber],
+    queryFn: async () => {
+      const response = await fetch(`/api/games/featured?week=${weekNumber}`);
+      if (!response.ok) throw new Error('Failed to fetch featured game');
+      return response.json();
+    }
   });
 
   const syncMutation = useMutation({
