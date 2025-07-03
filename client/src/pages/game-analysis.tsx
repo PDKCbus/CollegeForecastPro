@@ -209,32 +209,32 @@ export default function GameAnalysis() {
     awayValue: number;
     maxValue?: number;
   }) => (
-    <div className="space-y-2">
-      <div className="flex justify-between text-sm">
-        <span>{label}</span>
-        <div className="flex space-x-4">
+    <div className="space-y-3">
+      <div className="flex justify-between items-center">
+        <span className="text-xs sm:text-sm font-medium">{label}</span>
+        <div className="flex space-x-3 text-xs sm:text-sm">
           <span className="text-blue-600 font-medium">{homeValue}</span>
           <span className="text-red-600 font-medium">{awayValue}</span>
         </div>
       </div>
       <div className="flex space-x-2">
         <div className="flex-1">
-          <Progress value={(homeValue / maxValue) * 100} className="h-2" />
+          <Progress value={(homeValue / maxValue) * 100} className="h-2 sm:h-3" />
         </div>
         <div className="flex-1">
-          <Progress value={(awayValue / maxValue) * 100} className="h-2 [&>div]:bg-red-600" />
+          <Progress value={(awayValue / maxValue) * 100} className="h-2 sm:h-3 [&>div]:bg-red-600" />
         </div>
       </div>
     </div>
   );
 
   return (
-    <div className="container mx-auto p-6 space-y-6">
+    <div className="container mx-auto p-4 sm:p-6 space-y-6">
       <div className="flex flex-col space-y-4">
-        <div className="flex items-center justify-between">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div className="flex items-center space-x-2">
-            <Brain className="h-6 w-6" />
-            <h1 className="text-3xl font-bold">Game Analysis Dashboard</h1>
+            <Brain className="h-5 w-5 sm:h-6 sm:w-6" />
+            <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold">Game Analysis Dashboard</h1>
           </div>
           <Link href="/">
             <button className="flex items-center space-x-2 px-4 py-2 bg-surface hover:bg-surface-light rounded-lg transition-colors">
@@ -246,7 +246,7 @@ export default function GameAnalysis() {
         
         <div className="flex items-center space-x-4">
           <Select value={selectedGameId} onValueChange={setSelectedGameId}>
-            <SelectTrigger className="w-80">
+            <SelectTrigger className="w-full sm:w-80">
               <SelectValue placeholder="Select a game to analyze" />
             </SelectTrigger>
             <SelectContent>
@@ -284,7 +284,7 @@ export default function GameAnalysis() {
           </Card>
 
           {/* Predictive Metrics */}
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
             <MetricCard
               title="Win Probability"
               value={analysis.predictiveMetrics.winProbability}
@@ -313,11 +313,11 @@ export default function GameAnalysis() {
 
           <div className="mt-8">
             <Tabs defaultValue="analytics" className="w-full">
-              <TabsList className="grid w-full grid-cols-4">
-                <TabsTrigger value="analytics">Team Analytics</TabsTrigger>
-                <TabsTrigger value="stats">Advanced Stats</TabsTrigger>
-                <TabsTrigger value="factors">Key Factors</TabsTrigger>
-                <TabsTrigger value="recommendation">Recommendation</TabsTrigger>
+              <TabsList className="grid w-full grid-cols-2 lg:grid-cols-4 h-auto">
+                <TabsTrigger value="analytics" className="text-xs sm:text-sm">Team Analytics</TabsTrigger>
+                <TabsTrigger value="stats" className="text-xs sm:text-sm">Advanced Stats</TabsTrigger>
+                <TabsTrigger value="factors" className="text-xs sm:text-sm">Key Factors</TabsTrigger>
+                <TabsTrigger value="recommendation" className="text-xs sm:text-sm">Recommendation</TabsTrigger>
               </TabsList>
 
             <TabsContent value="analytics" className="space-y-6 mt-6">
@@ -329,10 +329,10 @@ export default function GameAnalysis() {
                     </CardDescription>
                   </CardHeader>
                 <CardContent className="space-y-6">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                     <div>
-                      <h4 className="font-semibold text-blue-600 mb-3">{selectedGame.homeTeam?.name} (Home)</h4>
-                      <div className="space-y-3">
+                      <h4 className="font-semibold text-blue-600 mb-4 text-sm sm:text-base">{selectedGame.homeTeam?.name} (Home)</h4>
+                      <div className="space-y-4">
                         <AnalyticsBar
                           label="Offensive Rating"
                           homeValue={analysis.homeTeamAnalytics.offensiveRating}
@@ -356,8 +356,8 @@ export default function GameAnalysis() {
                       </div>
                     </div>
                     <div>
-                      <h4 className="font-semibold text-red-600 mb-3">{selectedGame.awayTeam?.name} (Away)</h4>
-                      <div className="space-y-3">
+                      <h4 className="font-semibold text-red-600 mb-4 text-sm sm:text-base">{selectedGame.awayTeam?.name} (Away)</h4>
+                      <div className="space-y-4">
                         <AnalyticsBar
                           label="Home Field Advantage"
                           homeValue={analysis.homeTeamAnalytics.homeFieldAdvantage}
