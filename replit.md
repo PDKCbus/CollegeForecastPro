@@ -100,6 +100,13 @@ The application follows a modern full-stack architecture with clear separation o
 
 ## Changelog
 
+- July 03, 2025: **Game of the Week Feature Completed**
+  - Implemented intelligent "Game of the Week" selection algorithm
+  - Added prominent header with trophy icon and explanatory text
+  - Algorithm scores games based on rankings, rivalries, playoff implications
+  - Automatic selection eliminates manual featured game creation
+  - Rankings update endpoint available at `/api/teams/update-rankings`
+  - Development note: Use "Sync Real Data" button to get current season games
 - July 03, 2025: **Major Breakthrough - Comprehensive Data Collection Successful**
   - Successfully implemented raw PostgreSQL client bypassing undefined value restrictions
   - Fixed date validation issues preventing historical data collection
