@@ -5,9 +5,10 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
-import { Calendar, Clock, MapPin, MoreHorizontal, Twitter, TrendingUp, TrendingDown } from "lucide-react";
+import { Calendar, Clock, MapPin, MoreHorizontal, Twitter, TrendingUp, TrendingDown, BarChart3 } from "lucide-react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { useState } from "react";
+import { Link } from "wouter";
 import type { SentimentAnalysis } from "@shared/schema";
 
 interface GameCardProps {
@@ -193,6 +194,16 @@ export function GameCard({ game }: GameCardProps) {
               </div>
             </div>
           )}
+          
+          {/* Full Analysis Button */}
+          <div className="mt-3">
+            <Link href={`/game-analysis?game=${game.id}`}>
+              <Button className="w-full bg-accent hover:bg-accent/90 text-black font-medium">
+                <BarChart3 className="mr-2 h-4 w-4" />
+                Full Analysis
+              </Button>
+            </Link>
+          </div>
         </div>
       </div>
 

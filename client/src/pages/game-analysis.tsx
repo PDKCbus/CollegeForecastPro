@@ -1,5 +1,6 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
+import { useLocation } from "wouter";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
@@ -41,6 +42,16 @@ interface AdvancedStats {
 
 export default function GameAnalysis() {
   const [selectedGameId, setSelectedGameId] = useState<string>("");
+  const [location] = useLocation();
+
+  // Extract game ID from URL parameters
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const gameParam = urlParams.get('game');
+    if (gameParam) {
+      setSelectedGameId(gameParam);
+    }
+  }, [location]);
 
   const { data: upcomingGames = [] } = useQuery<GameWithTeams[]>({
     queryKey: ['/api/games/upcoming'],
