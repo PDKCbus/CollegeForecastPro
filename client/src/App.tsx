@@ -10,6 +10,7 @@ import Historical from "@/pages/historical";
 import Analysis from "@/pages/analysis";
 import Sentiment from "@/pages/sentiment";
 import DataAnalysis from "@/pages/data-analysis";
+import GameAnalysis from "@/pages/game-analysis";
 import NotFound from "@/pages/not-found";
 
 function Router() {
@@ -18,6 +19,7 @@ function Router() {
       <Route path="/" component={Home} />
       <Route path="/historical" component={Historical} />
       <Route path="/analysis" component={Analysis} />
+      <Route path="/game-analysis" component={GameAnalysis} />
       <Route path="/sentiment" component={Sentiment} />
       <Route path="/data" component={DataAnalysis} />
       <Route component={NotFound} />
