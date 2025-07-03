@@ -1,4 +1,5 @@
 import { GameWithTeams } from "@/lib/types";
+import { Link } from "wouter";
 
 interface FeaturedGameProps {
   game: GameWithTeams;
@@ -107,13 +108,15 @@ export function FeaturedGame({ game }: FeaturedGameProps) {
             </svg>
             {game.stadium}, {game.location}
           </div>
-          <button className="text-accent hover:text-accent/80 font-medium flex items-center space-x-1">
-            <span>Full Analysis</span>
-            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-arrow-right">
-              <path d="M5 12h14" />
-              <path d="m12 5 7 7-7 7" />
-            </svg>
-          </button>
+          <Link href={`/game-analysis?game=${game.id}`}>
+            <button className="text-accent hover:text-accent/80 font-medium flex items-center space-x-1">
+              <span>Full Analysis</span>
+              <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-arrow-right">
+                <path d="M5 12h14" />
+                <path d="m12 5 7 7-7 7" />
+              </svg>
+            </button>
+          </Link>
         </div>
       </div>
     </div>

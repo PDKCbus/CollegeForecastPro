@@ -49,19 +49,12 @@ export default function GameAnalysis() {
   useEffect(() => {
     const urlParams = new URLSearchParams(window.location.search);
     const gameParam = urlParams.get('game');
+    console.log('Game Analysis: URL param game =', gameParam);
     if (gameParam) {
+      console.log('Setting selectedGameId to:', gameParam);
       setSelectedGameId(gameParam);
     }
-  }, []);
-
-  // Also check when location changes
-  useEffect(() => {
-    const urlParams = new URLSearchParams(window.location.search);
-    const gameParam = urlParams.get('game');
-    if (gameParam && gameParam !== selectedGameId) {
-      setSelectedGameId(gameParam);
-    }
-  }, [location]);
+  }, [location]); // Include location dependency to trigger on navigation
 
   const { data: upcomingGames = [] } = useQuery<GameWithTeams[]>({
     queryKey: ['/api/games/upcoming'],
@@ -80,6 +73,10 @@ export default function GameAnalysis() {
   });
 
   const selectedGame = upcomingGames.find(game => game.id.toString() === selectedGameId);
+  
+  console.log('Available games:', upcomingGames.map(g => ({ id: g.id, homeTeam: g.homeTeam.name, awayTeam: g.awayTeam.name })));
+  console.log('Selected game ID:', selectedGameId);
+  console.log('Selected game found:', selectedGame);
 
   // Generate mock analytics for demonstration
   const generateMockAnalytics = () => {
