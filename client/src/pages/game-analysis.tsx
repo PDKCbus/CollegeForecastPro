@@ -52,6 +52,15 @@ export default function GameAnalysis() {
     if (gameParam) {
       setSelectedGameId(gameParam);
     }
+  }, []);
+
+  // Also check when location changes
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const gameParam = urlParams.get('game');
+    if (gameParam && gameParam !== selectedGameId) {
+      setSelectedGameId(gameParam);
+    }
   }, [location]);
 
   const { data: upcomingGames = [] } = useQuery<GameWithTeams[]>({
@@ -283,7 +292,7 @@ export default function GameAnalysis() {
               unit="%"
               icon={Target}
               trend="up"
-              teamLogo={analysis.predictiveMetrics.winProbability > 50 ? selectedGame.homeTeam?.logoUrl : selectedGame.awayTeam?.logoUrl}
+              teamLogo={analysis.predictiveMetrics.winProbability > 50 ? selectedGame.homeTeam?.logoUrl || undefined : selectedGame.awayTeam?.logoUrl || undefined}
             />
             <MetricCard
               title="Confidence"
