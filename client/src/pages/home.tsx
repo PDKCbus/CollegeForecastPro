@@ -8,7 +8,7 @@ import { CTASection } from "@/components/cta-section";
 import { Button } from "@/components/ui/button";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { useState } from "react";
-import { FilterOption } from "@/lib/types";
+import { FilterOption, GameWithTeams } from "@/lib/types";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 
@@ -25,11 +25,26 @@ export default function Home() {
     { label: "Conference", value: "conference", isActive: activeFilter === "conference" }
   ];
   
-  const { data: upcomingGames = [], isLoading } = useQuery({
+  const { data: allUpcomingGames = [], isLoading } = useQuery<GameWithTeams[]>({
     queryKey: ["/api/games/upcoming"],
   });
+
+  // Filter games based on active filter
+  const upcomingGames = allUpcomingGames.filter((game: GameWithTeams) => {
+    if (activeFilter === "all") return true;
+    if (activeFilter === "top25") {
+      // Filter for games with top 25 teams (assuming teams with rank)
+      return (game.homeTeam?.rank && game.homeTeam.rank <= 25) || 
+             (game.awayTeam?.rank && game.awayTeam.rank <= 25);
+    }
+    if (activeFilter === "conference") {
+      // Filter for conference games
+      return game.isConferenceGame;
+    }
+    return true;
+  });
   
-  const { data: featuredGame, isLoading: isFeaturedLoading } = useQuery({
+  const { data: featuredGame, isLoading: isFeaturedLoading } = useQuery<GameWithTeams>({
     queryKey: ["/api/games/1"],
   });
 
@@ -83,7 +98,7 @@ export default function Home() {
         {isFeaturedLoading ? (
           <div className="h-64 w-full bg-surface rounded-xl animate-pulse"></div>
         ) : featuredGame ? (
-          <FeaturedGame game={featuredGame} />
+          <FeaturedGame game={featuredGame as any} />
         ) : (
           <div className="mb-8 bg-surface rounded-xl p-6 text-center">
             <p className="text-white/60">Featured game not available</p>
@@ -113,8 +128,8 @@ export default function Home() {
           </div>
         ) : upcomingGames && upcomingGames.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {upcomingGames.map((game) => (
-              <GameCard key={game.id} game={game} />
+            {upcomingGames.map((game: GameWithTeams) => (
+              <GameCard key={game.id} game={game as any} />
             ))}
           </div>
         ) : (

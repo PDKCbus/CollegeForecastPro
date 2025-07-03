@@ -39,14 +39,14 @@ export function TabNavigation() {
       {/* Mobile Tab Selector */}
       <div className="md:hidden mb-6">
         <Select value={currentTab} onValueChange={handleTabChange}>
-          <SelectTrigger className="w-full p-3 bg-surface text-white rounded-md border border-surface-light">
+          <SelectTrigger className="w-full p-4 bg-surface text-white rounded-lg border border-surface-light/30 hover:border-surface-light transition-colors">
             <SelectValue placeholder="Select a tab" />
           </SelectTrigger>
-          <SelectContent className="bg-surface text-white">
-            <SelectItem value="upcoming" className="text-white">Upcoming Games</SelectItem>
-            <SelectItem value="historical" className="text-white">Historical Games</SelectItem>
-            <SelectItem value="analysis" className="text-white">Analysis</SelectItem>
-            <SelectItem value="sentiment" className="text-white">Twitter Sentiment</SelectItem>
+          <SelectContent className="bg-surface/95 backdrop-blur-sm text-white border border-surface-light/30 rounded-lg shadow-xl">
+            <SelectItem value="upcoming" className="text-white hover:bg-surface-light/20 focus:bg-surface-light/20">Upcoming Games</SelectItem>
+            <SelectItem value="historical" className="text-white hover:bg-surface-light/20 focus:bg-surface-light/20">Historical Games</SelectItem>
+            <SelectItem value="analysis" className="text-white hover:bg-surface-light/20 focus:bg-surface-light/20">Analysis</SelectItem>
+            <SelectItem value="sentiment" className="text-white hover:bg-surface-light/20 focus:bg-surface-light/20">Twitter Sentiment</SelectItem>
           </SelectContent>
         </Select>
       </div>
