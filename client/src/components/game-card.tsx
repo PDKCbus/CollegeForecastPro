@@ -91,6 +91,58 @@ export function GameCard({ game }: GameCardProps) {
     return `${favoredTeam.abbreviation} -${Math.abs(game.spread).toFixed(1)}`;
   };
 
+  const getRicksPick = () => {
+    // Algorithm-based prediction logic
+    const homeFieldAdvantage = 4.5;
+    const conferenceBonus = {
+      'SEC': 2, 'Big Ten': 2, 'Big 12': 2, 'ACC': 2
+    };
+    
+    const homeRank = game.homeTeam.rank || 999;
+    const awayRank = game.awayTeam.rank || 999;
+    
+    const homeRankBonus = homeRank <= 5 ? 5 : homeRank <= 15 ? 3 : homeRank <= 25 ? 1 : 0;
+    const awayRankBonus = awayRank <= 5 ? 5 : awayRank <= 15 ? 3 : awayRank <= 25 ? 1 : 0;
+    
+    const homeConfBonus = conferenceBonus[game.homeTeam.conference as keyof typeof conferenceBonus] || 0;
+    const awayConfBonus = conferenceBonus[game.awayTeam.conference as keyof typeof conferenceBonus] || 0;
+    
+    const rickSpread = homeFieldAdvantage + homeRankBonus + homeConfBonus - awayRankBonus - awayConfBonus;
+    
+    // Determine Rick's pick vs Vegas
+    if (game.spread && Math.abs(rickSpread - (-game.spread)) >= 1.5) {
+      const favoredTeam = rickSpread > 0 ? game.homeTeam : game.awayTeam;
+      const pointDifference = Math.abs(rickSpread - (-game.spread));
+      
+      if (rickSpread > -game.spread) {
+        return {
+          team: game.homeTeam,
+          pick: `Take ${game.homeTeam.abbreviation} +${Math.abs(game.spread).toFixed(1)}`,
+          reason: `Rick predicts closer game than Vegas by ${pointDifference.toFixed(1)} points`
+        };
+      } else {
+        return {
+          team: game.awayTeam,
+          pick: `Take ${game.awayTeam.abbreviation} +${Math.abs(game.spread).toFixed(1)}`,
+          reason: `Rick predicts ${favoredTeam.abbreviation} covers by ${pointDifference.toFixed(1)} more than Vegas`
+        };
+      }
+    }
+    
+    // Over/Under pick
+    const totalPoints = 45 + (homeRankBonus + awayRankBonus) * 2;
+    if (game.overUnder && Math.abs(totalPoints - game.overUnder) >= 3) {
+      const pick = totalPoints > game.overUnder ? 'OVER' : 'UNDER';
+      return {
+        team: null,
+        pick: `${pick} ${game.overUnder.toFixed(1)}`,
+        reason: `Rick predicts ${totalPoints.toFixed(1)} total points`
+      };
+    }
+    
+    return null;
+  };
+
   return (
     <div className="game-card bg-surface rounded-xl overflow-hidden shadow-lg transition-all">
       <div className="p-5">
@@ -184,6 +236,23 @@ export function GameCard({ game }: GameCardProps) {
             </DropdownMenu>
           </div>
           
+          {/* Rick's Pick Section */}
+          {(() => {
+            const ricksPick = getRicksPick();
+            if (ricksPick) {
+              return (
+                <div className="bg-blue-600 border border-blue-500 rounded-lg p-3 mb-3">
+                  <div className="text-center">
+                    <div className="text-white font-bold text-sm mb-1">🏈 RICK'S PICK</div>
+                    <div className="text-white font-semibold text-lg">{ricksPick.pick}</div>
+                    <div className="text-blue-100 text-xs mt-1">{ricksPick.reason}</div>
+                  </div>
+                </div>
+              );
+            }
+            return null;
+          })()}
+
           {game.prediction?.confidence && (
             <div className="bg-accent/10 border border-accent/20 rounded-lg p-2">
               <div className="text-center">
