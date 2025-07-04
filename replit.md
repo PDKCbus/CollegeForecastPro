@@ -100,6 +100,13 @@ The application follows a modern full-stack architecture with clear separation o
 
 ## Changelog
 
+- July 03, 2025: **Algorithm-Based Prediction System with Betting Recommendations**
+  - Replaced mock data with algorithm-based prediction system
+  - Algorithm factors: home field advantage (+4.5), conference strength bonuses, team rankings
+  - Betting recommendation badges comparing Rick's predictions vs Vegas lines
+  - Correct betting logic: when algorithm differs from Vegas by ≥1.5 points, show betting edge
+  - Real-time spread and over/under recommendations with colored badges
+  - Data collection progress: 22,680+ games collected across multiple seasons (2009-2017, 2020, 2024-2025)
 - July 03, 2025: **Mobile-Responsive Game Analysis Dashboard Completed**
   - Fixed Game Analysis Dashboard navigation from homepage game cards and featured game
   - Implemented robust game fetching for games not in upcoming list via fallback API
