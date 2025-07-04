@@ -401,9 +401,13 @@ export default function GameAnalysis() {
                             ? 'bg-green-600 hover:bg-green-700'
                             : 'bg-blue-600 hover:bg-blue-700'
                         } text-white`}>
+                          {/* 
+                            If our prediction is HIGHER than Vegas (less negative), we think the favorite won't cover
+                            If our prediction is LOWER than Vegas (more negative), we think the favorite will cover more
+                          */}
                           {analysis.predictiveMetrics.spreadPrediction > selectedGame.spread
-                            ? `Take ${selectedGame.homeTeam?.name} +${selectedGame.spread}`
-                            : `Take ${selectedGame.awayTeam?.name} ${selectedGame.spread > 0 ? `+${Math.abs(selectedGame.spread)}` : selectedGame.spread}`
+                            ? `Take ${selectedGame.awayTeam?.name} +${Math.abs(selectedGame.spread)}` // Take the underdog
+                            : `Take ${selectedGame.homeTeam?.name} ${selectedGame.spread}` // Take the favorite
                           }
                         </Badge>
                       ) : (
