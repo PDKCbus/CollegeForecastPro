@@ -81,7 +81,7 @@ export function Header() {
       </div>
       
       {/* Mobile navigation menu */}
-      <div className={`md:hidden bg-surface absolute w-full border-b border-surface-light animate-fade-in ${isMobileMenuOpen ? 'block' : 'hidden'}`}>
+      <div className={`md:hidden bg-surface absolute w-full border-b border-surface-light animate-fade-in z-50 ${isMobileMenuOpen ? 'block' : 'hidden'}`}>
         <div className="container mx-auto px-4 py-3 flex flex-col space-y-2">
           <Link href="/" className={`px-4 py-3 font-medium text-left rounded-md hover:bg-surface-light transition-colors ${currentTab === "upcoming" ? "text-white" : "text-white/60"}`} onClick={() => setIsMobileMenuOpen(false)}>
             Upcoming Games
