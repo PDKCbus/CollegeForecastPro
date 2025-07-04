@@ -81,32 +81,32 @@ export function Header() {
       </div>
       
       {/* Mobile navigation menu */}
-      <div className={`md:hidden bg-surface absolute w-full border-b border-surface-light animate-fade-in z-50 ${isMobileMenuOpen ? 'block' : 'hidden'}`}>
+      <div className={`md:hidden bg-gray-900 absolute w-full border-b border-gray-700 animate-fade-in z-50 ${isMobileMenuOpen ? 'block' : 'hidden'}`}>
         <div className="container mx-auto px-4 py-3 flex flex-col space-y-2">
-          <Link href="/" className={`px-4 py-3 font-medium text-left rounded-md hover:bg-surface-light transition-colors ${currentTab === "upcoming" ? "text-white" : "text-white/60"}`} onClick={() => setIsMobileMenuOpen(false)}>
+          <Link href="/" className={`px-4 py-3 font-medium text-left rounded-md hover:bg-gray-800 transition-colors ${currentTab === "upcoming" ? "text-white" : "text-white/60"}`} onClick={() => setIsMobileMenuOpen(false)}>
             Upcoming Games
           </Link>
-          <Link href="/historical" className={`px-4 py-3 font-medium text-left rounded-md hover:bg-surface-light transition-colors ${currentTab === "historical" ? "text-white" : "text-white/60"}`} onClick={() => setIsMobileMenuOpen(false)}>
+          <Link href="/historical" className={`px-4 py-3 font-medium text-left rounded-md hover:bg-gray-800 transition-colors ${currentTab === "historical" ? "text-white" : "text-white/60"}`} onClick={() => setIsMobileMenuOpen(false)}>
             Historical Games
           </Link>
-          <Link href="/analysis" className={`px-4 py-3 font-medium text-left rounded-md hover:bg-surface-light transition-colors ${currentTab === "analysis" ? "text-white" : "text-white/60"}`} onClick={() => setIsMobileMenuOpen(false)}>
+          <Link href="/analysis" className={`px-4 py-3 font-medium text-left rounded-md hover:bg-gray-800 transition-colors ${currentTab === "analysis" ? "text-white" : "text-white/60"}`} onClick={() => setIsMobileMenuOpen(false)}>
             Analysis
           </Link>
-          <Link href="/game-analysis" className={`px-4 py-3 font-medium text-left rounded-md hover:bg-surface-light transition-colors ${currentTab === "game-analysis" ? "text-white" : "text-white/60"}`} onClick={() => setIsMobileMenuOpen(false)}>
+          <Link href="/game-analysis" className={`px-4 py-3 font-medium text-left rounded-md hover:bg-gray-800 transition-colors ${currentTab === "game-analysis" ? "text-white" : "text-white/60"}`} onClick={() => setIsMobileMenuOpen(false)}>
             Game Analysis
           </Link>
-          <Link href="/data" className={`px-4 py-3 font-medium text-left rounded-md hover:bg-surface-light transition-colors ${currentTab === "data" ? "text-white" : "text-white/60"}`} onClick={() => setIsMobileMenuOpen(false)}>
+          <Link href="/data" className={`px-4 py-3 font-medium text-left rounded-md hover:bg-gray-800 transition-colors ${currentTab === "data" ? "text-white" : "text-white/60"}`} onClick={() => setIsMobileMenuOpen(false)}>
             Data Sync
           </Link>
           <div className="flex items-center space-x-2 px-4 py-3">
-            <button className="flex-1 bg-surface-light text-white/80 p-2 rounded-md">
+            <button className="flex-1 bg-gray-800 text-white/80 p-2 rounded-md">
               <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-search inline-block mr-2">
                 <circle cx="11" cy="11" r="8" />
                 <path d="m21 21-4.3-4.3" />
               </svg>
               Search
             </button>
-            <button className="bg-surface-light text-white/80 p-2 rounded-md">
+            <button className="bg-gray-800 text-white/80 p-2 rounded-md">
               <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-user-circle">
                 <circle cx="12" cy="12" r="10" />
                 <circle cx="12" cy="10" r="3" />
