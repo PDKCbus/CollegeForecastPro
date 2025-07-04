@@ -117,22 +117,7 @@ export default function GameAnalysis() {
     const ourSpread = homeFieldAdvantage + homeConfBonus - awayConfBonus + homeRankBonus - awayRankBonus;
     const finalSpread = Math.round(ourSpread * 2) / 2; // Round to nearest 0.5
     
-    // Debug logging
-    console.log('Algorithm Debug:', {
-      homeTeam: homeTeam?.name,
-      awayTeam: awayTeam?.name,
-      homeConference: homeTeam?.conference,
-      awayConference: awayTeam?.conference,
-      homeRank: homeTeam?.rank,
-      awayRank: awayTeam?.rank,
-      homeFieldAdvantage,
-      homeConfBonus,
-      awayConfBonus,
-      homeRankBonus,
-      awayRankBonus,
-      ourSpread,
-      finalSpread
-    });
+
 
     // Calculate our over/under prediction (base + offensive factors)
     const offensiveFactor = (homeConfBonus + awayConfBonus) * 1.5; // Strong conferences = higher scoring
