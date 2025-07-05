@@ -1,4 +1,5 @@
 import { Button } from "@/components/ui/button";
+import { Link } from "wouter";
 
 export function Hero() {
   return (
@@ -11,16 +12,24 @@ export function Hero() {
             <p className="text-lg text-white/80 mb-8">Advanced stats, picks, and analysis to give you the edge</p>
             <div className="flex space-x-4">
               <Button
+                onClick={() => {
+                  const featuredSection = document.getElementById('featured-games');
+                  if (featuredSection) {
+                    featuredSection.scrollIntoView({ behavior: 'smooth' });
+                  }
+                }}
                 className="bg-primary hover:bg-primary/90 text-white px-6 py-3 rounded-md font-medium shadow-lg hover:shadow-xl transition-all"
               >
                 Today's Top Picks
               </Button>
-              <Button
-                variant="outline"
-                className="bg-transparent border border-white/30 hover:border-white/70 text-white px-6 py-3 rounded-md font-medium transition-colors"
-              >
-                Season Stats
-              </Button>
+              <Link href="/season-stats">
+                <Button
+                  variant="outline"
+                  className="bg-transparent border border-white/30 hover:border-white/70 text-white px-6 py-3 rounded-md font-medium transition-colors"
+                >
+                  Season Stats
+                </Button>
+              </Link>
             </div>
           </div>
         </div>
