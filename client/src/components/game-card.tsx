@@ -111,20 +111,26 @@ export function GameCard({ game }: GameCardProps) {
     
     // Determine Rick's pick vs Vegas
     if (game.spread && Math.abs(rickSpread - (-game.spread)) >= 1.5) {
-      const favoredTeam = rickSpread > 0 ? game.homeTeam : game.awayTeam;
       const pointDifference = Math.abs(rickSpread - (-game.spread));
       
+      // If Rick's spread is less than Vegas spread (game will be closer)
       if (rickSpread > -game.spread) {
+        // Take the underdog getting points
+        const underdogTeam = game.spread > 0 ? game.awayTeam : game.homeTeam;
+        const points = Math.abs(game.spread).toFixed(1);
         return {
-          team: game.homeTeam,
-          pick: `Take ${game.homeTeam.abbreviation} +${Math.abs(game.spread).toFixed(1)}`,
-          reason: `Rick predicts closer game than Vegas by ${pointDifference.toFixed(1)} points`
+          team: underdogTeam,
+          pick: `Take ${underdogTeam.abbreviation} +${points}`,
+          reason: `Rick thinks this will be closer than Vegas predicts`
         };
       } else {
+        // Take the favorite giving points  
+        const favoriteTeam = game.spread > 0 ? game.homeTeam : game.awayTeam;
+        const points = Math.abs(game.spread).toFixed(1);
         return {
-          team: game.awayTeam,
-          pick: `Take ${game.awayTeam.abbreviation} +${Math.abs(game.spread).toFixed(1)}`,
-          reason: `Rick predicts ${favoredTeam.abbreviation} covers by ${pointDifference.toFixed(1)} more than Vegas`
+          team: favoriteTeam,
+          pick: `Take ${favoriteTeam.abbreviation} -${points}`,
+          reason: `Rick thinks ${favoriteTeam.abbreviation} wins bigger than Vegas expects`
         };
       }
     }
