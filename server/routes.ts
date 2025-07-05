@@ -1198,6 +1198,37 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Sync only missing years (2018, 2019, 2021-2023)
+  app.post('/api/comprehensive/sync-missing', async (_req: Request, res: Response) => {
+    try {
+      const missingYears = [2018, 2019, 2021, 2022, 2023];
+      
+      setImmediate(async () => {
+        try {
+          console.log(`📅 Starting missing years sync: ${missingYears.join(', ')}`);
+          for (const year of missingYears) {
+            console.log(`🏈 Syncing ${year} season...`);
+            await comprehensiveDataSync.syncAllGamesForSeason(year);
+            console.log(`✅ ${year} season completed`);
+          }
+          console.log(`✅ All missing years sync completed`);
+        } catch (error) {
+          console.error(`❌ Missing years sync failed:`, error);
+        }
+      });
+
+      res.json({ 
+        message: `Missing years sync started: ${missingYears.join(', ')}`,
+        years: missingYears,
+        includes: ['Games', 'Team Stats'],
+        status: 'processing',
+        estimated_duration: '15-30 minutes'
+      });
+    } catch (error) {
+      res.status(500).json({ message: 'Failed to start missing years sync' });
+    }
+  });
+
   // Game Analysis API
   app.get("/api/games/analysis/:gameId", async (req, res) => {
     try {
@@ -1277,6 +1308,75 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Game analysis error:", error);
       res.status(500).json({ message: "Failed to generate game analysis" });
+    }
+  });
+
+  // Weather enrichment endpoint for upcoming games
+  app.post('/api/weather/enrich-upcoming', async (_req: Request, res: Response) => {
+    try {
+      const { weatherService } = await import('./weather-service');
+      
+      // Get all upcoming games without weather data
+      const upcomingGames = await storage.getUpcomingGames(20, 0);
+      const gamesNeedingWeather = upcomingGames.filter(game => 
+        game.temperature === null || game.temperature === undefined
+      );
+
+      if (gamesNeedingWeather.length === 0) {
+        return res.json({ message: 'No upcoming games need weather enrichment', count: 0 });
+      }
+
+      let enrichedCount = 0;
+      for (const game of gamesNeedingWeather) {
+        try {
+          const enrichedGame = await weatherService.enrichGameWithWeather({
+            homeTeamId: game.homeTeamId,
+            awayTeamId: game.awayTeamId,
+            startDate: game.startDate,
+            season: game.season,
+            week: game.week,
+            stadium: game.stadium,
+            location: game.location,
+            spread: game.spread,
+            overUnder: game.overUnder,
+            homeTeamScore: game.homeTeamScore,
+            awayTeamScore: game.awayTeamScore,
+            completed: game.completed,
+            isConferenceGame: game.isConferenceGame,
+            isRivalryGame: game.isRivalryGame,
+            isFeatured: game.isFeatured
+          });
+          
+          // Update the game with weather data
+          await storage.updateGame(game.id, {
+            temperature: enrichedGame.temperature,
+            windSpeed: enrichedGame.windSpeed,
+            windDirection: enrichedGame.windDirection,
+            humidity: enrichedGame.humidity,
+            precipitation: enrichedGame.precipitation,
+            weatherCondition: enrichedGame.weatherCondition,
+            isDome: enrichedGame.isDome,
+            weatherImpactScore: enrichedGame.weatherImpactScore
+          });
+
+          enrichedCount++;
+          console.log(`Enriched game ${game.id} with weather: ${enrichedGame.temperature}°F, ${enrichedGame.weatherCondition}`);
+          
+          // Small delay to avoid rate limiting
+          await new Promise(resolve => setTimeout(resolve, 200));
+        } catch (error) {
+          console.error(`Error enriching game ${game.id}:`, error);
+        }
+      }
+
+      res.json({ 
+        message: `Successfully enriched ${enrichedCount} games with weather data`,
+        count: enrichedCount
+      });
+
+    } catch (error) {
+      console.error('Weather enrichment error:', error);
+      res.status(500).json({ error: 'Failed to enrich games with weather data' });
     }
   });
 
