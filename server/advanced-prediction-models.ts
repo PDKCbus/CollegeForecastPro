@@ -48,6 +48,207 @@ interface AdvancedPrediction {
 export class AdvancedPredictionEngine {
   
   /**
+   * HYPOTHESIS 1: BYE WEEK ADVANTAGE
+   * Teams coming off bye weeks perform better against the spread
+   */
+  async calculateByeWeekAdvantage(teamId: number, gameWeek: number, season: number): Promise<number> {
+    try {
+      // Check if team had a bye the previous week
+      const previousWeekGames = await db
+        .select()
+        .from(games)
+        .where(and(
+          eq(games.season, season),
+          eq(games.week, gameWeek - 1),
+          sql`(${games.homeTeamId} = ${teamId} OR ${games.awayTeamId} = ${teamId})`
+        ));
+
+      const hadBye = previousWeekGames.length === 0;
+      
+      if (!hadBye) return 0;
+
+      // Calculate historical bye week performance
+      const byeWeekGames = await db
+        .select({
+          homeTeamId: games.homeTeamId,
+          awayTeamId: games.awayTeamId,
+          homePoints: games.homePoints,
+          awayPoints: games.awayPoints,
+          spread: games.spread,
+          season: games.season,
+          week: games.week
+        })
+        .from(games)
+        .where(and(
+          sql`${games.homePoints} IS NOT NULL`,
+          sql`${games.awayPoints} IS NOT NULL`,
+          sql`${games.spread} IS NOT NULL`,
+          sql`${games.season} >= 2009`
+        ));
+
+      let byeWeekCoverage = 0;
+      let totalByeWeekGames = 0;
+
+      for (const game of byeWeekGames) {
+        // Check if either team had a bye the previous week
+        const prevWeekCheck = await db
+          .select()
+          .from(games)
+          .where(and(
+            eq(games.season, game.season),
+            eq(games.week, game.week - 1),
+            sql`(${games.homeTeamId} = ${game.homeTeamId} OR ${games.awayTeamId} = ${game.homeTeamId} OR ${games.homeTeamId} = ${game.awayTeamId} OR ${games.awayTeamId} = ${game.awayTeamId})`
+          ))
+          .limit(1);
+
+        const homeTeamHadBye = prevWeekCheck.length === 0;
+        const awayTeamHadBye = prevWeekCheck.length === 0;
+
+        if (homeTeamHadBye || awayTeamHadBye) {
+          const actualSpread = (game.homePoints || 0) - (game.awayPoints || 0);
+          const vegasSpread = game.spread || 0;
+          const covered = actualSpread > vegasSpread;
+
+          if (homeTeamHadBye) {
+            byeWeekCoverage += covered ? 1 : 0;
+            totalByeWeekGames++;
+          }
+          if (awayTeamHadBye && !homeTeamHadBye) {
+            byeWeekCoverage += (!covered) ? 1 : 0;
+            totalByeWeekGames++;
+          }
+        }
+      }
+
+      const byeWeekSuccessRate = totalByeWeekGames > 0 ? byeWeekCoverage / totalByeWeekGames : 0.5;
+      
+      // Convert to point value (if bye week teams cover 55% of the time, that's worth ~2 points)
+      const byeWeekBonus = (byeWeekSuccessRate - 0.5) * 8;
+      
+      return Math.max(-3, Math.min(3, byeWeekBonus));
+    } catch (error) {
+      console.error('Error calculating bye week advantage:', error);
+      return 0;
+    }
+  }
+
+  /**
+   * HYPOTHESIS 2: AWAY FAVORITES UNDERPERFORM
+   * Road favorites cover less often than home favorites
+   */
+  async calculateAwayFavoriteDisadvantage(isAwayFavorite: boolean, spread: number): Promise<number> {
+    try {
+      if (!isAwayFavorite) return 0;
+
+      // Get historical away favorite performance
+      const awayFavoriteGames = await db
+        .select({
+          homePoints: games.homePoints,
+          awayPoints: games.awayPoints,
+          spread: games.spread
+        })
+        .from(games)
+        .where(and(
+          sql`${games.homePoints} IS NOT NULL`,
+          sql`${games.awayPoints} IS NOT NULL`,
+          sql`${games.spread} IS NOT NULL`,
+          sql`${games.spread} > 0`, // Away team favored (positive spread)
+          sql`${games.season} >= 2009`
+        ));
+
+      let awayFavoriteCoverage = 0;
+      let totalAwayFavoriteGames = 0;
+
+      for (const game of awayFavoriteGames) {
+        const actualSpread = (game.homePoints || 0) - (game.awayPoints || 0);
+        const vegasSpread = game.spread || 0;
+        const awayFavoriteCovered = actualSpread < vegasSpread;
+
+        awayFavoriteCoverage += awayFavoriteCovered ? 1 : 0;
+        totalAwayFavoriteGames++;
+      }
+
+      const awayFavoriteSuccessRate = totalAwayFavoriteGames > 0 ? awayFavoriteCoverage / totalAwayFavoriteGames : 0.5;
+      
+      // If away favorites cover less than 50%, adjust spread accordingly
+      const awayFavoritePenalty = (0.5 - awayFavoriteSuccessRate) * 6;
+      
+      return Math.max(-2, Math.min(2, awayFavoritePenalty));
+    } catch (error) {
+      console.error('Error calculating away favorite disadvantage:', error);
+      return 0;
+    }
+  }
+
+  /**
+   * HYPOTHESIS 3: CONFERENCE STRENGTH ANALYSIS
+   * Analyze head-to-head performance between conferences
+   */
+  async calculateConferenceStrengthAdjustment(homeConference: string, awayConference: string): Promise<number> {
+    try {
+      if (homeConference === awayConference) return 0;
+
+      // Get historical head-to-head results between these conferences
+      const conferenceMatchups = await db
+        .select({
+          homePoints: games.homePoints,
+          awayPoints: games.awayPoints,
+          spread: games.spread
+        })
+        .from(games)
+        .innerJoin(teams, eq(teams.id, games.homeTeamId))
+        .innerJoin(teams, eq(teams.id, games.awayTeamId))
+        .where(and(
+          sql`${games.homePoints} IS NOT NULL`,
+          sql`${games.awayPoints} IS NOT NULL`,
+          sql`${games.spread} IS NOT NULL`,
+          sql`${teams.conference} = ${homeConference}`,
+          sql`${teams.conference} = ${awayConference}`,
+          sql`${games.season} >= 2009`
+        ));
+
+      let homeConferenceWins = 0;
+      let totalGames = 0;
+
+      for (const game of conferenceMatchups) {
+        const homeWon = (game.homePoints || 0) > (game.awayPoints || 0);
+        homeConferenceWins += homeWon ? 1 : 0;
+        totalGames++;
+      }
+
+      if (totalGames < 10) return 0; // Need minimum sample size
+
+      const homeConferenceWinRate = homeConferenceWins / totalGames;
+      
+      // Conference strength mapping
+      const conferenceStrengthMap: { [key: string]: number } = {
+        'SEC': 1.0,
+        'Big Ten': 0.9,
+        'Big 12': 0.8,
+        'ACC': 0.7,
+        'Pac-12': 0.7,
+        'American Athletic': 0.4,
+        'Mountain West': 0.3,
+        'Conference USA': 0.2,
+        'MAC': 0.2,
+        'Sun Belt': 0.1
+      };
+
+      const homeStrength = conferenceStrengthMap[homeConference] || 0.5;
+      const awayStrength = conferenceStrengthMap[awayConference] || 0.5;
+      
+      // Adjust based on historical performance and relative strength
+      const strengthDiff = homeStrength - awayStrength;
+      const historicalAdjustment = (homeConferenceWinRate - 0.5) * 4;
+      
+      return Math.max(-3, Math.min(3, strengthDiff * 2 + historicalAdjustment));
+    } catch (error) {
+      console.error('Error calculating conference strength adjustment:', error);
+      return 0;
+    }
+  }
+
+  /**
    * ELO RATING SYSTEM
    * Dynamic team strength ratings that update after each game
    */
@@ -347,10 +548,10 @@ export class AdvancedPredictionEngine {
   }
 
   /**
-   * ENSEMBLE PREDICTION
-   * Combines multiple models for final prediction with weather integration
+   * ENSEMBLE PREDICTION WITH HYPOTHESIS STACKING
+   * Combines multiple models including hypothesis testing for final prediction
    */
-  async generateAdvancedPrediction(homeTeamId: number, awayTeamId: number, season: number): Promise<AdvancedPrediction> {
+  async generateAdvancedPrediction(homeTeamId: number, awayTeamId: number, season: number, gameWeek: number = 1, spread?: number): Promise<AdvancedPrediction> {
     const eloRatings = await this.calculateEloRatings();
     const teamRatings = await this.calculateTeamRatings(season);
     
@@ -366,17 +567,39 @@ export class AdvancedPredictionEngine {
     const homeMomentum = await this.calculateMomentum(homeTeamId, season);
     const awayMomentum = await this.calculateMomentum(awayTeamId, season);
 
+    // Get team information for conference analysis
+    const homeTeam = await db.select().from(teams).where(eq(teams.id, homeTeamId)).limit(1);
+    const awayTeam = await db.select().from(teams).where(eq(teams.id, awayTeamId)).limit(1);
+    
+    const homeConference = homeTeam[0]?.conference || '';
+    const awayConference = awayTeam[0]?.conference || '';
+
+    // **HYPOTHESIS TESTING MODELS**
+    // Hypothesis 1: Bye Week Advantage
+    const homeByeAdvantage = await this.calculateByeWeekAdvantage(homeTeamId, gameWeek, season);
+    const awayByeAdvantage = await this.calculateByeWeekAdvantage(awayTeamId, gameWeek, season);
+    const byeWeekAdjustment = homeByeAdvantage - awayByeAdvantage;
+
+    // Hypothesis 2: Away Favorite Disadvantage
+    const isAwayFavorite = spread ? spread > 0 : false;
+    const awayFavoriteAdjustment = await this.calculateAwayFavoriteDisadvantage(isAwayFavorite, spread || 0);
+
+    // Hypothesis 3: Conference Strength Analysis
+    const conferenceStrengthAdjustment = await this.calculateConferenceStrengthAdjustment(homeConference, awayConference);
+
     // Get weather data and calculate impacts
     const weather = await this.getGameWeather(homeTeamId, awayTeamId, season);
     const weatherImpacts = weather ? this.calculateWeatherImpact(weather) : {
       offensiveImpact: 1.0, passingImpact: 1.0, kickingImpact: 1.0, turnoverImpact: 1.0
     };
 
-    // ELO-based prediction (35% weight - reduced to accommodate weather)
+    // **CORE PREDICTION MODELS**
+    
+    // ELO-based prediction (25% weight - reduced for hypothesis integration)
     const eloAdvantage = homeElo - awayElo + 100; // +100 home field advantage
     const eloWinProb = 1 / (1 + Math.pow(10, -eloAdvantage / 400));
     
-    // Rating-based prediction with weather adjustments (30% weight)
+    // Rating-based prediction with weather adjustments (25% weight)
     const homeOffensiveAdjusted = homeRatings.offensive * weatherImpacts.offensiveImpact;
     const awayOffensiveAdjusted = awayRatings.offensive * weatherImpacts.offensiveImpact;
     
@@ -396,14 +619,31 @@ export class AdvancedPredictionEngine {
     const weatherAdvantage = weather ? (weather.weatherImpactScore / 10) : 0;
     const weatherWinProb = 0.5 + (weatherAdvantage * 0.1); // Weather slightly favors home team
 
-    // Ensemble prediction with weather integration
-    const finalWinProb = Math.max(0.05, Math.min(0.95,
-      0.35 * eloWinProb + 
-      0.30 * Math.max(0.05, Math.min(0.95, ratingWinProb)) +
+    // **HYPOTHESIS STACKING INTEGRATION**
+    
+    // Calculate base prediction from core models (85% weight)
+    const baseWinProb = Math.max(0.05, Math.min(0.95,
+      0.25 * eloWinProb + 
+      0.25 * Math.max(0.05, Math.min(0.95, ratingWinProb)) +
       0.15 * Math.max(0.05, Math.min(0.95, momentumWinProb)) +
       0.10 * Math.max(0.05, Math.min(0.95, sosWinProb)) +
       0.10 * Math.max(0.05, Math.min(0.95, weatherWinProb))
     ));
+
+    // Apply hypothesis adjustments (15% total weight split among hypotheses)
+    let hypothesisAdjustment = 0;
+    
+    // Bye week advantage: 5% weight
+    hypothesisAdjustment += 0.05 * (byeWeekAdjustment / 6); // Normalize to ±0.5 range
+    
+    // Away favorite disadvantage: 5% weight
+    hypothesisAdjustment += 0.05 * (awayFavoriteAdjustment / 4); // Normalize to ±0.5 range
+    
+    // Conference strength: 5% weight
+    hypothesisAdjustment += 0.05 * (conferenceStrengthAdjustment / 6); // Normalize to ±0.5 range
+
+    // Final prediction with hypothesis stacking
+    const finalWinProb = Math.max(0.05, Math.min(0.95, baseWinProb + hypothesisAdjustment));
 
     // Calculate predicted spread with weather adjustments
     const predictedSpread = -1 * (400 * Math.log10(finalWinProb / (1 - finalWinProb)) - 100) / 25;
@@ -430,12 +670,26 @@ export class AdvancedPredictionEngine {
       confidence *= 0.8; // High weather impact reduces prediction confidence
     }
 
-    // Identify key factors including weather
+    // Identify key factors including weather and hypothesis insights
     const keyFactors: string[] = [];
     if (Math.abs(eloAdvantage) > 200) keyFactors.push('Significant ELO advantage');
     if (Math.abs(ratingAdvantage) > 40) keyFactors.push('Major rating difference');
     if (Math.abs(momentumAdvantage) > 2) keyFactors.push('Strong momentum trend');
     if (Math.abs(sosAdvantage) > 100) keyFactors.push('Schedule strength factor');
+    
+    // Hypothesis-specific factors
+    if (Math.abs(byeWeekAdjustment) > 1) {
+      keyFactors.push(byeWeekAdjustment > 0 ? 'Home team coming off bye week' : 'Away team coming off bye week');
+    }
+    
+    if (isAwayFavorite && Math.abs(awayFavoriteAdjustment) > 0.5) {
+      keyFactors.push('Away favorite historically underperforms');
+    }
+    
+    if (Math.abs(conferenceStrengthAdjustment) > 1) {
+      const stronger = conferenceStrengthAdjustment > 0 ? homeConference : awayConference;
+      keyFactors.push(`${stronger} historically dominates this matchup`);
+    }
     
     // Weather-specific factors
     if (weather) {
