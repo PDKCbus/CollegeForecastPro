@@ -116,7 +116,7 @@ export function GameCard({ game }: GameCardProps) {
       // If Rick's spread is less than Vegas spread (game will be closer)
       if (rickSpread > -game.spread) {
         // Take the underdog getting points
-        const underdogTeam = game.spread > 0 ? game.awayTeam : game.homeTeam;
+        const underdogTeam = game.spread < 0 ? game.awayTeam : game.homeTeam;
         const points = Math.abs(game.spread).toFixed(1);
         return {
           team: underdogTeam,
@@ -124,8 +124,8 @@ export function GameCard({ game }: GameCardProps) {
           reason: `Rick thinks this will be closer than Vegas predicts`
         };
       } else {
-        // Take the favorite giving points  
-        const favoriteTeam = game.spread > 0 ? game.homeTeam : game.awayTeam;
+        // Take the favorite laying points  
+        const favoriteTeam = game.spread < 0 ? game.homeTeam : game.awayTeam;
         const points = Math.abs(game.spread).toFixed(1);
         return {
           team: favoriteTeam,
