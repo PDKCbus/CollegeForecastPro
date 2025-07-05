@@ -40,6 +40,15 @@ export const games = pgTable("games", {
   isConferenceGame: boolean("is_conference_game").default(false),
   isRivalryGame: boolean("is_rivalry_game").default(false),
   isFeatured: boolean("is_featured").default(false),
+  // Weather data
+  temperature: real("temperature"), // Fahrenheit
+  windSpeed: real("wind_speed"), // MPH
+  windDirection: text("wind_direction"), // N, NE, E, SE, S, SW, W, NW
+  humidity: real("humidity"), // Percentage
+  precipitation: real("precipitation"), // Inches
+  weatherCondition: text("weather_condition"), // Clear, Cloudy, Rain, Snow, etc.
+  isDome: boolean("is_dome").default(false),
+  weatherImpactScore: real("weather_impact_score"), // Calculated impact on game
 });
 
 export const predictions = pgTable("predictions", {
