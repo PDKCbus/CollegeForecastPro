@@ -112,10 +112,11 @@ The application follows a modern full-stack architecture with clear separation o
 
 ## Changelog
 
-- July 07, 2025: **Hypothesis-Stacking Prediction Models Completed**
-  - Built three hypothesis models: bye week advantage, away favorites underperform, conference strength analysis
-  - Implemented proper stacking architecture: 85% core models + 15% hypothesis layer  
-  - Enhanced ensemble prediction with hypothesis-specific key factors and confidence adjustments
+- July 07, 2025: **Comprehensive Hypothesis Framework Completed**
+  - Built 20+ weather hypotheses: temperature impacts, wind effects, precipitation advantages, humidity factors
+  - Created 15+ conference hypotheses: Power 5 vs G5, SEC performance analysis, cross-conference dynamics
+  - Developed 15+ ELO hypotheses: time-calibrated ratings, preseason decay, momentum factors, injury adjustments
+  - Fixed Team Analytics UI: centered metric labels with team scores positioned on left/right sides
   - Missing years data collection in progress (2018, 2019, 2021-2023) using proven comprehensive sync
 - July 05, 2025: **"Rick's Season" Betting Performance Dashboard Completed**
   - Transformed Season Stats page into comprehensive betting performance tracker
