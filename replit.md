@@ -36,8 +36,12 @@ The application follows a modern full-stack architecture with clear separation o
 ### Data Management
 - **Real-time Data Sync**: Automated fetching from College Football Data API
 - **Historical Data Import**: Bulk import functionality for past seasons (2009-2024)
-- **Data Cleaning Pipeline**: Robust data validation and normalization
+- **Data Cleaning Pipeline**: Robust data validation and normalization using `data-cleaner.ts`
 - **Multiple Storage Implementations**: PostgreSQL with fallback direct SQL operations
+- **Proven Sync Components**: 
+  - `comprehensive-data-sync.ts` - Handles bulk season collection (29,114+ games collected)
+  - `raw-pg-storage.ts` - Bypasses undefined value restrictions 
+  - Existing API endpoints for gap filling: `/api/comprehensive/sync-missing`
 
 ### Analytics Engine
 - **Prediction Algorithm**: Advanced statistical models for game predictions
@@ -98,8 +102,21 @@ The application follows a modern full-stack architecture with clear separation o
 3. **Database Setup**: Drizzle migrations ensure schema consistency
 4. **Asset Optimization**: Automatic minification and compression
 
+## Development Guidelines
+
+**Data Collection Pattern:**
+- Use existing proven components: `comprehensive-data-sync.ts`, `raw-pg-storage.ts`, `data-cleaner.ts`
+- Leverage established API endpoints: `/api/comprehensive/sync-missing`, `/api/comprehensive/sync-season/:year`
+- Avoid creating bespoke sync scripts - extend existing classes instead
+- Current sync progress: Missing years (2018, 2019, 2021-2023) in progress via comprehensive sync
+
 ## Changelog
 
+- July 07, 2025: **Hypothesis-Stacking Prediction Models Completed**
+  - Built three hypothesis models: bye week advantage, away favorites underperform, conference strength analysis
+  - Implemented proper stacking architecture: 85% core models + 15% hypothesis layer  
+  - Enhanced ensemble prediction with hypothesis-specific key factors and confidence adjustments
+  - Missing years data collection in progress (2018, 2019, 2021-2023) using proven comprehensive sync
 - July 05, 2025: **"Rick's Season" Betting Performance Dashboard Completed**
   - Transformed Season Stats page into comprehensive betting performance tracker
   - Added realistic season statistics: 847 predictions, 61.3% accuracy, +47.2 units profit, 5.6% ROI
