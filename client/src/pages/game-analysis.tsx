@@ -265,11 +265,9 @@ export default function GameAnalysis() {
   }) => (
     <div className="space-y-3">
       <div className="flex justify-between items-center">
-        <span className="text-xs sm:text-sm font-medium">{label}</span>
-        <div className="flex space-x-3 text-xs sm:text-sm">
-          <span className="text-blue-600 font-medium">{homeValue}</span>
-          <span className="text-red-600 font-medium">{awayValue}</span>
-        </div>
+        <span className="text-blue-600 font-medium text-xs sm:text-sm">{homeValue}</span>
+        <span className="text-xs sm:text-sm font-medium text-center flex-1">{label}</span>
+        <span className="text-red-600 font-medium text-xs sm:text-sm">{awayValue}</span>
       </div>
       <div className="flex space-x-2">
         <div className="flex-1">
