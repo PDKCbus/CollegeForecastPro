@@ -16,14 +16,14 @@ export default function Home() {
   const [selectedWeek, setSelectedWeek] = useState("Week 1");
   const [activeFilter, setActiveFilter] = useState("all");
   const [teamFilter, setTeamFilter] = useState("");
+  const [selectedConference, setSelectedConference] = useState("");
   const { toast } = useToast();
   
   const weeks = ["Week 1", "Week 2", "Week 3", "Week 4", "Week 5"];
   
   const filterOptions: FilterOption[] = [
     { label: "All Games", value: "all", isActive: activeFilter === "all" },
-    { label: "Top 25", value: "top25", isActive: activeFilter === "top25" },
-    { label: "Conference", value: "conference", isActive: activeFilter === "conference" }
+    { label: "Top 25", value: "top25", isActive: activeFilter === "top25" }
   ];
   
   // Extract week number from selectedWeek (e.g., "Week 2" -> "2")
@@ -38,15 +38,22 @@ export default function Home() {
     }
   });
 
-  // Filter games based on active filter and team search
+  // Filter games based on active filter, conference, and team search
   const upcomingGames = allUpcomingGames.filter((game: GameWithTeams) => {
     // Apply category filter
     let categoryMatch = true;
     if (activeFilter === "top25") {
-      categoryMatch = (game.homeTeam?.rank && game.homeTeam.rank <= 25) || 
-                     (game.awayTeam?.rank && game.awayTeam.rank <= 25);
-    } else if (activeFilter === "conference") {
-      categoryMatch = game.isConferenceGame;
+      // Check if either team has a ranking <= 25
+      const homeRanked = game.homeTeam?.ranking && game.homeTeam.ranking <= 25;
+      const awayRanked = game.awayTeam?.ranking && game.awayTeam.ranking <= 25;
+      categoryMatch = homeRanked || awayRanked;
+    }
+    
+    // Apply conference filter
+    let conferenceMatch = true;
+    if (selectedConference) {
+      conferenceMatch = game.homeTeam?.conference === selectedConference || 
+                       game.awayTeam?.conference === selectedConference;
     }
     
     // Apply team name filter
@@ -57,7 +64,7 @@ export default function Home() {
                   game.awayTeam?.name.toLowerCase().includes(searchTerm);
     }
     
-    return categoryMatch && teamMatch;
+    return categoryMatch && conferenceMatch && teamMatch;
   });
   
   const { data: featuredGame, isLoading: isFeaturedLoading } = useQuery<GameWithTeams>({
@@ -103,6 +110,10 @@ export default function Home() {
   const handleTeamFilter = (teamName: string) => {
     setTeamFilter(teamName);
   };
+
+  const handleConferenceFilter = (conference: string) => {
+    setSelectedConference(conference);
+  };
   
   return (
     <>
@@ -118,6 +129,8 @@ export default function Home() {
           filterOptions={filterOptions}
           onFilterChange={handleFilterChange}
           onTeamFilter={handleTeamFilter}
+          selectedConference={selectedConference}
+          onConferenceFilter={handleConferenceFilter}
         />
         
         {/* Game of the Week Section */}

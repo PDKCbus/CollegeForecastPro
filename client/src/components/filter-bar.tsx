@@ -12,6 +12,8 @@ interface FilterBarProps {
   filterOptions: FilterOption[];
   onFilterChange: (filter: string) => void;
   onTeamFilter?: (teamName: string) => void;
+  selectedConference?: string;
+  onConferenceFilter?: (conference: string) => void;
 }
 
 export function FilterBar({ 
@@ -20,10 +22,20 @@ export function FilterBar({
   onWeekChange, 
   filterOptions, 
   onFilterChange,
-  onTeamFilter
+  onTeamFilter,
+  selectedConference = "",
+  onConferenceFilter
 }: FilterBarProps) {
   const [teamSearch, setTeamSearch] = useState("");
   const [showFilters, setShowFilters] = useState(false);
+
+  // Major D1 conferences in order of prominence
+  const conferences = [
+    "SEC", "Big Ten", "Big 12", "ACC", "Pac-12", 
+    "American Athletic", "Mountain West", "Conference USA", "Sun Belt",
+    "Mid-American", "Big Sky", "MEAC", "NEC", "Patriot", "Southern", 
+    "Southland", "SWAC", "CAA", "UAC"
+  ];
 
   const handleTeamSearch = (value: string) => {
     setTeamSearch(value);
@@ -47,6 +59,12 @@ export function FilterBar({
     }
   };
 
+  const handleConferenceChange = (conference: string) => {
+    if (onConferenceFilter) {
+      onConferenceFilter(conference === "all" ? "" : conference);
+    }
+  };
+
   return (
     <div className="mb-6">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center space-y-4 sm:space-y-0 gap-4">
@@ -67,8 +85,8 @@ export function FilterBar({
           ))}
         </div>
         
-        {/* Week Selector and Filter Toggle */}
-        <div className="flex items-center space-x-3">
+        {/* Week, Conference, and Filter Controls */}
+        <div className="flex items-center space-x-3 flex-wrap gap-2">
           <Select value={selectedWeek} onValueChange={(value) => onWeekChange(value)}>
             <SelectTrigger className="appearance-none bg-surface border border-surface-light text-white/90 pl-3 pr-8 py-2 rounded-md min-w-[120px]">
               <SelectValue placeholder="Select week" />
@@ -77,6 +95,20 @@ export function FilterBar({
               {weeks.map((week) => (
                 <SelectItem key={week} value={week} className="text-white">
                   {week}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          
+          <Select value={selectedConference || "all"} onValueChange={handleConferenceChange}>
+            <SelectTrigger className="appearance-none bg-surface border border-surface-light text-white/90 pl-3 pr-8 py-2 rounded-md min-w-[140px]">
+              <SelectValue placeholder="All Conferences" />
+            </SelectTrigger>
+            <SelectContent className="bg-surface text-white border-surface-light backdrop-blur-md max-h-60 overflow-y-auto">
+              <SelectItem value="all" className="text-white">All Conferences</SelectItem>
+              {conferences.map((conference) => (
+                <SelectItem key={conference} value={conference} className="text-white">
+                  {conference}
                 </SelectItem>
               ))}
             </SelectContent>
