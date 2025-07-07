@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
-import { Search, X, Filter } from "lucide-react";
+import { Search, X, Filter, ChevronDown } from "lucide-react";
 import { FilterOption } from "@/lib/types";
 
 interface FilterBarProps {
@@ -27,7 +27,7 @@ export function FilterBar({
   onConferenceFilter
 }: FilterBarProps) {
   const [teamSearch, setTeamSearch] = useState("");
-  const [showFilters, setShowFilters] = useState(false);
+  const [showAdvancedFilters, setShowAdvancedFilters] = useState(false);
 
   // Major D1 conferences in order of prominence
   const conferences = [
@@ -51,102 +51,130 @@ export function FilterBar({
     }
   };
 
-  const toggleFilters = () => {
-    setShowFilters(!showFilters);
-    // Clear search when hiding filters
-    if (showFilters && teamSearch) {
-      clearTeamSearch();
-    }
-  };
-
   const handleConferenceChange = (conference: string) => {
     if (onConferenceFilter) {
       onConferenceFilter(conference === "all" ? "" : conference);
     }
   };
 
+  const toggleAdvancedFilters = () => {
+    setShowAdvancedFilters(!showAdvancedFilters);
+    if (showAdvancedFilters && teamSearch) {
+      clearTeamSearch();
+    }
+  };
+
   return (
-    <div className="mb-6">
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center space-y-4 sm:space-y-0 gap-4">
-        {/* Category Filter Buttons */}
-        <div className="flex items-center space-x-2 text-sm flex-wrap gap-2">
-          {filterOptions.map((option) => (
-            <Button
-              key={option.value}
-              className={`px-4 py-2 rounded-full font-medium ${
-                option.isActive 
-                  ? "bg-primary text-white" 
-                  : "bg-surface text-white/70 hover:bg-surface-light"
-              }`}
-              onClick={() => onFilterChange(option.value)}
-            >
-              {option.label}
-            </Button>
-          ))}
-        </div>
+    <div className="mb-8">
+      {/* Primary Filter Row */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
         
-        {/* Week, Conference, and Filter Controls */}
-        <div className="flex items-center space-x-3 flex-wrap gap-2">
-          <Select value={selectedWeek} onValueChange={(value) => onWeekChange(value)}>
-            <SelectTrigger className="appearance-none bg-surface border border-surface-light text-white/90 pl-3 pr-8 py-2 rounded-md min-w-[120px]">
-              <SelectValue placeholder="Select week" />
+        {/* Game Type Filters */}
+        <div className="bg-surface rounded-xl p-4 border border-surface-light">
+          <div className="flex items-center space-x-2 flex-wrap gap-2">
+            {filterOptions.map((option) => (
+              <Button
+                key={option.value}
+                size="sm"
+                className={`rounded-full font-medium transition-all ${
+                  option.isActive 
+                    ? "bg-primary text-white shadow-lg" 
+                    : "bg-transparent text-white/70 hover:bg-white/10 border border-white/20"
+                }`}
+                onClick={() => onFilterChange(option.value)}
+              >
+                {option.label}
+              </Button>
+            ))}
+          </div>
+        </div>
+
+        {/* Week Selector */}
+        <div className="bg-surface rounded-xl p-4 border border-surface-light">
+          <Select value={selectedWeek} onValueChange={onWeekChange}>
+            <SelectTrigger className="w-full bg-transparent border-0 text-white/90 focus:ring-0 focus:ring-offset-0">
+              <div className="flex items-center justify-between w-full">
+                <span className="text-white/90">{selectedWeek}</span>
+                <ChevronDown className="h-4 w-4 text-white/50" />
+              </div>
             </SelectTrigger>
             <SelectContent className="bg-surface text-white border-surface-light backdrop-blur-md">
               {weeks.map((week) => (
-                <SelectItem key={week} value={week} className="text-white">
+                <SelectItem key={week} value={week} className="text-white hover:bg-white/10">
                   {week}
                 </SelectItem>
               ))}
             </SelectContent>
           </Select>
-          
+        </div>
+
+        {/* Conference Selector */}
+        <div className="bg-surface rounded-xl p-4 border border-surface-light">
           <Select value={selectedConference || "all"} onValueChange={handleConferenceChange}>
-            <SelectTrigger className="appearance-none bg-surface border border-surface-light text-white/90 pl-3 pr-8 py-2 rounded-md min-w-[140px]">
-              <SelectValue placeholder="All Conferences" />
+            <SelectTrigger className="w-full bg-transparent border-0 text-white/90 focus:ring-0 focus:ring-offset-0">
+              <div className="flex items-center justify-between w-full">
+                <span className="text-white/90">
+                  {selectedConference || "All Conferences"}
+                </span>
+                <ChevronDown className="h-4 w-4 text-white/50" />
+              </div>
             </SelectTrigger>
             <SelectContent className="bg-surface text-white border-surface-light backdrop-blur-md max-h-60 overflow-y-auto">
-              <SelectItem value="all" className="text-white">All Conferences</SelectItem>
+              <SelectItem value="all" className="text-white hover:bg-white/10">
+                All Conferences
+              </SelectItem>
               {conferences.map((conference) => (
-                <SelectItem key={conference} value={conference} className="text-white">
+                <SelectItem key={conference} value={conference} className="text-white hover:bg-white/10">
                   {conference}
                 </SelectItem>
               ))}
             </SelectContent>
           </Select>
-          
-          <Button
-            onClick={toggleFilters}
-            className={`px-4 py-2 rounded-md font-medium flex items-center gap-2 ${
-              showFilters 
-                ? "bg-primary text-white" 
-                : "bg-surface text-white/70 hover:bg-surface-light border border-surface-light"
-            }`}
-          >
-            <Filter className="h-4 w-4" />
-            Filter
-          </Button>
         </div>
       </div>
-      
-      {/* Collapsible Team Search */}
-      {showFilters && (
-        <div className="mt-4 animate-in slide-in-from-top-2 duration-200">
-          <div className="relative max-w-xs">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-            <Input
-              type="text"
-              placeholder="Search teams..."
-              value={teamSearch}
-              onChange={(e) => handleTeamSearch(e.target.value)}
-              className="pl-10 pr-10 bg-white border-gray-300 text-gray-900 placeholder:text-gray-500 focus:border-primary focus:ring-1 focus:ring-primary"
-            />
+
+      {/* Advanced Filters Toggle */}
+      <div className="flex justify-center mb-4">
+        <Button
+          onClick={toggleAdvancedFilters}
+          variant="ghost"
+          className={`rounded-full px-6 py-2 text-sm font-medium transition-all ${
+            showAdvancedFilters 
+              ? "bg-primary text-white" 
+              : "text-white/70 hover:text-white hover:bg-white/10"
+          }`}
+        >
+          <Filter className="h-4 w-4 mr-2" />
+          {showAdvancedFilters ? "Hide" : "Show"} Team Search
+        </Button>
+      </div>
+
+      {/* Advanced Team Search */}
+      {showAdvancedFilters && (
+        <div className="bg-surface rounded-xl p-4 border border-surface-light animate-in slide-in-from-top-2 duration-200">
+          <div className="max-w-md mx-auto">
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-white/50" />
+              <Input
+                type="text"
+                placeholder="Search for teams (e.g., Alabama, Ohio State)..."
+                value={teamSearch}
+                onChange={(e) => handleTeamSearch(e.target.value)}
+                className="pl-10 pr-10 bg-white/10 border-white/20 text-white placeholder:text-white/50 focus:border-primary focus:bg-white/20 rounded-full"
+              />
+              {teamSearch && (
+                <button
+                  onClick={clearTeamSearch}
+                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-white/50 hover:text-white transition-colors"
+                >
+                  <X className="h-4 w-4" />
+                </button>
+              )}
+            </div>
             {teamSearch && (
-              <button
-                onClick={clearTeamSearch}
-                className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
-              >
-                <X className="h-4 w-4" />
-              </button>
+              <div className="mt-2 text-center text-sm text-white/60">
+                Filtering games with "{teamSearch}"
+              </div>
             )}
           </div>
         </div>
