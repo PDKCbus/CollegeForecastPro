@@ -1381,6 +1381,43 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // 2018 Season Sync API
+  // Weather Analysis Endpoints
+  app.get('/api/weather/analysis', async (_req: Request, res: Response) => {
+    try {
+      console.log('🌦️ Starting weather hypothesis analysis...');
+      const { weatherAnalysisEngine } = await import('./weather-analysis-fixed');
+      const results = await weatherAnalysisEngine.runComprehensiveWeatherAnalysis();
+      
+      res.json({
+        message: "Weather analysis completed",
+        hypotheses: results,
+        summary: {
+          totalHypotheses: results.length,
+          highConfidence: results.filter(h => h.confidence === 'high').length,
+          significantAdvantages: results.filter(h => Math.abs(h.advantage) > 0.1).length
+        }
+      });
+    } catch (error) {
+      console.error('Weather analysis error:', error);
+      res.status(500).json({ error: 'Weather analysis failed', details: error instanceof Error ? error.message : 'Unknown error' });
+    }
+  });
+
+  app.get('/api/weather/strategy', async (_req: Request, res: Response) => {
+    try {
+      const { weatherAnalysisEngine } = await import('./weather-analysis-fixed');
+      const strategy = await weatherAnalysisEngine.getWeatherBettingStrategy();
+      
+      res.json({
+        message: "Weather betting strategy generated",
+        ...strategy
+      });
+    } catch (error) {
+      console.error('Weather strategy error:', error);
+      res.status(500).json({ error: 'Weather strategy generation failed', details: error instanceof Error ? error.message : 'Unknown error' });
+    }
+  });
+
   app.post('/api/sync/2018', async (_req: Request, res: Response) => {
     try {
       console.log('Starting 2018 season sync...');
