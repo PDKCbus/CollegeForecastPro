@@ -473,57 +473,53 @@ export default function GameAnalysis() {
                     </CardDescription>
                   </CardHeader>
                 <CardContent className="space-y-6">
-                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                    <div>
-                      <h4 className="font-semibold text-blue-600 mb-4 text-sm sm:text-base">{selectedGame.homeTeam?.name} (Home)</h4>
-                      <div className="space-y-4">
-                        <AnalyticsBar
-                          label="Offensive Rating"
-                          homeValue={analysis.homeTeamAnalytics.offensiveRating}
-                          awayValue={analysis.awayTeamAnalytics.offensiveRating}
-                        />
-                        <AnalyticsBar
-                          label="Defensive Rating"
-                          homeValue={analysis.homeTeamAnalytics.defensiveRating}
-                          awayValue={analysis.awayTeamAnalytics.defensiveRating}
-                        />
-                        <AnalyticsBar
-                          label="Strength of Schedule"
-                          homeValue={analysis.homeTeamAnalytics.strengthOfSchedule}
-                          awayValue={analysis.awayTeamAnalytics.strengthOfSchedule}
-                        />
-                        <AnalyticsBar
-                          label="Momentum Score"
-                          homeValue={analysis.homeTeamAnalytics.momentumScore}
-                          awayValue={analysis.awayTeamAnalytics.momentumScore}
-                        />
-                      </div>
+                  {/* Team Headers */}
+                  <div className="grid grid-cols-2 gap-6 mb-6">
+                    <div className="text-center">
+                      <h4 className="font-semibold text-blue-600 text-sm sm:text-base">{selectedGame.homeTeam?.name} (Home)</h4>
                     </div>
-                    <div>
-                      <h4 className="font-semibold text-red-600 mb-4 text-sm sm:text-base">{selectedGame.awayTeam?.name} (Away)</h4>
-                      <div className="space-y-4">
-                        <AnalyticsBar
-                          label="Home Field Advantage"
-                          homeValue={analysis.homeTeamAnalytics.homeFieldAdvantage}
-                          awayValue={analysis.awayTeamAnalytics.homeFieldAdvantage}
-                        />
-                        <AnalyticsBar
-                          label="Injury Impact"
-                          homeValue={analysis.homeTeamAnalytics.injuryImpact}
-                          awayValue={analysis.awayTeamAnalytics.injuryImpact}
-                        />
-                        <AnalyticsBar
-                          label="Weather Factor"
-                          homeValue={analysis.homeTeamAnalytics.weatherFactor}
-                          awayValue={analysis.awayTeamAnalytics.weatherFactor}
-                        />
-                        <AnalyticsBar
-                          label="Coaching Edge"
-                          homeValue={analysis.homeTeamAnalytics.coachingEdge}
-                          awayValue={analysis.awayTeamAnalytics.coachingEdge}
-                        />
-                      </div>
+                    <div className="text-center">
+                      <h4 className="font-semibold text-red-600 text-sm sm:text-base">{selectedGame.awayTeam?.name} (Away)</h4>
                     </div>
+                  </div>
+                  
+                  {/* Analytics Bars */}
+                  <div className="space-y-4">
+                    <AnalyticsBar
+                      label="Offensive Rating"
+                      homeValue={analysis.homeTeamAnalytics.offensiveRating}
+                      awayValue={analysis.awayTeamAnalytics.offensiveRating}
+                    />
+                    <AnalyticsBar
+                      label="Defensive Rating"
+                      homeValue={analysis.homeTeamAnalytics.defensiveRating}
+                      awayValue={analysis.awayTeamAnalytics.defensiveRating}
+                    />
+                    <AnalyticsBar
+                      label="Strength of Schedule"
+                      homeValue={analysis.homeTeamAnalytics.strengthOfSchedule}
+                      awayValue={analysis.awayTeamAnalytics.strengthOfSchedule}
+                    />
+                    <AnalyticsBar
+                      label="Momentum Score"
+                      homeValue={analysis.homeTeamAnalytics.momentumScore}
+                      awayValue={analysis.awayTeamAnalytics.momentumScore}
+                    />
+                    <AnalyticsBar
+                      label="Home Field Advantage"
+                      homeValue={analysis.homeTeamAnalytics.homeFieldAdvantage}
+                      awayValue={analysis.awayTeamAnalytics.homeFieldAdvantage}
+                    />
+                    <AnalyticsBar
+                      label="Injury Impact"
+                      homeValue={analysis.homeTeamAnalytics.injuryImpact}
+                      awayValue={analysis.awayTeamAnalytics.injuryImpact}
+                    />
+                    <AnalyticsBar
+                      label="Weather Factor"
+                      homeValue={analysis.homeTeamAnalytics.weatherFactor}
+                      awayValue={analysis.awayTeamAnalytics.weatherFactor}
+                    />
                   </div>
                 </CardContent>
               </Card>
