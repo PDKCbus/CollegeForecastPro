@@ -39,10 +39,10 @@ export function FilterBar({
       <div className="flex items-center space-x-3">
         <div className="relative">
           <Select value={selectedWeek} onValueChange={(value) => onWeekChange(value)}>
-            <SelectTrigger className="appearance-none bg-surface text-white/90 pl-3 pr-8 py-2 rounded-md">
+            <SelectTrigger className="appearance-none bg-surface border border-surface-light text-white/90 pl-3 pr-8 py-2 rounded-md min-w-[120px]">
               <SelectValue placeholder="Select week" />
             </SelectTrigger>
-            <SelectContent className="bg-surface text-white border-surface-light">
+            <SelectContent className="bg-surface text-white border-surface-light backdrop-blur-md">
               {weeks.map((week) => (
                 <SelectItem key={week} value={week} className="text-white">
                   {week}
