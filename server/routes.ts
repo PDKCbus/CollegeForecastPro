@@ -1380,6 +1380,33 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // 2018 Season Sync API
+  app.post('/api/sync/2018', async (_req: Request, res: Response) => {
+    try {
+      console.log('Starting 2018 season sync...');
+      
+      setImmediate(async () => {
+        try {
+          const { season2018Sync } = await import('./sync-2018');
+          await season2018Sync.syncComplete2018Season();
+          console.log('✅ 2018 season sync completed successfully');
+        } catch (error) {
+          console.error('❌ 2018 season sync failed:', error);
+        }
+      });
+      
+      res.json({ 
+        success: true, 
+        message: '2018 season sync started successfully',
+        status: 'processing',
+        estimated_duration: '5-10 minutes'
+      });
+    } catch (error) {
+      console.error('2018 sync failed:', error);
+      res.status(500).json({ error: '2018 sync failed', details: error.message });
+    }
+  });
+
   // Start auto-sync scheduler
   setInterval(autoSync, GAME_CHECK_INTERVAL);
   
