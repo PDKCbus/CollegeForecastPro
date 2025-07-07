@@ -1,6 +1,8 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Input } from "@/components/ui/input";
+import { Search, X } from "lucide-react";
 import { FilterOption } from "@/lib/types";
 
 interface FilterBarProps {
@@ -9,6 +11,7 @@ interface FilterBarProps {
   onWeekChange: (week: string) => void;
   filterOptions: FilterOption[];
   onFilterChange: (filter: string) => void;
+  onTeamFilter?: (teamName: string) => void;
 }
 
 export function FilterBar({ 
@@ -16,24 +19,64 @@ export function FilterBar({
   selectedWeek, 
   onWeekChange, 
   filterOptions, 
-  onFilterChange 
+  onFilterChange,
+  onTeamFilter
 }: FilterBarProps) {
+  const [teamSearch, setTeamSearch] = useState("");
+
+  const handleTeamSearch = (value: string) => {
+    setTeamSearch(value);
+    if (onTeamFilter) {
+      onTeamFilter(value);
+    }
+  };
+
+  const clearTeamSearch = () => {
+    setTeamSearch("");
+    if (onTeamFilter) {
+      onTeamFilter("");
+    }
+  };
+
   return (
-    <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 space-y-4 md:space-y-0">
-      <div className="flex items-center space-x-2 text-sm flex-wrap gap-2">
-        {filterOptions.map((option) => (
-          <Button
-            key={option.value}
-            className={`px-4 py-2 rounded-full font-medium ${
-              option.isActive 
-                ? "bg-primary text-white" 
-                : "bg-surface text-white/70"
-            }`}
-            onClick={() => onFilterChange(option.value)}
-          >
-            {option.label}
-          </Button>
-        ))}
+    <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center mb-6 space-y-4 lg:space-y-0 gap-4">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center space-y-3 sm:space-y-0 sm:space-x-4 w-full lg:w-auto">
+        {/* Filter Buttons */}
+        <div className="flex items-center space-x-2 text-sm flex-wrap gap-2">
+          {filterOptions.map((option) => (
+            <Button
+              key={option.value}
+              className={`px-4 py-2 rounded-full font-medium ${
+                option.isActive 
+                  ? "bg-primary text-white" 
+                  : "bg-surface text-white/70 hover:bg-surface-light"
+              }`}
+              onClick={() => onFilterChange(option.value)}
+            >
+              {option.label}
+            </Button>
+          ))}
+        </div>
+        
+        {/* Team Search */}
+        <div className="relative min-w-[200px]">
+          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-white/50" />
+          <Input
+            type="text"
+            placeholder="Search teams..."
+            value={teamSearch}
+            onChange={(e) => handleTeamSearch(e.target.value)}
+            className="pl-10 pr-10 bg-surface border-surface-light text-white placeholder:text-white/50 focus:border-primary"
+          />
+          {teamSearch && (
+            <button
+              onClick={clearTeamSearch}
+              className="absolute right-3 top-1/2 transform -translate-y-1/2 text-white/50 hover:text-white"
+            >
+              <X className="h-4 w-4" />
+            </button>
+          )}
+        </div>
       </div>
       
       <div className="flex items-center space-x-3">

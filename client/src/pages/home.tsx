@@ -15,6 +15,7 @@ import { useToast } from "@/hooks/use-toast";
 export default function Home() {
   const [selectedWeek, setSelectedWeek] = useState("Week 1");
   const [activeFilter, setActiveFilter] = useState("all");
+  const [teamFilter, setTeamFilter] = useState("");
   const { toast } = useToast();
   
   const weeks = ["Week 1", "Week 2", "Week 3", "Week 4", "Week 5"];
@@ -37,19 +38,26 @@ export default function Home() {
     }
   });
 
-  // Filter games based on active filter
+  // Filter games based on active filter and team search
   const upcomingGames = allUpcomingGames.filter((game: GameWithTeams) => {
-    if (activeFilter === "all") return true;
+    // Apply category filter
+    let categoryMatch = true;
     if (activeFilter === "top25") {
-      // Filter for games with top 25 teams (assuming teams with rank)
-      return (game.homeTeam?.rank && game.homeTeam.rank <= 25) || 
-             (game.awayTeam?.rank && game.awayTeam.rank <= 25);
+      categoryMatch = (game.homeTeam?.rank && game.homeTeam.rank <= 25) || 
+                     (game.awayTeam?.rank && game.awayTeam.rank <= 25);
+    } else if (activeFilter === "conference") {
+      categoryMatch = game.isConferenceGame;
     }
-    if (activeFilter === "conference") {
-      // Filter for conference games
-      return game.isConferenceGame;
+    
+    // Apply team name filter
+    let teamMatch = true;
+    if (teamFilter.trim()) {
+      const searchTerm = teamFilter.toLowerCase().trim();
+      teamMatch = game.homeTeam?.name.toLowerCase().includes(searchTerm) ||
+                  game.awayTeam?.name.toLowerCase().includes(searchTerm);
     }
-    return true;
+    
+    return categoryMatch && teamMatch;
   });
   
   const { data: featuredGame, isLoading: isFeaturedLoading } = useQuery<GameWithTeams>({
@@ -91,6 +99,10 @@ export default function Home() {
   const handleFilterChange = (filter: string) => {
     setActiveFilter(filter);
   };
+
+  const handleTeamFilter = (teamName: string) => {
+    setTeamFilter(teamName);
+  };
   
   return (
     <>
@@ -105,6 +117,7 @@ export default function Home() {
           onWeekChange={handleWeekChange}
           filterOptions={filterOptions}
           onFilterChange={handleFilterChange}
+          onTeamFilter={handleTeamFilter}
         />
         
         {/* Game of the Week Section */}
