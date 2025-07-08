@@ -112,6 +112,12 @@ The application follows a modern full-stack architecture with clear separation o
 
 ## Changelog
 
+- July 08, 2025: **Aggressive "Beat The Books" Rebranding Completed**
+  - Changed main title from "College Football Analytics" to "Beat The Books" for more aggressive betting focus
+  - Updated tagline to "Elite college football intel that crushes the sportsbooks" 
+  - Centered all hero section content including title, buttons, and "Game of the Week" heading
+  - Increased button spacing for better visual balance and professional appearance
+  - Targeting serious bettors with confident, results-oriented messaging instead of casual analytics
 - July 07, 2025: **Clean Filter Interface Completed**
   - Removed redundant tab navigation below "Today's Top Picks" and "Season Stats" 
   - Eliminated duplicate navigation since hamburger menu already provides same options
