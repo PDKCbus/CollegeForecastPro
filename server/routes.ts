@@ -63,13 +63,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Historical Games API - Get ALL historical games across all seasons
   app.get("/api/games/historical", async (req, res) => {
     try {
+      console.log('🔍 Historical games API called with params:', req.query);
       const season = req.query.season && req.query.season !== "all" ? parseInt(req.query.season as string) : undefined;
       const week = req.query.week && req.query.week !== "all" ? parseInt(req.query.week as string) : undefined;
       const page = parseInt(req.query.page as string) || 0;
       const limit = parseInt(req.query.limit as string) || 20;
       
-      // Get ALL historical games if no specific filters
+      console.log('📊 Fetching from PostgreSQL with filters:', { season, week, page, limit });
+      
+      // Get ALL historical games from static PostgreSQL database
       const games = await storage.getHistoricalGames(season, week);
+      console.log(`📈 Retrieved ${games.length} historical games from database`);
       
       // Filter to only completed games with betting data
       const completedGames = games.filter(game => 
