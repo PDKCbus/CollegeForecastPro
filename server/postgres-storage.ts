@@ -151,8 +151,8 @@ export class PostgresStorage implements IStorage {
     conference?: string
   ): Promise<GameWithTeams[]> {
     let queryConditions = [
-      eq(games.completed, true), // Only completed games
-      isNotNull(games.spread)     // Only games with betting lines
+      isNotNull(games.homeTeamScore), // Games with actual scores
+      isNotNull(games.awayTeamScore)   // Games with actual scores
     ];
 
     // Apply filters
