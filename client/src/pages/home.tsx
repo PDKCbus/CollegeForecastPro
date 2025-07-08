@@ -1,5 +1,5 @@
 import { Hero } from "@/components/hero";
-import { FilterBar } from "@/components/filter-bar";
+import { FilterBar } from "@/components/filter-bar-alt";
 import { FeaturedGame } from "@/components/featured-game";
 import { GameCard } from "@/components/game-card";
 import { FeatureHighlights } from "@/components/feature-highlights";

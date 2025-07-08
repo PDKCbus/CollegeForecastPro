@@ -66,20 +66,19 @@ export function FilterBar({
     <div className="space-y-6">
       
       {/* Main Filter Section */}
-      <div className="bg-surface/90 backdrop-blur-sm rounded-2xl p-6 border border-white/10">
+      <div className="bg-surface/95 backdrop-blur-sm rounded-2xl p-6 border border-white/10 shadow-2xl">
         
         {/* Game Type Pills */}
-        <div className="flex items-center gap-3 mb-6">
-          <Trophy className="h-5 w-5 text-primary" />
-          <div className="flex gap-2">
+        <div className="flex items-center justify-center gap-3 mb-8">
+          <div className="flex gap-3">
             {filterOptions.map((option) => (
               <Button
                 key={option.value}
-                size="sm"
-                className={`px-4 py-2 rounded-full font-medium transition-all ${
+                size="lg"
+                className={`px-6 py-3 rounded-full font-semibold transition-all ${
                   option.isActive 
-                    ? "bg-primary text-white shadow-lg transform scale-105" 
-                    : "bg-white/10 text-white/80 hover:bg-white/20 hover:text-white"
+                    ? "bg-primary text-white shadow-lg scale-105" 
+                    : "bg-white/10 text-white/80 hover:bg-white/20 hover:text-white hover:scale-105"
                 }`}
                 onClick={() => onFilterChange(option.value)}
               >
@@ -90,7 +89,7 @@ export function FilterBar({
         </div>
 
         {/* Week and Conference Row */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
           
           {/* Week Selection */}
           <div className="relative">
@@ -100,9 +99,10 @@ export function FilterBar({
             </div>
             <Button
               onClick={() => setShowWeeks(!showWeeks)}
-              className="w-full justify-start bg-white/10 hover:bg-white/20 text-white border-0 rounded-lg h-12"
+              className="w-full justify-between bg-white/10 hover:bg-white/20 text-white border-0 rounded-lg h-14 px-4 text-lg font-medium"
             >
-              {selectedWeek}
+              <span>{selectedWeek}</span>
+              <Calendar className="h-4 w-4 text-white/60" />
             </Button>
             
             {showWeeks && (
@@ -130,9 +130,10 @@ export function FilterBar({
             </div>
             <Button
               onClick={() => setShowConferences(!showConferences)}
-              className="w-full justify-start bg-white/10 hover:bg-white/20 text-white border-0 rounded-lg h-12"
+              className="w-full justify-between bg-white/10 hover:bg-white/20 text-white border-0 rounded-lg h-14 px-4 text-lg font-medium"
             >
-              {selectedConference || "All Conferences"}
+              <span>{selectedConference || "All Conferences"}</span>
+              <Building2 className="h-4 w-4 text-white/60" />
             </Button>
             
             {showConferences && (
@@ -173,7 +174,7 @@ export function FilterBar({
               placeholder="Find specific teams (e.g., Alabama, Ohio State)..."
               value={teamSearch}
               onChange={(e) => handleTeamSearch(e.target.value)}
-              className="pl-4 pr-10 bg-white/10 border-white/20 text-white placeholder:text-white/50 focus:border-primary focus:bg-white/20 rounded-lg h-12"
+              className="pl-4 pr-10 bg-white/10 border-white/20 text-white placeholder:text-white/50 focus:border-primary focus:bg-white/20 rounded-lg h-14 text-lg"
             />
             {teamSearch && (
               <button
