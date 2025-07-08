@@ -1,4 +1,4 @@
-import { eq, and, desc, asc, gte, lte, or, sql } from 'drizzle-orm';
+import { eq, and, desc, asc, gte, lte, or, sql, isNotNull } from 'drizzle-orm';
 import { db } from './db';
 import { users, teams, games, predictions, sentimentAnalysis } from '../shared/schema';
 import type {
@@ -150,7 +150,10 @@ export class PostgresStorage implements IStorage {
     teamId?: number,
     conference?: string
   ): Promise<GameWithTeams[]> {
-    let queryConditions = [];
+    let queryConditions = [
+      eq(games.completed, true), // Only completed games
+      isNotNull(games.spread)     // Only games with betting lines
+    ];
 
     // Apply filters
     if (season) {
@@ -163,17 +166,10 @@ export class PostgresStorage implements IStorage {
       queryConditions.push(or(eq(games.homeTeamId, teamId), eq(games.awayTeamId, teamId)));
     }
 
-    // Only filter by date if we're not filtering by specific week or season
-    // This allows us to get games for specific weeks regardless of their date
-    if (!week && !season) {
-      const now = new Date();
-      queryConditions.push(lte(games.startDate, now));
-    }
-
     const gameResults = await db.select()
       .from(games)
-      .where(queryConditions.length > 0 ? and(...queryConditions) : sql`true`)
-      .orderBy(desc(games.startDate));
+      .where(and(...queryConditions))
+      .orderBy(desc(games.season), desc(games.week), desc(games.startDate));
 
     const gamesWithTeams: GameWithTeams[] = [];
     for (const game of gameResults) {
