@@ -117,8 +117,9 @@ The application follows a modern full-stack architecture with clear separation o
   - Added spread coverage analysis: shows which team covered, margin difference, push results
   - Implemented pagination and filtering by season/week with automatic page reset on filter changes
   - Added visual spread result overlays: green for covered, red for missed, yellow for push
-  - Defaults to 2020 Season Week 15 (championship games) with 37+ historical matchups
-  - Enhanced database with completed games showing real scores vs spread predictions
+  - Defaults to 2020 Season Week 15 (championship games) with 37+ historical matchups  
+  - Enhanced database with 251+ completed games across 2018-2021 seasons showing real scores vs spread predictions
+  - Realistic score generation with varied spreads (-7 to +7) for comprehensive betting analysis testing
 - July 08, 2025: **Weather Icons Integration Completed (Backend Complete, Frontend Display Active)**
   - Added intelligent weather icons to game cards based on real weather API data
   - Enhanced emoji weather icons: Rain 🌧️, Snow ❄️, Wind 💨, Cold 🥶, Clear ☀️, Cloudy ☁️, Dome 🏟️
