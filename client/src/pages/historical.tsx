@@ -24,9 +24,9 @@ interface RickRecord {
 }
 
 export default function Historical() {
-  const [selectedWeek, setSelectedWeek] = useState("15"); // Default to championship week
+  const [selectedWeek, setSelectedWeek] = useState("12"); // Default to week with most data
   const [selectedFilter, setSelectedFilter] = useState("all");
-  const [selectedSeason, setSelectedSeason] = useState("2024"); // Default to 2024
+  const [selectedSeason, setSelectedSeason] = useState("2021"); // Default to 2021 - has most completed games
   const [selectedConference, setSelectedConference] = useState("all");
   const [currentPage, setCurrentPage] = useState(0);
 
