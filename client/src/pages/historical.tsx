@@ -33,7 +33,7 @@ export default function Historical() {
   // Reset pagination when filters change
   const resetPage = () => setCurrentPage(0);
 
-  const { data: historicalData, isLoading } = useQuery({
+  const { data: historicalData, isLoading, error } = useQuery({
     queryKey: ["/api/games/historical", selectedSeason, selectedWeek, currentPage],
     queryFn: async () => {
       const params = new URLSearchParams({
@@ -41,12 +41,15 @@ export default function Historical() {
         limit: "20"
       });
       
-      if (selectedSeason !== "all") params.append("season", selectedSeason);
-      if (selectedWeek !== "all") params.append("week", selectedWeek);
+      params.append("season", selectedSeason);
+      params.append("week", selectedWeek);
       
+      console.log(`Fetching historical games: ${params.toString()}`);
       const response = await fetch(`/api/games/historical?${params}`);
       if (!response.ok) throw new Error('Failed to fetch historical games');
-      return response.json();
+      const data = await response.json();
+      console.log(`Historical API returned ${data.games?.length || 0} games, total: ${data.pagination?.total || 0}`);
+      return data;
     }
   });
 
@@ -57,6 +60,18 @@ export default function Historical() {
 
   const games = historicalData?.games || [];
   const pagination = historicalData?.pagination;
+
+  // Debug logging
+  React.useEffect(() => {
+    console.log(`Historical page state:`, {
+      selectedSeason,
+      selectedWeek,
+      gamesCount: games.length,
+      paginationTotal: pagination?.total,
+      isLoading,
+      error: error?.message
+    });
+  }, [games.length, pagination?.total, isLoading, error, selectedSeason, selectedWeek]);
 
   const { data: rickRecord, isLoading: recordLoading } = useQuery<RickRecord>({
     queryKey: ["/api/ricks-record"],
