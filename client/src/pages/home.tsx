@@ -132,7 +132,7 @@ export default function Home() {
         
         {/* Game of the Week Section */}
         <div id="featured-games" className="mb-2 text-center mt-12">
-          <h2 className="text-3xl font-bold bg-gradient-to-r from-accent to-primary bg-clip-text text-transparent flex items-center justify-center gap-3">
+          <h2 className="text-3xl font-bold bg-gradient-to-r from-accent to-primary bg-clip-text text-transparent flex items-center justify-center gap-3 mb-4">
             <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-trophy text-accent">
               <path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/>
               <path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/>
