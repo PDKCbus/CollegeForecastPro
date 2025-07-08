@@ -5,8 +5,8 @@ import { GameCard } from "@/components/game-card";
 import { FeatureHighlights } from "@/components/feature-highlights";
 import { CTASection } from "@/components/cta-section";
 import { Button } from "@/components/ui/button";
-import { useQuery, useMutation } from "@tanstack/react-query";
-import { useState } from "react";
+import { useQuery, useMutation, useInfiniteQuery } from "@tanstack/react-query";
+import { useState, useEffect, useCallback } from "react";
 import { FilterOption, GameWithTeams } from "@/lib/types";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
@@ -28,17 +28,21 @@ export default function Home() {
   // Extract week number from selectedWeek (e.g., "Week 2" -> "2")
   const weekNumber = selectedWeek.replace("Week ", "");
   
-  const { data: allUpcomingGames = [], isLoading } = useQuery<GameWithTeams[]>({
+  // Initial load with larger page size and sorting
+  const { data: gamesResponse, isLoading } = useQuery({
     queryKey: ["/api/games/upcoming", weekNumber],
     queryFn: async () => {
-      const response = await fetch(`/api/games/upcoming?week=${weekNumber}`);
+      const response = await fetch(`/api/games/upcoming?week=${weekNumber}&limit=100`);
       if (!response.ok) throw new Error('Failed to fetch games');
       return response.json();
     }
   });
 
+  // Extract games array from response
+  const allUpcomingGames = gamesResponse?.games || gamesResponse || [];
+
   // Filter games based on active filter, conference, and team search
-  const upcomingGames = allUpcomingGames.filter((game: GameWithTeams) => {
+  const upcomingGames = Array.isArray(allUpcomingGames) ? allUpcomingGames.filter((game: GameWithTeams) => {
     // Apply category filter
     let categoryMatch = true;
     if (activeFilter === "top25") {
@@ -64,7 +68,12 @@ export default function Home() {
     }
     
     return categoryMatch && conferenceMatch && teamMatch;
-  });
+  }).sort((a, b) => {
+    // Sort by highest ranking (lowest number = higher rank)
+    const aHighestRank = Math.min(a.homeTeam?.ranking || 999, a.awayTeam?.ranking || 999);
+    const bHighestRank = Math.min(b.homeTeam?.ranking || 999, b.awayTeam?.ranking || 999);
+    return aHighestRank - bHighestRank;
+  }) : [];
   
   const { data: featuredGame, isLoading: isFeaturedLoading } = useQuery<GameWithTeams>({
     queryKey: ["/api/games/featured", weekNumber],
@@ -178,22 +187,19 @@ export default function Home() {
             ))}
           </div>
         ) : upcomingGames && upcomingGames.length > 0 ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {upcomingGames.map((game: GameWithTeams) => (
-              <GameCard key={game.id} game={game as any} />
-            ))}
-          </div>
+          <>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {upcomingGames.map((game: GameWithTeams) => (
+                <GameCard key={game.id} game={game as any} />
+              ))}
+            </div>
+
+          </>
         ) : (
           <div className="bg-surface rounded-xl p-6 text-center">
             <p className="text-white/60">No upcoming games available</p>
           </div>
         )}
-        
-        <div className="mt-8 text-center">
-          <Button className="px-6 py-3 bg-surface-light hover:bg-surface-light/80 text-white font-medium rounded-md transition-colors">
-            Load More Games
-          </Button>
-        </div>
       </main>
       
       <FeatureHighlights />

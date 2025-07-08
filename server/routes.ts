@@ -63,7 +63,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Games API
   app.get("/api/games/upcoming", async (req, res) => {
     try {
-      const limit = req.query.limit ? parseInt(req.query.limit as string) : 10;
+      const limit = req.query.limit ? parseInt(req.query.limit as string) : 20;
       const offset = req.query.offset ? parseInt(req.query.offset as string) : 0;
       const week = req.query.week ? parseInt(req.query.week as string) : undefined;
       
@@ -74,13 +74,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // If week is specified, get games for that specific week
       if (week) {
         const currentSeason = 2025;
-        const games = await storage.getGamesByWeek(currentSeason, week);
+        const allGames = await storage.getGamesByWeek(currentSeason, week);
         // Apply pagination to week-specific results
-        const paginatedGames = games.slice(offset, offset + limit);
-        res.json(paginatedGames);
+        const paginatedGames = allGames.slice(offset, offset + limit);
+        const hasMore = offset + limit < allGames.length;
+        res.json({ 
+          games: paginatedGames, 
+          hasMore, 
+          total: allGames.length 
+        });
       } else {
         const games = await storage.getUpcomingGames(limit, offset);
-        res.json(games);
+        res.json({ 
+          games, 
+          hasMore: games.length === limit, 
+          total: games.length 
+        });
       }
     } catch (error) {
       console.error("Error fetching upcoming games:", error);
