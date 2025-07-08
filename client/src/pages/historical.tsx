@@ -1,5 +1,5 @@
 import { useQuery, useMutation } from "@tanstack/react-query";
-import { GameCard } from "@/components/game-card";
+import { HistoricalGameCard } from "@/components/historical-game-card";
 import { FilterBar } from "@/components/filter-bar";
 import { useState, useEffect } from "react";
 import React from "react";
@@ -24,9 +24,9 @@ interface RickRecord {
 }
 
 export default function Historical() {
-  const [selectedWeek, setSelectedWeek] = useState("12"); // Default to week with most data
+  const [selectedWeek, setSelectedWeek] = useState("all"); // Show all weeks by default
   const [selectedFilter, setSelectedFilter] = useState("all");
-  const [selectedSeason, setSelectedSeason] = useState("2021"); // Default to 2021 - has most completed games
+  const [selectedSeason, setSelectedSeason] = useState("all"); // Show all seasons by default
   const [selectedConference, setSelectedConference] = useState("all");
   const [currentPage, setCurrentPage] = useState(0);
 
@@ -72,9 +72,9 @@ export default function Historical() {
     },
   });
 
-  // Generate options for filters
+  // Generate options for filters - ALL 15 years of data
   const weeks = ["all", ...Array.from({ length: 15 }, (_, i) => `${i + 1}`)];
-  const seasons = ["all", "2024", "2023", "2022", "2021", "2020"];
+  const seasons = ["all", ...Array.from({ length: 16 }, (_, i) => `${2024 - i}`)]; // 2024 down to 2009
   const conferences = ["all", "SEC", "Big Ten", "Big 12", "ACC", "PAC-12", "Independent"];
 
   const filterOptions = [
@@ -243,25 +243,7 @@ export default function Historical() {
           </div>
         ) : (
           filteredGames.map((game: any) => (
-            <div key={game.id} className="relative">
-              <GameCard game={game} />
-              {/* Spread Result Overlay for completed games */}
-              {game.spreadResult && (
-                <div className="absolute top-4 right-4 bg-black/80 rounded-lg p-2 text-xs">
-                  <div className="text-white/70">vs Spread:</div>
-                  <div className={`font-bold ${
-                    game.spreadResult.coverResult === 'home' ? 'text-green-400' : 
-                    game.spreadResult.coverResult === 'away' ? 'text-red-400' : 'text-yellow-400'
-                  }`}>
-                    {game.spreadResult.coverResult === 'push' ? 'PUSH' : 
-                     game.spreadResult.coverResult === 'home' ? 'HOME COVERED' : 'AWAY COVERED'}
-                  </div>
-                  <div className="text-white/60">
-                    {game.spreadResult.difference > 0 ? '+' : ''}{game.spreadResult.difference.toFixed(1)}
-                  </div>
-                </div>
-              )}
-            </div>
+            <HistoricalGameCard key={game.id} game={game} />
           ))
         )}
       </div>

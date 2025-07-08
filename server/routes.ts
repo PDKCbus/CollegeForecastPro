@@ -60,40 +60,60 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Historical Games API
+  // Historical Games API - Get ALL historical games across all seasons
   app.get("/api/games/historical", async (req, res) => {
     try {
-      const season = req.query.season ? parseInt(req.query.season as string) : 2024;
-      const week = req.query.week ? parseInt(req.query.week as string) : undefined;
+      const season = req.query.season && req.query.season !== "all" ? parseInt(req.query.season as string) : undefined;
+      const week = req.query.week && req.query.week !== "all" ? parseInt(req.query.week as string) : undefined;
       const page = parseInt(req.query.page as string) || 0;
       const limit = parseInt(req.query.limit as string) || 20;
       
-      // Default to last week of 2024 season if no params
-      const targetSeason = season;
-      const targetWeek = week || 15; // Championship week
+      // Get ALL historical games if no specific filters
+      const games = await storage.getHistoricalGames(season, week);
       
-      const games = await storage.getHistoricalGames(targetSeason, targetWeek);
+      // Filter to only completed games with betting data
+      const completedGames = games.filter(game => 
+        game.completed && 
+        game.homeTeamScore !== null && 
+        game.awayTeamScore !== null && 
+        game.spread !== null
+      );
       
-      // Add spread results analysis for completed games
-      const gamesWithResults = games.map(game => {
-        if (game.completed && game.homeTeamScore !== null && game.awayTeamScore !== null && game.spread !== null) {
-          const actualMargin = game.homeTeamScore - game.awayTeamScore;
-          const predictedMargin = -game.spread; // Vegas spread (negative means home team favored)
-          const coverResult = actualMargin > predictedMargin ? 'home' : actualMargin < predictedMargin ? 'away' : 'push';
-          const beatSpread = Math.abs(actualMargin - predictedMargin) > 0;
-          
-          return {
-            ...game,
-            spreadResult: {
-              actualMargin,
-              predictedMargin,
-              coverResult,
-              beatSpread,
-              difference: actualMargin - predictedMargin
-            }
-          };
-        }
-        return game;
+      // Add spread results analysis for completed games  
+      const gamesWithResults = completedGames.map(game => {
+        const actualMargin = game.homeTeamScore - game.awayTeamScore;
+        const predictedMargin = -game.spread; // Vegas spread (negative means home favored)
+        const coverResult = actualMargin > predictedMargin ? 'home' : actualMargin < predictedMargin ? 'away' : 'push';
+        const beatSpread = Math.abs(actualMargin - predictedMargin) > 0;
+        
+        // Calculate over/under result
+        const totalPoints = game.homeTeamScore + game.awayTeamScore;
+        const overUnderResult = game.overUnder ? 
+          (totalPoints > game.overUnder ? 'over' : totalPoints < game.overUnder ? 'under' : 'push') : null;
+        
+        return {
+          ...game,
+          spreadResult: {
+            actualMargin,
+            predictedMargin,
+            coverResult,
+            beatSpread,
+            difference: actualMargin - predictedMargin
+          },
+          overUnderResult: overUnderResult ? {
+            totalPoints,
+            line: game.overUnder,
+            result: overUnderResult,
+            difference: totalPoints - (game.overUnder || 0)
+          } : null
+        };
+      });
+      
+      // Sort by most recent first
+      gamesWithResults.sort((a, b) => {
+        if (a.season !== b.season) return b.season - a.season;
+        if (a.week !== b.week) return b.week - a.week;
+        return new Date(b.startDate).getTime() - new Date(a.startDate).getTime();
       });
       
       // Paginate results
@@ -110,8 +130,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
           hasMore: endIndex < gamesWithResults.length
         },
         filters: {
-          season: targetSeason,
-          week: targetWeek
+          season: season || "all",
+          week: week || "all"
         }
       });
     } catch (error) {
