@@ -1,5 +1,4 @@
 import { Hero } from "@/components/hero";
-import { TabNavigation } from "@/components/tab-navigation";
 import { FilterBar } from "@/components/filter-bar";
 import { FeaturedGame } from "@/components/featured-game";
 import { GameCard } from "@/components/game-card";
@@ -120,8 +119,6 @@ export default function Home() {
       <Hero />
       
       <main className="container mx-auto px-4 py-8">
-        <TabNavigation />
-        
         <FilterBar 
           weeks={weeks} 
           selectedWeek={selectedWeek}
