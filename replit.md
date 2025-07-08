@@ -112,6 +112,13 @@ The application follows a modern full-stack architecture with clear separation o
 
 ## Changelog
 
+- July 08, 2025: **Historical Games vs Vegas Spreads Implementation Completed**
+  - Built comprehensive historical games page with actual results vs Vegas betting lines
+  - Added spread coverage analysis: shows which team covered, margin difference, push results
+  - Implemented pagination and filtering by season/week with automatic page reset on filter changes
+  - Added visual spread result overlays: green for covered, red for missed, yellow for push
+  - Defaults to 2020 Season Week 15 (championship games) with 37+ historical matchups
+  - Enhanced database with completed games showing real scores vs spread predictions
 - July 08, 2025: **Weather Icons Integration Completed (Backend Complete, Frontend Display Active)**
   - Added intelligent weather icons to game cards based on real weather API data
   - Enhanced emoji weather icons: Rain 🌧️, Snow ❄️, Wind 💨, Cold 🥶, Clear ☀️, Cloudy ☁️, Dome 🏟️

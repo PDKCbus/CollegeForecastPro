@@ -1,7 +1,8 @@
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { GameCard } from "@/components/game-card";
 import { FilterBar } from "@/components/filter-bar";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import React from "react";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { apiRequest, queryClient } from "@/lib/queryClient";
@@ -23,14 +24,39 @@ interface RickRecord {
 }
 
 export default function Historical() {
-  const [selectedWeek, setSelectedWeek] = useState("all");
+  const [selectedWeek, setSelectedWeek] = useState("15"); // Default to championship week
   const [selectedFilter, setSelectedFilter] = useState("all");
-  const [selectedSeason, setSelectedSeason] = useState("all");
+  const [selectedSeason, setSelectedSeason] = useState("2024"); // Default to 2024
   const [selectedConference, setSelectedConference] = useState("all");
+  const [currentPage, setCurrentPage] = useState(0);
 
-  const { data: games = [], isLoading } = useQuery({
-    queryKey: ["/api/games/historical"],
+  // Reset pagination when filters change
+  const resetPage = () => setCurrentPage(0);
+
+  const { data: historicalData, isLoading } = useQuery({
+    queryKey: ["/api/games/historical", selectedSeason, selectedWeek, currentPage],
+    queryFn: async () => {
+      const params = new URLSearchParams({
+        page: currentPage.toString(),
+        limit: "20"
+      });
+      
+      if (selectedSeason !== "all") params.append("season", selectedSeason);
+      if (selectedWeek !== "all") params.append("week", selectedWeek);
+      
+      const response = await fetch(`/api/games/historical?${params}`);
+      if (!response.ok) throw new Error('Failed to fetch historical games');
+      return response.json();
+    }
   });
+
+  // Reset page when filters change
+  React.useEffect(() => {
+    setCurrentPage(0);
+  }, [selectedSeason, selectedWeek, selectedFilter, selectedConference]);
+
+  const games = historicalData?.games || [];
+  const pagination = historicalData?.pagination;
 
   const { data: rickRecord, isLoading: recordLoading } = useQuery<RickRecord>({
     queryKey: ["/api/ricks-record"],
@@ -48,7 +74,7 @@ export default function Historical() {
 
   // Generate options for filters
   const weeks = ["all", ...Array.from({ length: 15 }, (_, i) => `${i + 1}`)];
-  const seasons = ["all", "2024", "2023", "2022", "2021", "2020", "2019", "2018", "2017", "2016", "2015"];
+  const seasons = ["all", "2024", "2023", "2022", "2021", "2020"];
   const conferences = ["all", "SEC", "Big Ten", "Big 12", "ACC", "PAC-12", "Independent"];
 
   const filterOptions = [
@@ -82,7 +108,13 @@ export default function Historical() {
     <div className="max-w-6xl mx-auto p-6">
       <div className="mb-8">
         <h1 className="text-3xl font-bold text-white mb-2">Historical Games</h1>
-        <p className="text-white/70">Review past games and Rick's prediction performance</p>
+        <p className="text-white/70">Review past games with actual results vs Vegas spreads</p>
+        {historicalData?.filters && (
+          <div className="mt-2 text-sm text-white/60">
+            Showing {historicalData.filters.season} Season, Week {historicalData.filters.week}
+            {pagination && ` • ${pagination.total} games found`}
+          </div>
+        )}
       </div>
 
       {/* Rick's Overall Record */}
@@ -139,7 +171,7 @@ export default function Historical() {
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
           <div>
             <label className="block text-white/70 text-sm mb-2">Season</label>
-            <Select value={selectedSeason} onValueChange={setSelectedSeason}>
+            <Select value={selectedSeason} onValueChange={(value) => { setSelectedSeason(value); setCurrentPage(0); }}>
               <SelectTrigger className="w-full bg-surface text-white">
                 <SelectValue placeholder="All Seasons" />
               </SelectTrigger>
@@ -171,7 +203,7 @@ export default function Historical() {
           
           <div>
             <label className="block text-white/70 text-sm mb-2">Week</label>
-            <Select value={selectedWeek} onValueChange={setSelectedWeek}>
+            <Select value={selectedWeek} onValueChange={(value) => { setSelectedWeek(value); setCurrentPage(0); }}>
               <SelectTrigger className="w-full bg-surface text-white">
                 <SelectValue placeholder="All Weeks" />
               </SelectTrigger>
@@ -207,14 +239,57 @@ export default function Historical() {
         {filteredGames.length === 0 ? (
           <div className="text-center py-12">
             <div className="text-white/60 text-lg mb-2">No historical games found</div>
-            <div className="text-white/40">Try adjusting your filters or loading historical data</div>
+            <div className="text-white/40">Try adjusting your filters to see completed games</div>
           </div>
         ) : (
           filteredGames.map((game: any) => (
-            <GameCard key={game.id} game={game} />
+            <div key={game.id} className="relative">
+              <GameCard game={game} />
+              {/* Spread Result Overlay for completed games */}
+              {game.spreadResult && (
+                <div className="absolute top-4 right-4 bg-black/80 rounded-lg p-2 text-xs">
+                  <div className="text-white/70">vs Spread:</div>
+                  <div className={`font-bold ${
+                    game.spreadResult.coverResult === 'home' ? 'text-green-400' : 
+                    game.spreadResult.coverResult === 'away' ? 'text-red-400' : 'text-yellow-400'
+                  }`}>
+                    {game.spreadResult.coverResult === 'push' ? 'PUSH' : 
+                     game.spreadResult.coverResult === 'home' ? 'HOME COVERED' : 'AWAY COVERED'}
+                  </div>
+                  <div className="text-white/60">
+                    {game.spreadResult.difference > 0 ? '+' : ''}{game.spreadResult.difference.toFixed(1)}
+                  </div>
+                </div>
+              )}
+            </div>
           ))
         )}
       </div>
+
+      {/* Pagination Controls */}
+      {pagination && pagination.total > pagination.limit && (
+        <div className="flex justify-center mt-8 space-x-4">
+          <Button
+            onClick={() => setCurrentPage(Math.max(0, currentPage - 1))}
+            disabled={currentPage === 0}
+            variant="outline"
+            className="bg-surface text-white border-surface-light"
+          >
+            Previous
+          </Button>
+          <span className="flex items-center text-white/70">
+            Page {currentPage + 1} of {Math.ceil(pagination.total / pagination.limit)}
+          </span>
+          <Button
+            onClick={() => setCurrentPage(currentPage + 1)}
+            disabled={!pagination.hasMore}
+            variant="outline"
+            className="bg-surface text-white border-surface-light"
+          >
+            Next
+          </Button>
+        </div>
+      )}
     </div>
   );
 }

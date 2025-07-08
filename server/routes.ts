@@ -60,6 +60,66 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Historical Games API
+  app.get("/api/games/historical", async (req, res) => {
+    try {
+      const season = req.query.season ? parseInt(req.query.season as string) : 2024;
+      const week = req.query.week ? parseInt(req.query.week as string) : undefined;
+      const page = parseInt(req.query.page as string) || 0;
+      const limit = parseInt(req.query.limit as string) || 20;
+      
+      // Default to last week of 2024 season if no params
+      const targetSeason = season;
+      const targetWeek = week || 15; // Championship week
+      
+      const games = await storage.getHistoricalGames(targetSeason, targetWeek);
+      
+      // Add spread results analysis for completed games
+      const gamesWithResults = games.map(game => {
+        if (game.completed && game.homeTeamScore !== null && game.awayTeamScore !== null && game.spread !== null) {
+          const actualMargin = game.homeTeamScore - game.awayTeamScore;
+          const predictedMargin = -game.spread; // Vegas spread (negative means home team favored)
+          const coverResult = actualMargin > predictedMargin ? 'home' : actualMargin < predictedMargin ? 'away' : 'push';
+          const beatSpread = Math.abs(actualMargin - predictedMargin) > 0;
+          
+          return {
+            ...game,
+            spreadResult: {
+              actualMargin,
+              predictedMargin,
+              coverResult,
+              beatSpread,
+              difference: actualMargin - predictedMargin
+            }
+          };
+        }
+        return game;
+      });
+      
+      // Paginate results
+      const startIndex = page * limit;
+      const endIndex = startIndex + limit;
+      const paginatedGames = gamesWithResults.slice(startIndex, endIndex);
+      
+      res.json({
+        games: paginatedGames,
+        pagination: {
+          page,
+          limit,
+          total: gamesWithResults.length,
+          hasMore: endIndex < gamesWithResults.length
+        },
+        filters: {
+          season: targetSeason,
+          week: targetWeek
+        }
+      });
+    } catch (error) {
+      console.error('Error fetching historical games:', error);
+      res.status(500).json({ message: "Failed to fetch historical games" });
+    }
+  });
+
   // Games API
   app.get("/api/games/upcoming", async (req, res) => {
     try {
