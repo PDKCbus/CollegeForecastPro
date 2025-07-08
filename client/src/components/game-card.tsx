@@ -5,7 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
-import { Calendar, Clock, MapPin, MoreHorizontal, Twitter, TrendingUp, TrendingDown, BarChart3 } from "lucide-react";
+import { Calendar, Clock, MapPin, MoreHorizontal, Twitter, TrendingUp, TrendingDown, BarChart3, Cloud, CloudRain, CloudSnow, Sun, Wind, Thermometer } from "lucide-react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { useState } from "react";
 import { Link } from "wouter";
@@ -149,13 +149,88 @@ export function GameCard({ game }: GameCardProps) {
     return null;
   };
 
+  const getWeatherIcon = () => {
+    if (game.isDome) {
+      return (
+        <div className="flex items-center text-xs text-white/60">
+          <div className="w-5 h-5 bg-surface-light rounded-full flex items-center justify-center mr-1">
+            🏟️
+          </div>
+          <span>Dome</span>
+        </div>
+      );
+    }
+
+    if (!game.weatherCondition && !game.temperature) {
+      return null; // No weather data available
+    }
+
+    const condition = game.weatherCondition?.toLowerCase() || '';
+    const temp = game.temperature;
+    const wind = game.windSpeed || 0;
+    const precipitation = game.precipitation || 0;
+
+    let icon;
+    let color = 'text-white/60';
+    let weatherLabel = '';
+
+    // Determine weather icon and impact level
+    if (condition.includes('snow') || (temp && temp < 32 && precipitation > 0)) {
+      icon = <CloudSnow className="h-4 w-4" />;
+      color = 'text-blue-300';
+      weatherLabel = 'Snow';
+    } else if (condition.includes('rain') || precipitation > 0.1) {
+      icon = <CloudRain className="h-4 w-4" />;
+      color = 'text-blue-400';
+      weatherLabel = 'Rain';
+    } else if (wind > 15) {
+      icon = <Wind className="h-4 w-4" />;
+      color = 'text-gray-300';
+      weatherLabel = `${Math.round(wind)} mph`;
+    } else if (temp && (temp < 35 || temp > 85)) {
+      icon = <Thermometer className="h-4 w-4" />;
+      color = temp < 35 ? 'text-blue-300' : 'text-red-400';
+      weatherLabel = `${Math.round(temp)}°F`;
+    } else if (condition.includes('cloud')) {
+      icon = <Cloud className="h-4 w-4" />;
+      color = 'text-gray-400';
+      weatherLabel = 'Cloudy';
+    } else if (condition.includes('clear') || condition.includes('sunny')) {
+      icon = <Sun className="h-4 w-4" />;
+      color = 'text-yellow-400';
+      weatherLabel = 'Clear';
+    } else {
+      return null; // Unknown weather condition
+    }
+
+    // Show weather impact level if significant
+    const impactScore = game.weatherImpactScore || 0;
+    let impactIndicator = '';
+    if (impactScore > 7) {
+      impactIndicator = '🔴'; // High impact
+    } else if (impactScore > 4) {
+      impactIndicator = '🟡'; // Medium impact
+    }
+
+    return (
+      <div className={`flex items-center text-xs ${color}`}>
+        {icon}
+        <span className="ml-1">{weatherLabel}</span>
+        {impactIndicator && <span className="ml-1">{impactIndicator}</span>}
+      </div>
+    );
+  };
+
   return (
     <div className="game-card bg-gray-800/30 border border-gray-700/50 rounded-xl p-4 transition-all hover:bg-gray-800/40">
       <div className="bg-surface rounded-xl overflow-hidden shadow-lg">
         <div className="p-5">
-          <div className="text-sm text-white/70 mb-2 flex justify-between">
+          <div className="text-sm text-white/70 mb-2 flex justify-between items-center">
           <div>{formatDate(game.startDate)}</div>
-          <div>{formatTime(game.startDate)} ET</div>
+          <div className="flex items-center gap-3">
+            {getWeatherIcon()}
+            <div>{formatTime(game.startDate)} ET</div>
+          </div>
         </div>
         
         <div className="flex justify-between items-center">
