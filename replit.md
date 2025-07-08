@@ -125,6 +125,7 @@ The application follows a modern full-stack architecture with clear separation o
   - Color-coded weather indicators: blue for cold/precipitation, yellow for clear, red for extreme heat, gray for wind/clouds
   - Weather impact scoring with colored indicators: 🔴 high impact (>7), 🟡 medium impact (4-7), no indicator for low impact
   - Positioned strategically next to game time for quick weather awareness without cluttering layout
+  - Weather icons now display on both regular game cards AND the featured "Game of the Week" section
 - July 08, 2025: **Enhanced Game Card Design Completed**
   - Added light gray containers around game cards to eliminate "free floating" appearance and improve visual containment
   - Implemented subtle border styling with hover effects for better user interaction feedback
