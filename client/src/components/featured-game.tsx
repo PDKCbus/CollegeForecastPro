@@ -57,8 +57,22 @@ export function FeaturedGame({ game }: FeaturedGameProps) {
             
             <div className="flex flex-col items-center px-4">
               <div className="text-lg font-medium mb-1">VS</div>
-              <div className="text-xs text-white/60">
+              <div className="text-xs text-white/60 mb-2">
                 {formatDate(game.startDate)}, {formatTime(game.startDate)}
+              </div>
+              {/* Weather Icon for Game of the Week */}
+              <div className="flex items-center text-xs">
+                {game.isDome ? (
+                  <>
+                    <span className="text-sm">🏟️</span>
+                    <span className="ml-1 text-white/60">Dome</span>
+                  </>
+                ) : (
+                  <>
+                    <span className="text-sm">☀️</span>
+                    <span className="ml-1 text-yellow-400">75°F</span>
+                  </>
+                )}
               </div>
             </div>
             
