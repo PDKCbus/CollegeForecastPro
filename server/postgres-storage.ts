@@ -106,7 +106,12 @@ export class PostgresStorage implements IStorage {
       }
     }
 
-    return gamesWithTeams;
+    // Sort by highest ranking (lowest ranking number = higher rank)
+    return gamesWithTeams.sort((a, b) => {
+      const aHighestRank = Math.min(a.homeTeam.ranking || 999, a.awayTeam.ranking || 999);
+      const bHighestRank = Math.min(b.homeTeam.ranking || 999, b.awayTeam.ranking || 999);
+      return aHighestRank - bHighestRank;
+    });
   }
 
   async getGamesByWeek(season: number, week: number): Promise<GameWithTeams[]> {
@@ -131,7 +136,12 @@ export class PostgresStorage implements IStorage {
       }
     }
 
-    return gamesWithTeams;
+    // Sort by highest ranking (lowest ranking number = higher rank)
+    return gamesWithTeams.sort((a, b) => {
+      const aHighestRank = Math.min(a.homeTeam.ranking || 999, a.awayTeam.ranking || 999);
+      const bHighestRank = Math.min(b.homeTeam.ranking || 999, b.awayTeam.ranking || 999);
+      return aHighestRank - bHighestRank;
+    });
   }
 
   async getHistoricalGames(
