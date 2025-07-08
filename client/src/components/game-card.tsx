@@ -150,9 +150,10 @@ export function GameCard({ game }: GameCardProps) {
   };
 
   return (
-    <div className="game-card bg-surface rounded-xl overflow-hidden shadow-lg transition-all">
-      <div className="p-5">
-        <div className="text-sm text-white/70 mb-2 flex justify-between">
+    <div className="game-card bg-gray-800/30 border border-gray-700/50 rounded-xl p-4 transition-all hover:bg-gray-800/40">
+      <div className="bg-surface rounded-xl overflow-hidden shadow-lg">
+        <div className="p-5">
+          <div className="text-sm text-white/70 mb-2 flex justify-between">
           <div>{formatDate(game.startDate)}</div>
           <div>{formatTime(game.startDate)} ET</div>
         </div>
@@ -281,6 +282,7 @@ export function GameCard({ game }: GameCardProps) {
           </div>
         </div>
       </div>
+    </div>
 
       {/* Twitter Sentiment Dialog */}
       <Dialog open={sentimentDialogOpen} onOpenChange={setSentimentDialogOpen}>
