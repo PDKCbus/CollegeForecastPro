@@ -127,12 +127,12 @@ export class CompleteHistoricalSync {
 
     // Filter to only games with actual scores (these are completed)
     const completedGames = allGames.filter(game => 
-      game.home_points !== null && 
-      game.away_points !== null &&
-      game.home_points !== undefined && 
-      game.away_points !== undefined &&
-      typeof game.home_points === 'number' &&
-      typeof game.away_points === 'number'
+      game.homePoints !== null && 
+      game.awayPoints !== null &&
+      game.homePoints !== undefined && 
+      game.awayPoints !== undefined &&
+      typeof game.homePoints === 'number' &&
+      typeof game.awayPoints === 'number'
     );
 
     console.log(`🏈 Found ${completedGames.length} completed games with scores`);
@@ -163,11 +163,11 @@ export class CompleteHistoricalSync {
 
     for (const game of completedGames) {
       try {
-        const homeTeamId = await this.ensureTeamExists(game.home_team);
-        const awayTeamId = await this.ensureTeamExists(game.away_team);
+        const homeTeamId = await this.ensureTeamExists(game.homeTeam);
+        const awayTeamId = await this.ensureTeamExists(game.awayTeam);
 
         // Find betting lines for this game
-        const lineKey = `${game.home_team}-${game.away_team}-${game.week}`;
+        const lineKey = `${game.homeTeam}-${game.awayTeam}-${game.week}`;
         const bettingLine = linesMap.get(lineKey);
         
         let spread = null;
@@ -181,15 +181,33 @@ export class CompleteHistoricalSync {
           gamesWithBettingLines++;
         }
 
+        // Skip games where home and away team are the same (invalid data)
+        if (homeTeamId === awayTeamId) {
+          console.log(`⚠️ Skipping invalid game: ${game.homeTeam} vs ${game.awayTeam} (same team ID)`);
+          continue;
+        }
+
+        // Validate and fix start date
+        let startDate: Date;
+        try {
+          startDate = new Date(game.start_date);
+          if (isNaN(startDate.getTime())) {
+            throw new Error('Invalid date');
+          }
+        } catch (error) {
+          console.log(`⚠️ Invalid date for game ${game.id}, using default`);
+          startDate = new Date(`${game.season}-09-01T12:00:00Z`); // Default to season start
+        }
+
         const gameData: InsertGame = {
           id: game.id,
           season: game.season,
           week: game.week,
-          startDate: new Date(game.start_date),
+          startDate,
           homeTeamId,
           awayTeamId,
-          homeTeamScore: game.home_points,
-          awayTeamScore: game.away_points,
+          homeTeamScore: game.homePoints,
+          awayTeamScore: game.awayPoints,
           completed: true, // Mark as completed since it has scores
           neutralSite: game.neutral_site || false,
           conferenceGame: game.conference_game || false,

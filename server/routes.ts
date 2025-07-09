@@ -1597,6 +1597,77 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Initial sync on server start
   setTimeout(autoSync, 5000);
 
+  // Fill missing scores for existing games
+  app.post('/api/historical/fill-scores', async (req, res) => {
+    try {
+      const { scoreFiller } = await import('./fill-scores');
+      
+      // Start the score filling in the background
+      scoreFiller.fillAllHistoricalScores().catch(error => {
+        console.error('Background score filling failed:', error);
+      });
+
+      res.json({
+        message: 'Score filling started for existing games',
+        action: 'Updating games that have team IDs but missing scores',
+        status: 'processing',
+        estimated_duration: '10-15 minutes'
+      });
+    } catch (error) {
+      console.error('Error starting score fill:', error);
+      res.status(500).json({ error: 'Failed to start score filling' });
+    }
+  });
+
+  // Fill scores for specific season
+  app.post('/api/historical/fill-scores/:season', async (req, res) => {
+    try {
+      const { scoreFiller } = await import('./fill-scores');
+      const season = parseInt(req.params.season);
+      
+      if (isNaN(season) || season < 2009 || season > 2024) {
+        return res.status(400).json({ error: 'Invalid season. Must be between 2009 and 2024' });
+      }
+      
+      // Start the score filling for specific season
+      scoreFiller.fillScoresForSeason(season).catch(error => {
+        console.error(`Background score filling failed for ${season}:`, error);
+      });
+
+      res.json({
+        message: `Score filling started for ${season} season`,
+        action: 'Updating games that have team IDs but missing scores',
+        season,
+        status: 'processing'
+      });
+    } catch (error) {
+      console.error('Error starting score fill:', error);
+      res.status(500).json({ error: 'Failed to start score filling' });
+    }
+  });
+
+  // Mark all historical games as completed
+  app.post('/api/historical/mark-completed', async (req, res) => {
+    try {
+      const { scoreFiller } = await import('./fill-scores');
+      
+      // Start marking games as completed in the background
+      scoreFiller.markHistoricalGamesCompleted().catch(error => {
+        console.error('Background completion marking failed:', error);
+      });
+
+      res.json({
+        message: 'Started marking historical games as completed',
+        action: 'Setting completed=true for all games with scores from CFBD API',
+        status: 'processing',
+        note: 'This will make games appear in the historical games section'
+      });
+    } catch (error) {
+      console.error('Error starting completion marking:', error);
+      res.status(500).json({ error: 'Failed to start completion marking' });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }
