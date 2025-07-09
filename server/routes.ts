@@ -1349,6 +1349,33 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Complete Historical Sync - Get ALL completed games with scores
+  app.post('/api/historical/complete-sync', async (_req: Request, res: Response) => {
+    try {
+      const { completeHistoricalSync } = await import('./complete-historical-sync');
+      
+      setImmediate(async () => {
+        try {
+          console.log(`🚀 Starting complete historical sync...`);
+          await completeHistoricalSync.syncAllHistoricalSeasons();
+          console.log(`✅ Complete historical sync finished!`);
+        } catch (error) {
+          console.error(`❌ Complete historical sync failed:`, error);
+        }
+      });
+
+      res.json({ 
+        message: `Complete historical sync started - collecting ALL completed games with scores`,
+        seasons: [2024, 2023, 2022, 2021, 2020, 2019, 2018, 2017, 2016, 2015, 2014, 2013, 2012, 2011, 2010, 2009],
+        status: 'processing',
+        expected_games: 'Thousands of completed games from each season',
+        estimated_duration: '30-45 minutes'
+      });
+    } catch (error) {
+      res.status(500).json({ message: 'Failed to start complete historical sync' });
+    }
+  });
+
   // Game Analysis API
   app.get("/api/games/analysis/:gameId", async (req, res) => {
     try {
