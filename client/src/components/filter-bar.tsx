@@ -92,7 +92,7 @@ export function FilterBar({
         {/* Week Selector */}
         <div className="bg-surface rounded-xl p-4 border border-surface-light">
           <Select value={selectedWeek} onValueChange={onWeekChange}>
-            <SelectTrigger className="w-full bg-transparent border-0 text-white/90 focus:ring-0 focus:ring-offset-0">
+            <SelectTrigger className="w-full bg-surface border-0 text-white/90 focus:ring-0 focus:ring-offset-0">
               <div className="flex items-center justify-between w-full">
                 <span className="text-white/90">{selectedWeek}</span>
                 <ChevronDown className="h-4 w-4 text-white/50" />
@@ -111,7 +111,7 @@ export function FilterBar({
         {/* Conference Selector */}
         <div className="bg-surface rounded-xl p-4 border border-surface-light">
           <Select value={selectedConference || "all"} onValueChange={handleConferenceChange}>
-            <SelectTrigger className="w-full bg-transparent border-0 text-white/90 focus:ring-0 focus:ring-offset-0">
+            <SelectTrigger className="w-full bg-surface border-0 text-white/90 focus:ring-0 focus:ring-offset-0">
               <div className="flex items-center justify-between w-full">
                 <span className="text-white/90">
                   {selectedConference || "All Conferences"}
