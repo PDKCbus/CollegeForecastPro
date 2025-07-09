@@ -744,11 +744,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
           overUnder = selectedLine?.overUnder || null;
         }
 
-        // Check for existing game first
-        const existingGames = await storage.getUpcomingGames();
-        const existingGame = existingGames.find(g => 
-          g.homeTeam.name === game.homeTeam && g.awayTeam.name === game.awayTeam
-        );
+        // Check for existing game first by external CFBD ID
+        const existingGame = await storage.getGame(game.id);
 
         let gameToUse;
         
@@ -762,8 +759,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
             location: game.venue || null
           });
         } else {
-          // Create new game
+          // Create new game with CFBD ID to prevent duplicates
           gameToUse = await storage.createGame({
+            id: game.id, // Use CFBD game ID
             homeTeamId: homeTeam.id,
             awayTeamId: awayTeam.id,
             startDate: new Date(game.startDate || "2025-08-30T12:00:00Z"),
@@ -1095,11 +1093,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
             overUnder = selectedLine?.overUnder || null;
           }
 
-          // Update existing game or create new one
-          const existingGames = await storage.getUpcomingGames();
-          const existingGame = existingGames.find(g => 
-            g.homeTeam.name === game.homeTeam && g.awayTeam.name === game.awayTeam
-          );
+          // Check for existing game by CFBD ID
+          const existingGame = await storage.getGame(game.id);
 
           if (existingGame) {
             // Update existing game with latest betting lines
@@ -1109,8 +1104,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
               startDate: new Date(game.startDate || "2025-08-30T12:00:00Z"),
             });
           } else {
-            // Create new game
+            // Create new game with CFBD ID to prevent duplicates
             const newGame = await storage.createGame({
+              id: game.id, // Use CFBD game ID
               homeTeamId: homeTeam.id,
               awayTeamId: awayTeam.id,
               startDate: new Date(game.startDate || "2025-08-30T12:00:00Z"),
