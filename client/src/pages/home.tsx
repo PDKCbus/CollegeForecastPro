@@ -166,19 +166,7 @@ export default function Home() {
           </div>
         )}
         
-        {/* Sync Button - Only show in dev */}
-        {import.meta.env.DEV && (
-          <div className="flex justify-end mb-6">
-            <Button 
-              onClick={() => syncMutation.mutate()}
-              disabled={syncMutation.isPending}
-              variant="outline"
-              className="bg-accent/10 border-accent/20 text-accent hover:bg-accent/20"
-            >
-              {syncMutation.isPending ? "Syncing..." : "Sync Real Data"}
-            </Button>
-          </div>
-        )}
+
         
         {isLoading ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">

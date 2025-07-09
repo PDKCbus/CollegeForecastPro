@@ -183,14 +183,53 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.get("/api/games/historical", async (req, res) => {
     try {
-      const season = req.query.season ? parseInt(req.query.season as string) : undefined;
-      const week = req.query.week ? parseInt(req.query.week as string) : undefined;
-      const teamId = req.query.teamId ? parseInt(req.query.teamId as string) : undefined;
-      const conference = req.query.conference as string | undefined;
-
-      const games = await storage.getHistoricalGames(season, week, teamId, conference);
-      res.json(games);
+      const { page = 0, limit = 20, season, week, conference } = req.query;
+      const pageNum = parseInt(page as string) || 0;
+      const limitNum = parseInt(limit as string) || 20;
+      
+      console.log(`🔍 Historical games API called with params:`, { page, limit, season, week });
+      
+      const seasonNum = season && season !== 'all' ? parseInt(season as string) : undefined;
+      const weekNum = week && week !== 'all' ? parseInt(week as string) : undefined;
+      
+      console.log(`📊 Fetching from PostgreSQL with filters:`, { 
+        season: seasonNum, 
+        week: weekNum, 
+        page: pageNum, 
+        limit: limitNum 
+      });
+      
+      // Get historical games with pagination
+      const allHistoricalGames = await storage.getHistoricalGames(
+        seasonNum,
+        weekNum,
+        undefined,
+        conference as string
+      );
+      
+      // Apply pagination
+      const startIndex = pageNum * limitNum;
+      const endIndex = startIndex + limitNum;
+      const paginatedGames = allHistoricalGames.slice(startIndex, endIndex);
+      
+      console.log(`📈 Retrieved ${allHistoricalGames.length} historical games from database (showing ${paginatedGames.length})`);
+      
+      res.json({
+        games: paginatedGames,
+        pagination: {
+          page: pageNum,
+          limit: limitNum,
+          total: allHistoricalGames.length,
+          hasMore: endIndex < allHistoricalGames.length
+        },
+        filters: {
+          season: season || 'all',
+          week: week || 'all',
+          conference: conference || 'all'
+        }
+      });
     } catch (error) {
+      console.error('Error fetching historical games:', error);
       res.status(500).json({ message: "Failed to fetch historical games" });
     }
   });

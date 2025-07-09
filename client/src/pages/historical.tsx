@@ -156,16 +156,30 @@ export default function Historical() {
       <div className="mb-8 bg-surface-light rounded-lg p-6">
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-xl font-bold text-white">Rick's Overall Record</h2>
-          {import.meta.env.DEV && (
-            <Button
-              onClick={() => syncHistoricalMutation.mutate()}
-              disabled={syncHistoricalMutation.isPending}
-              variant="outline"
-              size="sm"
-            >
-              {syncHistoricalMutation.isPending ? "Loading..." : "Load Historical Data"}
-            </Button>
-          )}
+          <div className="flex gap-2">
+            {import.meta.env.DEV && (
+              <>
+                <Button
+                  onClick={() => fillScoresMutation.mutate()}
+                  disabled={fillScoresMutation.isPending}
+                  variant="outline"
+                  size="sm"
+                  className="bg-blue-500/10 border-blue-500/20 text-blue-400 hover:bg-blue-500/20"
+                >
+                  {fillScoresMutation.isPending ? "Filling..." : "Fill Scores"}
+                </Button>
+                <Button
+                  onClick={() => markCompletedMutation.mutate()}
+                  disabled={markCompletedMutation.isPending}
+                  variant="outline"
+                  size="sm"
+                  className="bg-green-500/10 border-green-500/20 text-green-400 hover:bg-green-500/20"
+                >
+                  {markCompletedMutation.isPending ? "Marking..." : "Mark Completed"}
+                </Button>
+              </>
+            )}
+          </div>
         </div>
         
         {recordLoading ? (
