@@ -92,15 +92,15 @@ export function FilterBar({
         {/* Week Selector */}
         <div className="bg-surface rounded-xl p-4 border border-surface-light">
           <Select value={selectedWeek} onValueChange={onWeekChange}>
-            <SelectTrigger className="w-full bg-surface border-0 text-white/90 focus:ring-0 focus:ring-offset-0">
+            <SelectTrigger className="w-full bg-gray-800 border-0 text-white/90 focus:ring-0 focus:ring-offset-0">
               <div className="flex items-center justify-between w-full">
                 <span className="text-white/90">{selectedWeek}</span>
                 <ChevronDown className="h-4 w-4 text-white/50" />
               </div>
             </SelectTrigger>
-            <SelectContent className="bg-surface text-white border-surface-light backdrop-blur-md">
+            <SelectContent className="bg-gray-800 text-white border-gray-700 backdrop-blur-md">
               {weeks.map((week) => (
-                <SelectItem key={week} value={week} className="text-white hover:bg-white/10">
+                <SelectItem key={week} value={week} className="text-white hover:bg-gray-700 focus:bg-gray-700">
                   {week}
                 </SelectItem>
               ))}
@@ -111,7 +111,7 @@ export function FilterBar({
         {/* Conference Selector */}
         <div className="bg-surface rounded-xl p-4 border border-surface-light">
           <Select value={selectedConference || "all"} onValueChange={handleConferenceChange}>
-            <SelectTrigger className="w-full bg-surface border-0 text-white/90 focus:ring-0 focus:ring-offset-0">
+            <SelectTrigger className="w-full bg-gray-800 border-0 text-white/90 focus:ring-0 focus:ring-offset-0">
               <div className="flex items-center justify-between w-full">
                 <span className="text-white/90">
                   {selectedConference || "All Conferences"}
@@ -119,12 +119,12 @@ export function FilterBar({
                 <ChevronDown className="h-4 w-4 text-white/50" />
               </div>
             </SelectTrigger>
-            <SelectContent className="bg-surface text-white border-surface-light backdrop-blur-md max-h-60 overflow-y-auto">
-              <SelectItem value="all" className="text-white hover:bg-white/10">
+            <SelectContent className="bg-gray-800 text-white border-gray-700 backdrop-blur-md max-h-60 overflow-y-auto">
+              <SelectItem value="all" className="text-white hover:bg-gray-700 focus:bg-gray-700">
                 All Conferences
               </SelectItem>
               {conferences.map((conference) => (
-                <SelectItem key={conference} value={conference} className="text-white hover:bg-white/10">
+                <SelectItem key={conference} value={conference} className="text-white hover:bg-gray-700 focus:bg-gray-700">
                   {conference}
                 </SelectItem>
               ))}

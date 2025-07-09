@@ -56,3 +56,21 @@
     @apply font-sans antialiased bg-background text-foreground;
   }
 }
+
+/* Custom CSS variables for college football theme */
+:root {
+  --surface: #1a1a1a;
+  --surface-light: #2a2a2a;
+}
+
+.bg-surface {
+  background-color: var(--surface) !important;
+}
+
+.bg-surface-light {
+  background-color: var(--surface-light) !important;
+}
+
+.border-surface-light {
+  border-color: var(--surface-light) !important;
+}
