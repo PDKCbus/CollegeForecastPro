@@ -1322,6 +1322,33 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Fix Historical Scores - Only collect completed games with actual scores
+  app.post('/api/historical/fix-scores', async (_req: Request, res: Response) => {
+    try {
+      const { historicalScoreFixer } = await import('./fix-historical-scores');
+      
+      setImmediate(async () => {
+        try {
+          console.log(`🔧 Starting historical score fix...`);
+          await historicalScoreFixer.fixAllHistoricalSeasons();
+          console.log(`✅ Historical score fix completed!`);
+        } catch (error) {
+          console.error(`❌ Historical score fix failed:`, error);
+        }
+      });
+
+      res.json({ 
+        message: `Historical score fix started - collecting only completed games with actual scores`,
+        seasons: [2024, 2023, 2022, 2021, 2020, 2019, 2018, 2017, 2016, 2015, 2014, 2013, 2012, 2011, 2010, 2009],
+        status: 'processing',
+        expected_games: 'Only completed games with scores and betting lines',
+        estimated_duration: '20-30 minutes'
+      });
+    } catch (error) {
+      res.status(500).json({ message: 'Failed to start historical score fix' });
+    }
+  });
+
   // Game Analysis API
   app.get("/api/games/analysis/:gameId", async (req, res) => {
     try {
