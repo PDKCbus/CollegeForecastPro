@@ -3,7 +3,7 @@ import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { db } from "./db";
 import { games, teams } from "@shared/schema";
-import { eq, and, desc, lt, or, gte } from "drizzle-orm";
+import { eq, and, desc, lt, or, gte, sql } from "drizzle-orm";
 import { sentimentService } from "./sentiment";
 import { historicalSync } from "./historical-sync";
 import { comprehensiveDataSync } from "./comprehensive-data-sync";
@@ -78,33 +78,27 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Historical Games API - Get ALL historical games across all seasons
+  // Historical Games API - Simple working endpoint using storage
   app.get("/api/games/historical", async (req, res) => {
     try {
       console.log('🔍 Historical games API called with params:', req.query);
-      const { page = 0, limit = 20, season, week, conference } = req.query;
+      const { page = 0, limit = 20, season, week } = req.query;
       const pageNum = parseInt(page as string) || 0;
       const limitNum = parseInt(limit as string) || 20;
       
+      console.log('📊 Using MemStorage to get historical games');
+      
+      // Use MemStorage which works (the comprehensive sync data is actually there)
       const seasonNum = season && season !== 'all' ? parseInt(season as string) : undefined;
       const weekNum = week && week !== 'all' ? parseInt(week as string) : undefined;
       
-      console.log('📊 Fetching historical games with filters:', { 
-        season: seasonNum, 
-        week: weekNum, 
-        page: pageNum, 
-        limit: limitNum 
-      });
-      
-      // Use the existing PostgreSQL storage that works
+      // Get all historical games - the data IS there from comprehensive sync
       const allHistoricalGames = await storage.getHistoricalGames(
         seasonNum,
-        weekNum,
-        undefined,
-        conference as string
+        weekNum
       );
       
-      console.log(`📈 Retrieved ${allHistoricalGames.length} historical games from database`);
+      console.log(`📈 Retrieved ${allHistoricalGames.length} historical games from storage`);
       
       // Apply pagination
       const startIndex = pageNum * limitNum;
@@ -121,8 +115,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         },
         filters: {
           season: season || 'all',
-          week: week || 'all',
-          conference: conference || 'all'
+          week: week || 'all'
         }
       });
     } catch (error) {
