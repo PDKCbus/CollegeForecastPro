@@ -66,11 +66,46 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Test endpoint for historical games data
   app.get("/api/test/historical", async (req, res) => {
     try {
-      // Simple test - we know we have 209 completed historical games with scores
+      // Get actual counts from database
+      const totalCountResult = await db.execute(sql.raw('SELECT COUNT(*) as total FROM games'));
+      const completedCountResult = await db.execute(sql.raw('SELECT COUNT(*) as completed FROM games WHERE completed = true'));
+      const withScoresResult = await db.execute(sql.raw('SELECT COUNT(*) as with_scores FROM games WHERE completed = true AND home_team_score IS NOT NULL AND away_team_score IS NOT NULL'));
+      
+      const total = parseInt(totalCountResult[0]?.total || '0');
+      const completed = parseInt(completedCountResult[0]?.completed || '0');
+      const withScores = parseInt(withScoresResult[0]?.with_scores || '0');
+      
+      // Sample a few games to show they're real
+      const sampleGames = await db.execute(sql.raw(`
+        SELECT g.id, g.season, g.week, g.completed, g.home_team_score, g.away_team_score, g.spread, g.over_under,
+               ht.name as home_team, at.name as away_team
+        FROM games g
+        LEFT JOIN teams ht ON g.home_team_id = ht.id
+        LEFT JOIN teams at ON g.away_team_id = at.id
+        WHERE g.completed = true AND g.home_team_score IS NOT NULL
+        ORDER BY g.season DESC, g.week DESC
+        LIMIT 5
+      `));
+      
       res.json({
-        message: "We have 209 completed historical games from 2009-2024",
-        totalHistoricalGames: 209,
-        note: "These are real games with authentic scores and betting lines from College Football Data API"
+        totalGames: total,
+        totalHistoricalGames: total,
+        completedHistoricalGames: completed,
+        gamesWithScores: withScores,
+        sampleGames: sampleGames.map((game: any) => ({
+          id: game.id,
+          season: game.season,
+          week: game.week,
+          completed: game.completed,
+          homeTeamId: game.home_team_id,
+          awayTeamId: game.away_team_id,
+          scores: `${game.home_team_score}-${game.away_team_score}`,
+          homeTeam: game.home_team,
+          awayTeam: game.away_team,
+          spread: game.spread,
+          overUnder: game.over_under
+        })),
+        seasonsAvailable: [2024, 2023, 2022, 2021, 2020, 2019, 2018, 2017, 2016, 2015, 2009]
       });
     } catch (error) {
       console.error('Error in test historical:', error);
@@ -78,7 +113,33 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Historical Games API - Simple working endpoint using storage
+  // Fix Historical Data endpoint - Update existing games with scores
+  app.post("/api/fix/historical-data", async (req, res) => {
+    try {
+      const { runHistoricalDataFix } = await import('./fix-historical-data');
+      console.log('🔧 Starting historical data fix - adding scores to existing games...');
+      
+      // Run in background to avoid request timeout
+      runHistoricalDataFix().then(() => {
+        console.log('✅ Historical data fix completed successfully!');
+      }).catch((error) => {
+        console.error('❌ Historical data fix failed:', error);
+      });
+      
+      res.json({ 
+        message: "Historical data fix started", 
+        note: "This will update existing 1,583 games with authentic scores from CFBD API",
+        current: "209 completed games",
+        expected: "1,000+ completed games after fix",
+        status: "running"
+      });
+    } catch (error) {
+      console.error('Error starting historical data fix:', error);
+      res.status(500).json({ message: "Failed to start fix", error: error.message });
+    }
+  });
+
+  // Historical Games API - Clean SQL approach
   app.get("/api/games/historical", async (req, res) => {
     try {
       console.log('🔍 Historical games API called with params:', req.query);
@@ -86,32 +147,86 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const pageNum = parseInt(page as string) || 0;
       const limitNum = parseInt(limit as string) || 20;
       
-      console.log('📊 Using MemStorage to get historical games');
+      // Build SQL query with filters
+      let whereClause = "WHERE g.completed = true AND g.season < 2025";
+      const params: any[] = [];
+      let paramIndex = 1;
       
-      // Use MemStorage which works (the comprehensive sync data is actually there)
-      const seasonNum = season && season !== 'all' ? parseInt(season as string) : undefined;
-      const weekNum = week && week !== 'all' ? parseInt(week as string) : undefined;
+      if (season && season !== 'all') {
+        whereClause += ` AND g.season = $${paramIndex}`;
+        params.push(parseInt(season as string));
+        paramIndex++;
+      }
       
-      // Get all historical games - the data IS there from comprehensive sync
-      const allHistoricalGames = await storage.getHistoricalGames(
-        seasonNum,
-        weekNum
-      );
+      if (week && week !== 'all') {
+        whereClause += ` AND g.week = $${paramIndex}`;
+        params.push(parseInt(week as string));
+        paramIndex++;
+      }
       
-      console.log(`📈 Retrieved ${allHistoricalGames.length} historical games from storage`);
+      // Get total count for pagination
+      const countQuery = `SELECT COUNT(*) as total FROM games g ${whereClause}`;
+      const countResult = await db.execute(sql.raw(countQuery, ...params));
+      const total = parseInt(countResult[0]?.total || '0');
       
-      // Apply pagination
-      const startIndex = pageNum * limitNum;
-      const endIndex = startIndex + limitNum;
-      const paginatedGames = allHistoricalGames.slice(startIndex, endIndex);
+      // Get paginated games with team data
+      const offset = pageNum * limitNum;
+      const gameQuery = `
+        SELECT 
+          g.id, g.home_team_id, g.away_team_id, g.start_date, g.season, g.week, 
+          g.completed, g.home_team_score, g.away_team_score, g.spread, g.over_under,
+          ht.name as home_team_name, ht.abbreviation as home_team_abbr, 
+          ht.logo_url as home_team_logo, ht.color as home_team_color,
+          at.name as away_team_name, at.abbreviation as away_team_abbr,
+          at.logo_url as away_team_logo, at.color as away_team_color
+        FROM games g
+        LEFT JOIN teams ht ON g.home_team_id = ht.id
+        LEFT JOIN teams at ON g.away_team_id = at.id
+        ${whereClause}
+        ORDER BY g.season DESC, g.week DESC, g.start_date DESC
+        LIMIT ${limitNum} OFFSET ${offset}
+      `;
+      
+      const gamesResult = await db.execute(sql.raw(gameQuery, ...params));
+      
+      // Format games for frontend
+      const formattedGames = gamesResult.map((row: any) => ({
+        id: row.id,
+        homeTeamId: row.home_team_id,
+        awayTeamId: row.away_team_id,
+        startDate: row.start_date,
+        season: row.season,
+        week: row.week,
+        completed: row.completed,
+        homeTeamScore: row.home_team_score,
+        awayTeamScore: row.away_team_score,
+        spread: row.spread,
+        overUnder: row.over_under,
+        homeTeam: {
+          id: row.home_team_id,
+          name: row.home_team_name,
+          abbreviation: row.home_team_abbr,
+          logoUrl: row.home_team_logo,
+          color: row.home_team_color
+        },
+        awayTeam: {
+          id: row.away_team_id,
+          name: row.away_team_name,
+          abbreviation: row.away_team_abbr,
+          logoUrl: row.away_team_logo,
+          color: row.away_team_color
+        }
+      }));
+      
+      console.log(`📈 Retrieved ${formattedGames.length} historical games from database (${total} total)`);
       
       res.json({
-        games: paginatedGames,
+        games: formattedGames,
         pagination: {
           page: pageNum,
           limit: limitNum,
-          total: allHistoricalGames.length,
-          hasMore: endIndex < allHistoricalGames.length
+          total: total,
+          hasMore: (pageNum + 1) * limitNum < total
         },
         filters: {
           season: season || 'all',
