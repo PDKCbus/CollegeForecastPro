@@ -113,29 +113,31 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Fix Historical Data endpoint - Update existing games with scores
-  app.post("/api/fix/historical-data", async (req, res) => {
+  // Complete Historical Rebuild endpoint - Rebuild entire 15-year dataset
+  app.post("/api/rebuild/complete-historical", async (req, res) => {
     try {
-      const { runHistoricalDataFix } = await import('./fix-historical-data');
-      console.log('🔧 Starting historical data fix - adding scores to existing games...');
+      const { runCompleteHistoricalRebuild } = await import('./complete-historical-rebuild');
+      console.log('🚀 Starting complete 15-year historical rebuild...');
       
       // Run in background to avoid request timeout
-      runHistoricalDataFix().then(() => {
-        console.log('✅ Historical data fix completed successfully!');
+      runCompleteHistoricalRebuild().then(() => {
+        console.log('✅ Complete historical rebuild finished successfully!');
       }).catch((error) => {
-        console.error('❌ Historical data fix failed:', error);
+        console.error('❌ Complete historical rebuild failed:', error);
       });
       
       res.json({ 
-        message: "Historical data fix started", 
-        note: "This will update existing 1,583 games with authentic scores from CFBD API",
-        current: "209 completed games",
-        expected: "1,000+ completed games after fix",
-        status: "running"
+        message: "Complete 15-year historical rebuild started", 
+        note: "This will collect ALL games from 2009-2024 with proper team mapping and authentic CFBD data",
+        currentGames: "360 valid games",
+        expectedGames: "10,000+ games from 15 years",
+        includes: ["Games with scores", "Betting lines", "Team data"],
+        status: "processing",
+        estimatedTime: "30-45 minutes"
       });
     } catch (error) {
-      console.error('Error starting historical data fix:', error);
-      res.status(500).json({ message: "Failed to start fix", error: error.message });
+      console.error('Error starting complete historical rebuild:', error);
+      res.status(500).json({ message: "Failed to start rebuild", error: error.message });
     }
   });
 
