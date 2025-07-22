@@ -93,8 +93,8 @@ export function ImprovedHistoricalGameCard({ game }: HistoricalGameCardProps) {
   };
 
   return (
-    <div className="bg-gray-50 rounded-lg p-2">
-      <Card className="w-full bg-white border-2 hover:shadow-lg transition-all duration-200 hover:border-blue-200">
+    <div className="bg-gray-100 rounded-lg p-1">
+      <Card className="w-full bg-white border hover:shadow-md transition-shadow">
         <CardContent className="p-6">
           {/* Header with Historical Badge */}
           <div className="flex justify-between items-center mb-4">
@@ -132,7 +132,7 @@ export function ImprovedHistoricalGameCard({ game }: HistoricalGameCardProps) {
                     </span>
                   )}
                   <span className={`font-bold text-lg ${awayWon ? "text-green-600" : "text-gray-700"}`}>
-                    {game.awayTeam.abbreviation || game.awayTeam.name}
+                    {game.awayTeam.name}
                   </span>
                   {awayWon && <TrendingUp className="w-4 h-4 text-green-600" />}
                 </div>
@@ -162,7 +162,7 @@ export function ImprovedHistoricalGameCard({ game }: HistoricalGameCardProps) {
                 <div className="flex items-center gap-2 justify-end mb-1">
                   {homeWon && <TrendingUp className="w-4 h-4 text-green-600" />}
                   <span className={`font-bold text-lg ${homeWon ? "text-green-600" : "text-gray-700"}`}>
-                    {game.homeTeam.abbreviation || game.homeTeam.name}
+                    {game.homeTeam.name}
                   </span>
                   {game.homeTeam.rank && (
                     <span className="text-xs bg-blue-100 text-blue-800 px-2 py-0.5 rounded-full font-semibold">
@@ -197,7 +197,7 @@ export function ImprovedHistoricalGameCard({ game }: HistoricalGameCardProps) {
                       <span className="text-xs text-gray-500 font-medium">SPREAD</span>
                     </div>
                     <div className="font-bold text-sm mb-2 text-gray-700">
-                      {spread > 0 ? `${game.awayTeam.abbreviation} +${spread}` : `${game.homeTeam.abbreviation} ${spread}`}
+                      {spread > 0 ? `${game.awayTeam.name} +${spread}` : `${game.homeTeam.name} ${spread}`}
                     </div>
                     <div className="flex justify-center mb-1">
                       {getSpreadBadge()}
