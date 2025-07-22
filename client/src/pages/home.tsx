@@ -76,9 +76,9 @@ export default function Home() {
   }) : [];
   
   const { data: featuredGame, isLoading: isFeaturedLoading } = useQuery<GameWithTeams>({
-    queryKey: ["/api/games/featured", weekNumber],
+    queryKey: ["/api/games/featured"],
     queryFn: async () => {
-      const response = await fetch(`/api/games/featured?week=${weekNumber}`);
+      const response = await fetch(`/api/games/featured`);
       if (!response.ok) throw new Error('Failed to fetch featured game');
       return response.json();
     }
