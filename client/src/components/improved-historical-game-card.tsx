@@ -107,8 +107,8 @@ export function ImprovedHistoricalGameCard({ game }: HistoricalGameCardProps) {
   };
 
   return (
-    <div className="bg-gray-100 rounded-lg p-1">
-      <Card className="w-full bg-white border hover:shadow-md transition-shadow">
+    <div className="p-4 bg-gray-50 rounded-lg border border-gray-200 hover:border-gray-300 transition-colors">
+      <Card className="w-full bg-white border-0 shadow-sm hover:shadow-md transition-shadow">
         <CardContent className="p-4">
           {/* Header */}
           <div className="flex items-center justify-between mb-3">
