@@ -113,31 +113,31 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Complete Historical Rebuild endpoint - Rebuild entire 15-year dataset
-  app.post("/api/rebuild/complete-historical", async (req, res) => {
+  // Working Historical Sync - Get REAL completed games with scores
+  app.post("/api/sync/working-historical", async (req, res) => {
     try {
-      const { runCompleteHistoricalRebuild } = await import('./complete-historical-rebuild');
-      console.log('🚀 Starting complete 15-year historical rebuild...');
+      const { runWorkingHistoricalSync } = await import('./working-historical-sync');
+      console.log('🚀 Starting working historical sync for recent seasons...');
       
       // Run in background to avoid request timeout
-      runCompleteHistoricalRebuild().then(() => {
-        console.log('✅ Complete historical rebuild finished successfully!');
+      runWorkingHistoricalSync().then(() => {
+        console.log('✅ Working historical sync finished successfully!');
       }).catch((error) => {
-        console.error('❌ Complete historical rebuild failed:', error);
+        console.error('❌ Working historical sync failed:', error);
       });
       
       res.json({ 
-        message: "Complete 15-year historical rebuild started", 
-        note: "This will collect ALL games from 2009-2024 with proper team mapping and authentic CFBD data",
-        currentGames: "360 valid games",
-        expectedGames: "10,000+ games from 15 years",
-        includes: ["Games with scores", "Betting lines", "Team data"],
+        message: "Working historical sync started", 
+        note: "This will collect COMPLETED games with scores from recent seasons (2020-2024)",
+        approach: "Only processing games with valid team names and final scores",
+        seasons: [2020, 2021, 2022, 2023, 2024],
+        expectedGames: "2,000+ completed games with authentic scores",
         status: "processing",
-        estimatedTime: "30-45 minutes"
+        estimatedTime: "10-15 minutes"
       });
     } catch (error) {
-      console.error('Error starting complete historical rebuild:', error);
-      res.status(500).json({ message: "Failed to start rebuild", error: error.message });
+      console.error('Error starting working historical sync:', error);
+      res.status(500).json({ message: "Failed to start sync", error: error.message });
     }
   });
 
@@ -168,7 +168,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       // Get total count for pagination
       const countQuery = `SELECT COUNT(*) as total FROM games g ${whereClause}`;
-      const countResult = await db.execute(sql.raw(countQuery, ...params));
+      const countResult = await db.execute(sql`${sql.raw(countQuery)}`);
       const total = parseInt(countResult[0]?.total || '0');
       
       // Get paginated games with team data
@@ -189,7 +189,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         LIMIT ${limitNum} OFFSET ${offset}
       `;
       
-      const gamesResult = await db.execute(sql.raw(gameQuery, ...params));
+      const gamesResult = await db.execute(sql`${sql.raw(gameQuery)}`);
       
       // Format games for frontend
       const formattedGames = gamesResult.map((row: any) => ({

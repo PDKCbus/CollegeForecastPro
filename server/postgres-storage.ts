@@ -1,4 +1,4 @@
-import { eq, and, desc, asc, gte, lte, or, sql, isNotNull } from 'drizzle-orm';
+import { eq, and, desc, asc, gte, lte, or, sql, isNotNull, lt } from 'drizzle-orm';
 import { db } from './db';
 import { users, teams, games, predictions, sentimentAnalysis } from '../shared/schema';
 import type {
@@ -108,8 +108,8 @@ export class PostgresStorage implements IStorage {
 
     // Sort by highest ranking (lowest ranking number = higher rank)
     return gamesWithTeams.sort((a, b) => {
-      const aHighestRank = Math.min(a.homeTeam.ranking || 999, a.awayTeam.ranking || 999);
-      const bHighestRank = Math.min(b.homeTeam.ranking || 999, b.awayTeam.ranking || 999);
+      const aHighestRank = Math.min(a.homeTeam.rank || 999, a.awayTeam.rank || 999);
+      const bHighestRank = Math.min(b.homeTeam.rank || 999, b.awayTeam.rank || 999);
       return aHighestRank - bHighestRank;
     });
   }
@@ -138,8 +138,8 @@ export class PostgresStorage implements IStorage {
 
     // Sort by highest ranking (lowest ranking number = higher rank)
     return gamesWithTeams.sort((a, b) => {
-      const aHighestRank = Math.min(a.homeTeam.ranking || 999, a.awayTeam.ranking || 999);
-      const bHighestRank = Math.min(b.homeTeam.ranking || 999, b.awayTeam.ranking || 999);
+      const aHighestRank = Math.min(a.homeTeam.rank || 999, a.awayTeam.rank || 999);
+      const bHighestRank = Math.min(b.homeTeam.rank || 999, b.awayTeam.rank || 999);
       return aHighestRank - bHighestRank;
     });
   }
@@ -147,8 +147,8 @@ export class PostgresStorage implements IStorage {
   async getHistoricalGames(
     season?: number,
     week?: number,
-    teamId?: number,
-    conference?: string
+    limit?: number,
+    offset?: number
   ): Promise<GameWithTeams[]> {
     let queryConditions = [
       eq(games.completed, true), // Only completed games
@@ -162,14 +162,21 @@ export class PostgresStorage implements IStorage {
     if (week) {
       queryConditions.push(eq(games.week, week));
     }
-    if (teamId) {
-      queryConditions.push(or(eq(games.homeTeamId, teamId), eq(games.awayTeamId, teamId)));
-    }
 
-    const gameResults = await db.select()
+    let queryBuilder = db.select()
       .from(games)
       .where(and(...queryConditions))
       .orderBy(desc(games.season), desc(games.week), desc(games.startDate));
+
+    // Apply pagination if provided
+    if (limit) {
+      queryBuilder = queryBuilder.limit(limit);
+    }
+    if (offset) {
+      queryBuilder = queryBuilder.offset(offset);
+    }
+
+    const gameResults = await queryBuilder;
 
     const gamesWithTeams: GameWithTeams[] = [];
     for (const game of gameResults) {
@@ -188,6 +195,27 @@ export class PostgresStorage implements IStorage {
     }
 
     return gamesWithTeams;
+  }
+
+  async getHistoricalGamesCount(season?: number, week?: number): Promise<number> {
+    let queryConditions = [
+      eq(games.completed, true), // Only completed games
+      lt(games.season, 2025)     // Only historical seasons (not current 2025)
+    ];
+
+    // Apply filters
+    if (season) {
+      queryConditions.push(eq(games.season, season));
+    }
+    if (week) {
+      queryConditions.push(eq(games.week, week));
+    }
+
+    const result = await db.select({ count: sql`cast(count(*) as integer)` })
+      .from(games)
+      .where(and(...queryConditions));
+
+    return Number(result[0]?.count) || 0;
   }
 
   async createGame(game: InsertGame): Promise<Game> {

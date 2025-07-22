@@ -112,6 +112,13 @@ The application follows a modern full-stack architecture with clear separation o
 
 ## Changelog
 
+- July 22, 2025: **Fixed Historical Games UI and Data Collection Issues**
+  - Fixed historical game cards to match upcoming games styling with proper gray background containers
+  - Resolved team name display showing "Unknown" by updating data mapping from CFBD API
+  - Fixed critical PostgreSQL parameter error in historical games filtering by adding missing getHistoricalGamesCount method
+  - Updated CFBD API integration to use correct field names (homeTeam/awayTeam vs home_team/away_team)
+  - Working historical sync now properly identifies completed games with valid team data and scores
+  - Historical games filtering by season/week now works correctly with pagination support
 - July 09, 2025: **Complete Historical Data Collection System Implemented**
   - Fixed critical data sync issues that were only collecting 251 games instead of thousands
   - Implemented comprehensive validation to prevent invalid games (home_team_id = away_team_id)
