@@ -1,7 +1,7 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { format } from "date-fns";
-import { Clock, Trophy, TrendingUp, Target } from "lucide-react";
+import { Clock, Trophy, TrendingUp, Target, Calendar } from "lucide-react";
 
 interface HistoricalGameCardProps {
   game: {
@@ -92,91 +92,100 @@ export function ImprovedHistoricalGameCard({ game }: HistoricalGameCardProps) {
     return null;
   };
 
+  const formatDate = (dateString: string) => {
+    const date = new Date(dateString);
+    return date.toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' });
+  };
+
+  const formatTime = (dateString: string) => {
+    const date = new Date(dateString);
+    return date.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
+  };
+
+  const formatTeamRecord = (wins: number, losses: number) => {
+    return `${wins}-${losses}`;
+  };
+
   return (
     <div className="bg-gray-100 rounded-lg p-1">
       <Card className="w-full bg-white border hover:shadow-md transition-shadow">
-        <CardContent className="p-6">
-          {/* Header with Historical Badge */}
-          <div className="flex justify-between items-center mb-4">
+        <CardContent className="p-4">
+          {/* Header */}
+          <div className="flex items-center justify-between mb-3">
             <div className="flex items-center gap-2">
+              <Calendar className="w-4 h-4 text-gray-500" />
+              <span className="text-sm font-medium text-gray-700">{formatDate(game.startDate)}</span>
               <Badge variant="secondary" className="bg-amber-100 text-amber-800 text-xs">
                 <Trophy className="w-3 h-3 mr-1" />
                 Historical Result
               </Badge>
             </div>
-            <div className="text-sm text-gray-600 flex items-center gap-1">
-              <Clock className="w-3 h-3" />
-              {format(new Date(game.startDate), "MMM d, yyyy")} • Week {game.week}
-            </div>
+            <span className="text-xs text-gray-500">Week {game.week}</span>
           </div>
 
-          {/* Teams and Scores - Similar to Game Card Layout */}
-          <div className="grid grid-cols-5 items-center gap-4 mb-6">
+          {/* Teams Display - Exact same as GameCard */}
+          <div className="grid grid-cols-3 items-center gap-4 mb-4">
             {/* Away Team */}
-            <div className="col-span-2 flex items-center gap-3">
-              <div className="w-12 h-12 flex-shrink-0 bg-gray-50 rounded-lg flex items-center justify-center">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 flex-shrink-0">
                 <img 
                   src={getTeamLogo(game.awayTeam)} 
                   alt={game.awayTeam.name}
-                  className="w-10 h-10 object-contain"
+                  className="w-full h-full object-contain"
                   onError={(e) => {
                     e.currentTarget.src = `https://a.espncdn.com/i/teamlogos/ncaa/500/default.png`;
                   }}
                 />
               </div>
               <div className="min-w-0 flex-1">
-                <div className="flex items-center gap-2 mb-1">
+                <div className="flex items-center gap-2">
                   {game.awayTeam.rank && (
-                    <span className="text-xs bg-blue-100 text-blue-800 px-2 py-0.5 rounded-full font-semibold">
+                    <span className="text-xs bg-yellow-100 text-yellow-800 px-1 rounded">
                       #{game.awayTeam.rank}
                     </span>
                   )}
-                  <span className={`font-bold text-lg ${awayWon ? "text-green-600" : "text-gray-700"}`}>
+                  <span className="font-semibold text-gray-900 truncate">
                     {game.awayTeam.name}
                   </span>
-                  {awayWon && <TrendingUp className="w-4 h-4 text-green-600" />}
                 </div>
-                <div className="text-sm text-gray-500">{game.awayTeam.conference || 'Unknown'}</div>
+                <div className="text-xs text-gray-500 mt-0.5">
+                  {game.awayTeam.conference}
+                </div>
               </div>
             </div>
 
-            {/* Score */}
+            {/* Score Display */}
             <div className="text-center">
-              <div className="text-3xl font-bold mb-1">
-                <span className={`${awayWon ? "text-green-600" : "text-gray-700"}`}>
-                  {awayScore}
-                </span>
+              <div className="text-2xl font-bold text-gray-900 mb-1">
+                <span className={awayWon ? "text-green-600" : ""}>{awayScore}</span>
                 <span className="text-gray-400 mx-2">-</span>
-                <span className={`${homeWon ? "text-green-600" : "text-gray-700"}`}>
-                  {homeScore}
-                </span>
+                <span className={homeWon ? "text-green-600" : ""}>{homeScore}</span>
               </div>
-              <Badge variant="outline" className="text-xs bg-gray-100">
-                {isTie ? "TIE" : "FINAL"}
-              </Badge>
+              <div className="text-xs text-gray-500">Final</div>
             </div>
 
             {/* Home Team */}
-            <div className="col-span-2 flex items-center gap-3 justify-end">
+            <div className="flex items-center gap-3 justify-end">
               <div className="min-w-0 flex-1 text-right">
-                <div className="flex items-center gap-2 justify-end mb-1">
-                  {homeWon && <TrendingUp className="w-4 h-4 text-green-600" />}
-                  <span className={`font-bold text-lg ${homeWon ? "text-green-600" : "text-gray-700"}`}>
+                <div className="flex items-center gap-2 justify-end">
+                  <span className="font-semibold text-gray-900 truncate">
                     {game.homeTeam.name}
                   </span>
                   {game.homeTeam.rank && (
-                    <span className="text-xs bg-blue-100 text-blue-800 px-2 py-0.5 rounded-full font-semibold">
+                    <span className="text-xs bg-yellow-100 text-yellow-800 px-1 rounded">
                       #{game.homeTeam.rank}
                     </span>
                   )}
                 </div>
-                <div className="text-sm text-gray-500">{game.homeTeam.conference || 'Unknown'}</div>
+                <div className="text-xs text-gray-500 mt-0.5 text-right">
+                  {game.homeTeam.conference}
+                </div>
               </div>
-              <div className="w-12 h-12 flex-shrink-0 bg-gray-50 rounded-lg flex items-center justify-center">
+              <div className="w-10 h-10 flex-shrink-0">
                 <img 
                   src={getTeamLogo(game.homeTeam)} 
                   alt={game.homeTeam.name}
-                  className="w-10 h-10 object-contain"
+                  className="w-full h-full object-contain"
                   onError={(e) => {
                     e.currentTarget.src = `https://a.espncdn.com/i/teamlogos/ncaa/500/default.png`;
                   }}
@@ -185,24 +194,21 @@ export function ImprovedHistoricalGameCard({ game }: HistoricalGameCardProps) {
             </div>
           </div>
 
-          {/* Betting Results - Only show if we have betting data */}
+          {/* Betting Results Section */}
           {(spread !== 0 || overUnder !== 0) && (
-            <div className="border-t border-gray-200 pt-4">
-              <div className="grid grid-cols-2 gap-6">
+            <div className="border-t pt-3">
+              <div className="grid grid-cols-2 gap-4">
                 {/* Spread Results */}
                 {spread !== 0 && (
                   <div className="text-center">
-                    <div className="flex items-center justify-center gap-1 mb-2">
-                      <Target className="w-3 h-3 text-gray-500" />
-                      <span className="text-xs text-gray-500 font-medium">SPREAD</span>
-                    </div>
-                    <div className="font-bold text-sm mb-2 text-gray-700">
+                    <div className="text-xs text-gray-500 mb-1">SPREAD</div>
+                    <div className="font-medium text-sm mb-1">
                       {spread > 0 ? `${game.awayTeam.name} +${spread}` : `${game.homeTeam.name} ${spread}`}
                     </div>
-                    <div className="flex justify-center mb-1">
+                    <div className="flex justify-center">
                       {getSpreadBadge()}
                     </div>
-                    <div className="text-xs text-gray-500">
+                    <div className="text-xs text-gray-500 mt-1">
                       Margin: by {Math.abs(actualMargin)}
                     </div>
                   </div>
@@ -211,15 +217,12 @@ export function ImprovedHistoricalGameCard({ game }: HistoricalGameCardProps) {
                 {/* Over/Under Results */}
                 {overUnder !== 0 && (
                   <div className="text-center">
-                    <div className="flex items-center justify-center gap-1 mb-2">
-                      <TrendingUp className="w-3 h-3 text-gray-500" />
-                      <span className="text-xs text-gray-500 font-medium">O/U</span>
-                    </div>
-                    <div className="font-bold text-sm mb-2 text-gray-700">{overUnder}</div>
-                    <div className="flex justify-center mb-1">
+                    <div className="text-xs text-gray-500 mb-1">O/U</div>
+                    <div className="font-medium text-sm mb-1">{overUnder}</div>
+                    <div className="flex justify-center">
                       {getOverUnderBadge()}
                     </div>
-                    <div className="text-xs text-gray-500">
+                    <div className="text-xs text-gray-500 mt-1">
                       Total: {totalPoints} ({Math.abs(totalPoints - overUnder)} {wentOver ? 'over' : 'under'})
                     </div>
                   </div>

@@ -38,9 +38,10 @@ export interface IStorage {
   getHistoricalGames(
     season?: number, 
     week?: number, 
-    teamId?: number, 
-    conference?: string
+    limit?: number,
+    offset?: number
   ): Promise<GameWithTeams[]>;
+  getHistoricalGamesCount(season?: number, week?: number): Promise<number>;
   getGamesByWeek(season: number, week: number): Promise<GameWithTeams[]>;
   createGame(game: InsertGame): Promise<Game>;
   updateGame(id: number, game: Partial<Game>): Promise<Game | undefined>;
