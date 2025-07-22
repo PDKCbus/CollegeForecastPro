@@ -30,9 +30,9 @@ export default function Home() {
   
   // Initial load with larger page size and sorting
   const { data: gamesResponse, isLoading } = useQuery({
-    queryKey: ["/api/games/upcoming", weekNumber],
+    queryKey: ["/api/games/upcoming"],
     queryFn: async () => {
-      const response = await fetch(`/api/games/upcoming?week=${weekNumber}&limit=100`);
+      const response = await fetch(`/api/games/upcoming?limit=100`);
       if (!response.ok) throw new Error('Failed to fetch games');
       return response.json();
     }
@@ -41,14 +41,20 @@ export default function Home() {
   // Extract games array from response
   const allUpcomingGames = gamesResponse?.games || gamesResponse || [];
 
-  // Filter games based on active filter, conference, and team search
+  // Filter games based on week, active filter, conference, and team search
   const upcomingGames = Array.isArray(allUpcomingGames) ? allUpcomingGames.filter((game: GameWithTeams) => {
+    // Apply week filter
+    let weekMatch = true;
+    if (weekNumber && weekNumber !== "all") {
+      weekMatch = game.week === parseInt(weekNumber);
+    }
+    
     // Apply category filter
     let categoryMatch = true;
     if (activeFilter === "top25") {
       // Check if either team has a ranking <= 25
-      const homeRanked = game.homeTeam?.ranking && game.homeTeam.ranking <= 25;
-      const awayRanked = game.awayTeam?.ranking && game.awayTeam.ranking <= 25;
+      const homeRanked = game.homeTeam?.rank && game.homeTeam.rank <= 25;
+      const awayRanked = game.awayTeam?.rank && game.awayTeam.rank <= 25;
       categoryMatch = homeRanked || awayRanked;
     }
     
@@ -67,11 +73,11 @@ export default function Home() {
                   game.awayTeam?.name.toLowerCase().includes(searchTerm);
     }
     
-    return categoryMatch && conferenceMatch && teamMatch;
+    return weekMatch && categoryMatch && conferenceMatch && teamMatch;
   }).sort((a, b) => {
     // Sort by highest ranking (lowest number = higher rank)
-    const aHighestRank = Math.min(a.homeTeam?.ranking || 999, a.awayTeam?.ranking || 999);
-    const bHighestRank = Math.min(b.homeTeam?.ranking || 999, b.awayTeam?.ranking || 999);
+    const aHighestRank = Math.min(a.homeTeam?.rank || 999, a.awayTeam?.rank || 999);
+    const bHighestRank = Math.min(b.homeTeam?.rank || 999, b.awayTeam?.rank || 999);
     return aHighestRank - bHighestRank;
   }) : [];
   
