@@ -202,7 +202,7 @@ export function ImprovedHistoricalGameCard({ game }: HistoricalGameCardProps) {
                 {spread !== 0 && (
                   <div className="text-center">
                     <div className="text-xs text-gray-500 mb-1">SPREAD</div>
-                    <div className="font-medium text-sm mb-1">
+                    <div className="font-medium text-sm mb-1 text-gray-900">
                       {spread > 0 ? `${game.awayTeam.name} +${spread}` : `${game.homeTeam.name} ${spread}`}
                     </div>
                     <div className="flex justify-center">
@@ -218,7 +218,7 @@ export function ImprovedHistoricalGameCard({ game }: HistoricalGameCardProps) {
                 {overUnder !== 0 && (
                   <div className="text-center">
                     <div className="text-xs text-gray-500 mb-1">O/U</div>
-                    <div className="font-medium text-sm mb-1">{overUnder}</div>
+                    <div className="font-medium text-sm mb-1 text-gray-900">{overUnder}</div>
                     <div className="flex justify-center">
                       {getOverUnderBadge()}
                     </div>

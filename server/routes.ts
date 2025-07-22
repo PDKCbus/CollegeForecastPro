@@ -343,7 +343,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       let allUpcomingGames;
       if (week) {
         const currentSeason = 2025;
-        allUpcomingGames = await storage.getHistoricalGames(currentSeason, week, undefined, undefined);
+        allUpcomingGames = await storage.getGamesByWeek(currentSeason, week);
       } else {
         allUpcomingGames = await storage.getUpcomingGames(50, 0);
       }
