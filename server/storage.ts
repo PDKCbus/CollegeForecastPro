@@ -325,6 +325,37 @@ export class MemStorage implements IStorage {
     return updatedSentiment;
   }
 
+  // Missing method needed for week filtering
+  async getGamesByWeek(season: number, week: number): Promise<GameWithTeams[]> {
+    const gamesInWeek = Array.from(this.games.values())
+      .filter(game => game.season === season && game.week === week && !game.completed)
+      .sort((a, b) => {
+        // Sort by game date
+        const dateA = new Date(a.startDate);
+        const dateB = new Date(b.startDate);
+        return dateA.getTime() - dateB.getTime();
+      });
+    
+    return Promise.all(gamesInWeek.map(async game => {
+      const homeTeam = await this.getTeam(game.homeTeamId);
+      const awayTeam = await this.getTeam(game.awayTeamId);
+      
+      if (!homeTeam || !awayTeam) {
+        throw new Error(`Missing team data for game ${game.id}`);
+      }
+      
+      const predictions = Array.from(this.predictions.values())
+        .filter(p => p.gameId === game.id);
+      
+      return {
+        ...game,
+        homeTeam,
+        awayTeam,
+        prediction: predictions.length > 0 ? predictions[0] : undefined
+      };
+    }));
+  }
+
   // Helper methods to initialize sample data
   private initializeTeams() {
     const sampleTeams: InsertTeam[] = [

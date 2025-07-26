@@ -31,9 +31,12 @@ export default function Home() {
   
   // Initial load with larger page size and sorting
   const { data: gamesResponse, isLoading } = useQuery({
-    queryKey: ["/api/games/upcoming"],
+    queryKey: ["/api/games/upcoming", weekNumber],
     queryFn: async () => {
-      const response = await fetch(`/api/games/upcoming?limit=100`);
+      const url = weekNumber && weekNumber !== "all" 
+        ? `/api/games/upcoming?limit=100&week=${weekNumber}`
+        : `/api/games/upcoming?limit=100`;
+      const response = await fetch(url);
       if (!response.ok) throw new Error('Failed to fetch games');
       return response.json();
     }
@@ -42,13 +45,9 @@ export default function Home() {
   // Extract games array from response
   const allUpcomingGames = gamesResponse?.games || gamesResponse || [];
 
-  // Filter games based on week, active filter, conference, and team search
+  // Filter games based on active filter, conference, and team search (week filtering now done in API)
   const upcomingGames = Array.isArray(allUpcomingGames) ? allUpcomingGames.filter((game: GameWithTeams) => {
-    // Apply week filter
-    let weekMatch = true;
-    if (weekNumber && weekNumber !== "all") {
-      weekMatch = game.week === parseInt(weekNumber);
-    }
+    // Week filtering is now handled by the API, so we skip it here
     
     // Apply category filter
     let categoryMatch = true;
@@ -74,7 +73,7 @@ export default function Home() {
                   game.awayTeam?.name.toLowerCase().includes(searchTerm);
     }
     
-    return weekMatch && categoryMatch && conferenceMatch && teamMatch;
+    return categoryMatch && conferenceMatch && teamMatch;
   }).sort((a, b) => {
     // Sort by highest ranking (lowest number = higher rank)
     const aHighestRank = Math.min(a.homeTeam?.rank || 999, a.awayTeam?.rank || 999);
