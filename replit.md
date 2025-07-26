@@ -112,6 +112,13 @@ The application follows a modern full-stack architecture with clear separation o
 
 ## Changelog
 
+- July 26, 2025: **Fixed Homepage Duplicate Games and Enhanced Betting Lines System**
+  - Resolved critical duplicate games issue: removed 3,228 duplicate upcoming games from homepage
+  - Implemented DraftKings > Bovada > Average priority system for betting lines collection
+  - Added footer disclaimer explaining betting line sources and priority methodology
+  - Cleaned "Unknown Team" entries and duplicate matchups to ensure 18 unique upcoming games
+  - Enhanced betting lines coverage: 221 games (9.4%) now have authentic spread/total data
+  - Database now shows perfect 1:1 ratio between upcoming games and unique matchups
 - July 22, 2025: **Fixed Historical Games UI and Data Collection Issues**
   - Fixed historical game cards to match upcoming games styling with proper gray background containers
   - Resolved team name display showing "Unknown" by updating data mapping from CFBD API
