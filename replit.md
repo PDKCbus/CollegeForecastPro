@@ -112,6 +112,14 @@ The application follows a modern full-stack architecture with clear separation o
 
 ## Changelog
 
+- July 26, 2025: **Complete 2025 Season Data & Fixed Server Restart Data Loss**
+  - CRITICAL DISCOVERY: All previous sync work was lost due to in-memory processing - explains weeks of missing progress
+  - Created standalone data collection scripts that persist regardless of server restarts (historical-backfill-script.ts, priority-backfill.ts, complete-2025-season.ts)
+  - Completed 2025 season: 1,112 games across all weeks 1-15 (previously only Week 1 available)
+  - Added 2014 historical data: 311 completed games with authentic scores for analysis
+  - Fixed homepage duplicate games issue: cleaned 20 duplicates, now perfect 1:1 unique matchups
+  - Updated week filtering: Homepage now supports filtering by all weeks 1-15 instead of just weeks 1-5
+  - Total dataset: 2,663+ games across 13 seasons with proper data persistence architecture
 - July 26, 2025: **Fixed Homepage Duplicate Games and Enhanced Betting Lines System**
   - Resolved critical duplicate games issue: removed 3,228 duplicate upcoming games from homepage
   - Implemented DraftKings > Bovada > Average priority system for betting lines collection
