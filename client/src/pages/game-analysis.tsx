@@ -63,7 +63,7 @@ export default function GameAnalysis() {
   // Also try to fetch the specific game if not found in upcoming games
   const { data: specificGame } = useQuery<GameWithTeams>({
     queryKey: [`/api/games/${selectedGameId}`],
-    enabled: !!selectedGameId && !upcomingGames.find(game => game.id.toString() === selectedGameId),
+    enabled: !!selectedGameId && upcomingGames && upcomingGames.length > 0 && !upcomingGames.find(game => game.id.toString() === selectedGameId),
   });
 
   const { data: gameAnalysis } = useQuery<{
@@ -78,7 +78,7 @@ export default function GameAnalysis() {
     enabled: !!selectedGameId,
   });
 
-  const selectedGame = upcomingGames.find(game => game.id.toString() === selectedGameId) || specificGame;
+  const selectedGame = (upcomingGames && upcomingGames.find(game => game.id.toString() === selectedGameId)) || specificGame;
 
   // Algorithm-based prediction system
   const generateAnalytics = () => {
