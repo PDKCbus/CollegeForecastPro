@@ -56,14 +56,17 @@ export default function GameAnalysis() {
     }
   }, [location]); // Include location dependency to trigger on navigation
 
-  const { data: upcomingGames = [] } = useQuery<GameWithTeams[]>({
+  const { data: upcomingGames = [], isLoading: isLoadingUpcoming } = useQuery<GameWithTeams[]>({
     queryKey: ['/api/games/upcoming'],
   });
+
+  // Safely check if game exists in upcoming games
+  const gameExistsInUpcoming = upcomingGames && Array.isArray(upcomingGames) && upcomingGames.some(game => game.id.toString() === selectedGameId);
 
   // Also try to fetch the specific game if not found in upcoming games
   const { data: specificGame } = useQuery<GameWithTeams>({
     queryKey: [`/api/games/${selectedGameId}`],
-    enabled: !!selectedGameId && upcomingGames && upcomingGames.length > 0 && !upcomingGames.find(game => game.id.toString() === selectedGameId),
+    enabled: !!selectedGameId && !isLoadingUpcoming && !gameExistsInUpcoming,
   });
 
   const { data: gameAnalysis } = useQuery<{
@@ -78,7 +81,7 @@ export default function GameAnalysis() {
     enabled: !!selectedGameId,
   });
 
-  const selectedGame = (upcomingGames && upcomingGames.find(game => game.id.toString() === selectedGameId)) || specificGame;
+  const selectedGame = (upcomingGames && Array.isArray(upcomingGames) && upcomingGames.find(game => game.id.toString() === selectedGameId)) || specificGame;
 
   // Algorithm-based prediction system
   const generateAnalytics = () => {
