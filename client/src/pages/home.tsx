@@ -114,6 +114,7 @@ export default function Home() {
   });
   
   const handleWeekChange = (week: string) => {
+    console.log('Week changed to:', week);
     setSelectedWeek(week);
   };
   
