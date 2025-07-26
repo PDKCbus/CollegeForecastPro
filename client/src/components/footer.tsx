@@ -64,14 +64,22 @@ export function Footer() {
           </div>
         </div>
         
-        <div className="border-t border-surface-light pt-8 flex flex-col md:flex-row justify-between items-center">
-          <div className="text-white/60 text-sm mb-4 md:mb-0">
-            &copy; {new Date().getFullYear()} Rick's Picks. All rights reserved.
+        <div className="border-t border-surface-light pt-8">
+          <div className="text-center mb-4">
+            <p className="text-white/50 text-xs">
+              Betting lines sourced from DraftKings, Bovada, and other major sportsbooks via College Football Data API. 
+              Lines prioritize DraftKings, then Bovada, with averaging when multiple sources available.
+            </p>
           </div>
-          <div className="flex space-x-6">
-            <a href="#" className="text-white/60 hover:text-white text-sm transition-colors">Privacy Policy</a>
-            <a href="#" className="text-white/60 hover:text-white text-sm transition-colors">Terms of Service</a>
-            <a href="#" className="text-white/60 hover:text-white text-sm transition-colors">Cookie Policy</a>
+          <div className="flex flex-col md:flex-row justify-between items-center">
+            <div className="text-white/60 text-sm mb-4 md:mb-0">
+              &copy; {new Date().getFullYear()} Rick's Picks. All rights reserved.
+            </div>
+            <div className="flex space-x-6">
+              <a href="#" className="text-white/60 hover:text-white text-sm transition-colors">Privacy Policy</a>
+              <a href="#" className="text-white/60 hover:text-white text-sm transition-colors">Terms of Service</a>
+              <a href="#" className="text-white/60 hover:text-white text-sm transition-colors">Cookie Policy</a>
+            </div>
           </div>
         </div>
       </div>
