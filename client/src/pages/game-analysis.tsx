@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useLocation } from "wouter";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -81,7 +81,13 @@ export default function GameAnalysis() {
     enabled: !!selectedGameId,
   });
 
-  const selectedGame = (upcomingGames && Array.isArray(upcomingGames) && upcomingGames.find(game => game.id.toString() === selectedGameId)) || specificGame;
+  // Safely find the selected game
+  const selectedGame = useMemo(() => {
+    if (upcomingGames && Array.isArray(upcomingGames) && selectedGameId) {
+      return upcomingGames.find(game => game.id.toString() === selectedGameId) || specificGame;
+    }
+    return specificGame;
+  }, [upcomingGames, selectedGameId, specificGame]);
 
   // Algorithm-based prediction system
   const generateAnalytics = () => {
@@ -305,11 +311,13 @@ export default function GameAnalysis() {
               <SelectValue placeholder="Select a game to analyze" />
             </SelectTrigger>
             <SelectContent>
-              {upcomingGames.map((game) => (
+              {upcomingGames && Array.isArray(upcomingGames) ? upcomingGames.map((game) => (
                 <SelectItem key={game.id} value={game.id.toString()}>
                   {game.awayTeam?.name} @ {game.homeTeam?.name}
                 </SelectItem>
-              ))}
+              )) : (
+                <SelectItem value="loading">Loading games...</SelectItem>
+              )}
             </SelectContent>
           </Select>
         </div>
