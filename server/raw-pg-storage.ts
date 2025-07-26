@@ -126,6 +126,17 @@ export class RawPGStorage {
     }
   }
 
+  // Add query method for direct SQL access
+  async query(text: string, params?: any[]): Promise<any> {
+    const client = await this.pool.connect();
+    try {
+      return await client.query(text, params);
+    } finally {
+      client.release();
+    }
+  }
+
+  // Close the pool
   async close(): Promise<void> {
     await this.pool.end();
   }
