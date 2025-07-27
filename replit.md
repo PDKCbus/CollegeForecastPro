@@ -120,6 +120,11 @@ The application follows a modern full-stack architecture with clear separation o
 
 ## Changelog
 
+- July 27, 2025: **CLEANUP: Removed Legacy Manual Sync UI Elements**
+  - **REMOVED OBSOLETE BUTTONS**: Eliminated "Fill Scores" and "Mark Completed" buttons from Historical Games page
+  - **LEGACY CLEANUP**: These manual sync buttons are no longer needed with complete authentic dataset
+  - **AUTOMATIC HANDLING**: Weekly collector now automatically updates completion status based on game times and scores
+  - **STREAMLINED UI**: Historical page now focuses purely on game analysis and filtering without manual data operations
 - July 27, 2025: **CRITICAL FIX: Duplicate Game Cards Prevention with Regression Tests**
   - **RECURRING ISSUE RESOLVED**: Fixed duplicate upcoming game cards that kept reappearing in UI
   - **ROOT CAUSE**: Database contained 10 duplicate upcoming games (Kansas State @ Iowa State, Fresno State @ Kansas, etc.)
