@@ -1921,6 +1921,47 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Team analytics endpoints
+  app.get("/api/teams/:teamId/analytics", async (req, res) => {
+    try {
+      const { TeamAnalyticsEngine } = await import("./team-analytics-engine");
+      const teamId = parseInt(req.params.teamId);
+      const analytics = await TeamAnalyticsEngine.getTeamAnalytics(teamId);
+      
+      if (!analytics) {
+        return res.status(404).json({ error: "Team analytics not found" });
+      }
+      
+      res.json(analytics);
+    } catch (error) {
+      console.error("Error fetching team analytics:", error);
+      res.status(500).json({ error: "Failed to fetch team analytics" });
+    }
+  });
+
+  app.post("/api/teams/collect-stats", async (req, res) => {
+    try {
+      const { CFBDTeamStatsCollector } = await import("./cfbd-team-stats-collector");
+      const { season = 2025 } = req.body;
+      await CFBDTeamStatsCollector.performFullAnalyticsUpdate(season);
+      res.json({ success: true, message: `Team analytics updated for ${season} season` });
+    } catch (error) {
+      console.error("Error collecting team stats:", error);
+      res.status(500).json({ error: "Failed to collect team stats" });
+    }
+  });
+
+  app.post("/api/teams/initialize-elo", async (req, res) => {
+    try {
+      const { initializeTeamEloRatings } = await import("./cfbd-team-stats-collector");
+      await initializeTeamEloRatings();
+      res.json({ success: true, message: "ELO ratings initialized" });
+    } catch (error) {
+      console.error("Error initializing ELO ratings:", error);
+      res.status(500).json({ error: "Failed to initialize ELO ratings" });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }
