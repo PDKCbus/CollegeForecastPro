@@ -9,6 +9,7 @@ import { historicalSync } from "./historical-sync";
 import { comprehensiveDataSync } from "./comprehensive-data-sync";
 import { RicksPicksPredictionEngine } from "./rick-picks-engine";
 import CFBDELOService from "./cfbd-elo-integration";
+import ELORatingsCollector from "./elo-ratings-collector";
 import { z } from "zod";
 import { insertGameSchema, insertTeamSchema, insertPredictionSchema, insertSentimentAnalysisSchema } from "@shared/schema";
 
@@ -2057,6 +2058,113 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error('CFBD ELO test error:', error);
       res.status(500).json({ message: 'CFBD ELO test failed', error: String(error) });
+    }
+  });
+
+  // Collect current ELO ratings for teams
+  app.post('/api/elo/collect-current', async (req, res) => {
+    try {
+      const eloCollector = new ELORatingsCollector();
+      const { year } = req.body;
+      const currentYear = year || new Date().getFullYear();
+      
+      const ratingsUpdated = await eloCollector.collectCurrentELORatings(currentYear);
+      
+      res.json({
+        success: true,
+        ratingsUpdated,
+        message: `Updated ${ratingsUpdated} teams with current ELO ratings for ${currentYear}`
+      });
+    } catch (error) {
+      console.error('ELO collection error:', error);
+      res.status(500).json({ message: 'Failed to collect ELO ratings', error: String(error) });
+    }
+  });
+
+  // Collect game ELO data for specific season/week
+  app.post('/api/elo/collect-games', async (req, res) => {
+    try {
+      const eloCollector = new ELORatingsCollector();
+      const { season, week } = req.body;
+      
+      if (!season) {
+        return res.status(400).json({ message: 'Season is required' });
+      }
+      
+      const gamesUpdated = await eloCollector.collectGameELOData(season, week);
+      
+      res.json({
+        success: true,
+        gamesUpdated,
+        message: `Updated ${gamesUpdated} games with ELO data for ${season}${week ? ` week ${week}` : ''}`
+      });
+    } catch (error) {
+      console.error('Game ELO collection error:', error);
+      res.status(500).json({ message: 'Failed to collect game ELO data', error: String(error) });
+    }
+  });
+
+  // Initialize ELO for all seasons
+  app.post('/api/elo/initialize-all', async (req, res) => {
+    try {
+      const eloCollector = new ELORatingsCollector();
+      
+      res.json({
+        success: true,
+        message: 'ELO initialization started - this will take several minutes',
+        status: 'processing'
+      });
+      
+      // Run initialization in background
+      eloCollector.initializeELOForAllSeasons().catch(error => {
+        console.error('Background ELO initialization failed:', error);
+      });
+      
+    } catch (error) {
+      console.error('ELO initialization error:', error);
+      res.status(500).json({ message: 'Failed to start ELO initialization', error: String(error) });
+    }
+  });
+
+  // Enrich upcoming games with ELO data
+  app.post('/api/elo/enrich-upcoming', async (req, res) => {
+    try {
+      const eloCollector = new ELORatingsCollector();
+      const gamesUpdated = await eloCollector.enrichUpcomingGamesWithELO();
+      
+      res.json({
+        success: true,
+        gamesUpdated,
+        message: `Enriched ${gamesUpdated} upcoming games with ELO data`
+      });
+    } catch (error) {
+      console.error('Upcoming games ELO enrichment error:', error);
+      res.status(500).json({ message: 'Failed to enrich upcoming games with ELO', error: String(error) });
+    }
+  });
+
+  // Get team ELO rating
+  app.get('/api/elo/team/:teamName', async (req, res) => {
+    try {
+      const eloCollector = new ELORatingsCollector();
+      const teamName = req.params.teamName;
+      const eloRating = await eloCollector.getTeamELORating(teamName);
+      
+      if (eloRating !== null) {
+        res.json({
+          teamName,
+          eloRating,
+          message: `Current ELO rating for ${teamName}`
+        });
+      } else {
+        res.status(404).json({
+          teamName,
+          message: `No ELO rating found for ${teamName}`
+        });
+      }
+    } catch (error) {
+      console.error('Team ELO lookup error:', error);
+      res.status(500).json({ message: 'Failed to get team ELO rating', error: String(error) });
     }
   });
 

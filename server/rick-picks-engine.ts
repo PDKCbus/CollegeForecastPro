@@ -156,10 +156,22 @@ export class RicksPicksPredictionEngine {
   }
 
   calculateEloFactor(game: any): number {
-    // Check for CFBD ELO data first (authentic source)
+    // Check for CFBD ELO data in game object first (authentic source)
+    if (game.homePregameElo && game.awayPregameElo) {
+      const eloAdvantage = game.homePregameElo - game.awayPregameElo;
+      return eloAdvantage / 25; // Convert to point spread
+    }
+    
+    // Check for CFBD ELO data nested in cfbdEloData
     if (game.cfbdEloData && game.cfbdEloData.homePregameELO && game.cfbdEloData.awayPregameELO) {
       const eloAdvantage = game.cfbdEloData.homePregameELO - game.cfbdEloData.awayPregameELO;
       return eloAdvantage / 25; // Convert to point spread
+    }
+    
+    // Check for current ELO ratings in team objects
+    if (game.homeTeam.currentEloRating && game.awayTeam.currentEloRating) {
+      const eloAdvantage = (game.homeTeam.currentEloRating + 50) - game.awayTeam.currentEloRating; // +50 home advantage
+      return eloAdvantage / 25;
     }
     
     // Fallback to our basic ELO if available
@@ -239,11 +251,36 @@ export class RicksPicksPredictionEngine {
     const keyFactors = [];
     
     // CFBD ELO factors (highest priority - authentic data)
-    if (game.cfbdEloData && game.cfbdEloData.homePregameELO) {
-      const eloAdvantage = game.cfbdEloData.homePregameELO - game.cfbdEloData.awayPregameELO;
-      if (Math.abs(eloAdvantage) > 50) {
-        keyFactors.push(`CFBD ELO edge: ${eloAdvantage > 0 ? 'Home' : 'Away'} ${Math.abs(eloAdvantage)} points`);
+    let eloAdvantage = 0;
+    let hasEloData = false;
+    
+    // Check for ELO data in game object first
+    if (game.homePregameElo && game.awayPregameElo) {
+      eloAdvantage = game.homePregameElo - game.awayPregameElo;
+      hasEloData = true;
+    }
+    // Check for nested CFBD ELO data
+    else if (game.cfbdEloData && game.cfbdEloData.homePregameELO) {
+      eloAdvantage = game.cfbdEloData.homePregameELO - game.cfbdEloData.awayPregameELO;
+      hasEloData = true;
+    }
+    // Check for current team ELO ratings
+    else if (game.homeTeam.currentEloRating && game.awayTeam.currentEloRating) {
+      eloAdvantage = game.homeTeam.currentEloRating - game.awayTeam.currentEloRating;
+      hasEloData = true;
+    }
+    
+    if (hasEloData && Math.abs(eloAdvantage) > 50) {
+      keyFactors.push(`ELO edge: ${eloAdvantage > 0 ? 'Home' : 'Away'} ${Math.abs(eloAdvantage)} points`);
+    }
+    
+    // Win probability from CFBD or calculated from ELO
+    if (game.homeWinProbability && game.awayWinProbability) {
+      const winProb = Math.max(game.homeWinProbability, game.awayWinProbability);
+      if (winProb > 65) {
+        keyFactors.push(`High win probability: ${winProb.toFixed(1)}%`);
       }
+    } else if (game.cfbdEloData && game.cfbdEloData.homeWinProb) {
       const winProb = Math.max(game.cfbdEloData.homeWinProb, game.cfbdEloData.awayWinProb);
       if (winProb > 0.65) {
         keyFactors.push(`High win probability: ${(winProb * 100).toFixed(1)}%`);
