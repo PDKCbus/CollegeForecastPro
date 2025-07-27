@@ -7,6 +7,7 @@ import { eq, and, desc, lt, or, gte, sql } from "drizzle-orm";
 import { sentimentService } from "./sentiment";
 import { historicalSync } from "./historical-sync";
 import { comprehensiveDataSync } from "./comprehensive-data-sync";
+import { RicksPicksPredictionEngine } from "./rick-picks-engine";
 import { z } from "zod";
 import { insertGameSchema, insertTeamSchema, insertPredictionSchema, insertSentimentAnalysisSchema } from "@shared/schema";
 
@@ -1971,6 +1972,55 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error initializing ELO ratings:", error);
       res.status(500).json({ error: "Failed to initialize ELO ratings" });
+    }
+  });
+
+  // Rick's Picks Prediction Engine - Data-driven predictions based on 28,431 game analysis
+  app.get('/api/rick-picks/:gameId', async (req, res) => {
+    try {
+      const gameId = parseInt(req.params.gameId);
+      const game = await storage.getGameWithTeams(gameId);
+      
+      if (!game) {
+        return res.status(404).json({ message: 'Game not found' });
+      }
+      
+      const engine = new RicksPicksPredictionEngine();
+      const prediction = engine.generateGamePrediction(game);
+      
+      res.json(prediction);
+    } catch (error) {
+      console.error('Rick\'s Picks prediction error:', error);
+      res.status(500).json({ message: 'Failed to generate Rick\'s prediction' });
+    }
+  });
+
+  // Rick's Picks for all upcoming games
+  app.get('/api/rick-picks', async (req, res) => {
+    try {
+      const upcomingGames = await storage.getUpcomingGames(20, 0);
+      
+      if (upcomingGames.length === 0) {
+        return res.json({ predictions: [], summary: 'No upcoming games found' });
+      }
+      
+      const engine = new RicksPicksPredictionEngine();
+      const predictions = engine.generatePredictions(upcomingGames);
+      const topPlays = engine.getTopPlays(predictions, 65);
+      
+      res.json({
+        predictions,
+        topPlays,
+        summary: {
+          totalGames: predictions.length,
+          highConfidencePlays: topPlays.length,
+          avgSpreadConfidence: predictions.reduce((sum, p) => sum + p.spreadConfidence, 0) / predictions.length,
+          avgTotalConfidence: predictions.reduce((sum, p) => sum + p.totalConfidence, 0) / predictions.length
+        }
+      });
+    } catch (error) {
+      console.error('Rick\'s Picks bulk prediction error:', error);
+      res.status(500).json({ message: 'Failed to generate Rick\'s predictions' });
     }
   });
 
