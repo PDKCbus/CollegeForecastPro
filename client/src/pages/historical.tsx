@@ -7,21 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 
-interface RickRecord {
-  spread: {
-    wins: number;
-    losses: number;
-    total: number;
-    percentage: number;
-  };
-  overUnder: {
-    wins: number;
-    losses: number;
-    total: number;
-    percentage: number;
-  };
-  totalGames: number;
-}
+
 
 export default function Historical() {
   const [selectedWeek, setSelectedWeek] = useState("all"); // Show all weeks by default
@@ -73,9 +59,7 @@ export default function Historical() {
     });
   }, [games.length, pagination?.total, isLoading, error, selectedSeason, selectedWeek]);
 
-  const { data: rickRecord, isLoading: recordLoading } = useQuery<RickRecord>({
-    queryKey: ["/api/ricks-record"],
-  });
+
 
   const syncHistoricalMutation = useMutation({
     mutationFn: () => 
@@ -133,51 +117,7 @@ export default function Historical() {
         )}
       </div>
 
-      {/* Rick's Overall Record */}
-      <div className="mb-8 bg-surface-light rounded-lg p-6">
-        <div className="flex items-center justify-between mb-4">
-          <h2 className="text-xl font-bold text-white">Rick's Overall Record</h2>
-          <div className="flex gap-2">
-            {import.meta.env.DEV && (
-              <>
 
-              </>
-            )}
-          </div>
-        </div>
-        
-        {recordLoading ? (
-          <div className="text-white/60">Loading record...</div>
-        ) : rickRecord ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div className="bg-surface rounded-lg p-4">
-              <h3 className="text-lg font-semibold text-white mb-2">Against the Spread</h3>
-              <div className="flex items-center justify-between">
-                <div className="text-2xl font-bold text-accent">
-                  {rickRecord.spread.percentage}%
-                </div>
-                <div className="text-white/70">
-                  {rickRecord.spread.wins}-{rickRecord.spread.losses} ({rickRecord.spread.total} total)
-                </div>
-              </div>
-            </div>
-            
-            <div className="bg-surface rounded-lg p-4">
-              <h3 className="text-lg font-semibold text-white mb-2">Over/Under</h3>
-              <div className="flex items-center justify-between">
-                <div className="text-2xl font-bold text-accent">
-                  {rickRecord.overUnder.percentage}%
-                </div>
-                <div className="text-white/70">
-                  {rickRecord.overUnder.wins}-{rickRecord.overUnder.losses} ({rickRecord.overUnder.total} total)
-                </div>
-              </div>
-            </div>
-          </div>
-        ) : (
-          <div className="text-white/60">No historical data available. Click "Load Historical Data" to get started.</div>
-        )}
-      </div>
 
       {/* Filter Controls */}
       <div className="mb-6 bg-surface-light rounded-lg p-6">
