@@ -280,11 +280,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const countResult = await db.execute(sql.raw(countQuery));
       const total = parseInt(countResult[0]?.total || '0');
       
-      // Get paginated games with team data - ORDER BY season DESC puts 2024 first
+      // Get paginated games with team data and weather info - ORDER BY season DESC puts 2024 first
       const gameQuery = `
         SELECT 
           g.id, g.home_team_id, g.away_team_id, g.start_date, g.season, g.week, 
           g.completed, g.home_team_score, g.away_team_score, g.spread, g.over_under,
+          g.temperature, g.wind_speed, g.wind_direction, g.humidity, g.precipitation, 
+          g.weather_condition, g.is_dome, g.weather_impact_score,
           ht.name as home_team_name, ht.abbreviation as home_team_abbr, 
           ht.logo_url as home_team_logo, ht.color as home_team_color,
           at.name as away_team_name, at.abbreviation as away_team_abbr,
@@ -299,7 +301,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       const gamesResult = await db.execute(sql.raw(gameQuery));
       
-      // Format games for frontend
+      // Format games for frontend including weather data
       const formattedGames = gamesResult.map((row: any) => ({
         id: row.id,
         homeTeamId: row.home_team_id,
@@ -312,6 +314,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
         awayTeamScore: row.away_team_score,
         spread: row.spread,
         overUnder: row.over_under,
+        // Weather fields
+        temperature: row.temperature,
+        windSpeed: row.wind_speed,
+        windDirection: row.wind_direction,
+        humidity: row.humidity,
+        precipitation: row.precipitation,
+        weatherCondition: row.weather_condition,
+        isDome: row.is_dome,
+        weatherImpactScore: row.weather_impact_score,
         homeTeam: {
           id: row.home_team_id,
           name: row.home_team_name,

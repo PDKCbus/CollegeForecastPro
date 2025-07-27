@@ -56,6 +56,68 @@ export function HistoricalGameCard({ game }: HistoricalGameCardProps) {
   const spread = game.spread || 0;
   const overUnder = game.overUnder || 0;
 
+  const getWeatherDisplay = () => {
+    // Check if game has actual weather data from the database
+    const temp = (game as any).temperature;
+    const windSpeed = (game as any).windSpeed || (game as any).wind_speed;
+    const weatherCondition = (game as any).weatherCondition || (game as any).weather_condition;
+    const precipitation = (game as any).precipitation;
+    const isDome = (game as any).isDome || (game as any).is_dome;
+
+    // Show dome indicator if confirmed dome venue
+    if (isDome) {
+      return (
+        <div className="flex items-center gap-1 text-sm text-gray-600">
+          <span className="text-base">🏟️</span>
+          <span>Dome</span>
+        </div>
+      );
+    }
+
+    // Only show weather if we have actual data
+    const hasWeatherData = temp !== null || windSpeed !== null || weatherCondition !== null || precipitation !== null;
+    
+    if (!hasWeatherData) {
+      return null;
+    }
+
+    const condition = weatherCondition?.toLowerCase() || '';
+    let icon = '';
+    let label = '';
+
+    // Determine weather icon based on actual data
+    if (precipitation > 0) {
+      if (condition.includes('snow') || (temp && temp < 35)) {
+        icon = '❄️';
+        label = 'Snow';
+      } else {
+        icon = '🌧️';
+        label = 'Rain';
+      }
+    } else if (windSpeed > 15) {
+      icon = '💨';
+      label = `${windSpeed} mph`;
+    } else if (temp && temp < 40) {
+      icon = '🥶';
+      label = `${Math.round(temp)}°F`;
+    } else if (condition.includes('cloud')) {
+      icon = '☁️';
+      label = 'Cloudy';
+    } else if (temp) {
+      icon = '☀️';
+      label = `${Math.round(temp)}°F`;
+    } else {
+      return null;
+    }
+
+    return (
+      <div className="flex items-center gap-1 text-sm text-gray-600">
+        <span className="text-base">{icon}</span>
+        <span>{label}</span>
+      </div>
+    );
+  };
+
   // Calculate spread coverage
   const actualMargin = homeScore - awayScore;
   const predictedMargin = -spread; // Vegas spread (negative means home favored)
@@ -103,12 +165,7 @@ export function HistoricalGameCard({ game }: HistoricalGameCardProps) {
             <div className="text-sm text-gray-600">
               {format(new Date(game.startDate), "EEEE, MMM d")} • Week {game.week}
             </div>
-            {game.weather && (
-              <div className="flex items-center gap-1 text-sm">
-                <span>{game.weather.icon}</span>
-                <span className="text-gray-600">{game.weather.temperature}°F</span>
-              </div>
-            )}
+            {getWeatherDisplay()}
           </div>
 
           {/* Teams and Scores */}
