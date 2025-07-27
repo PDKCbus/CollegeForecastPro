@@ -122,6 +122,14 @@ The application follows a modern full-stack architecture with clear separation o
 
 ## Changelog
 
+- July 27, 2025: **RICK'S PICKS ADMIN SYSTEM: Personal Picks with Algorithmic Fallback Completed**
+  - **ADMIN PANEL INTEGRATION**: Complete admin system allows Rick to make weekly picks via secure login interface (default: rick/RicksPicks2025!)
+  - **DUAL PREDICTION SYSTEM**: Game cards display Rick's personal picks when available, automatically fall back to algorithmic predictions when missing
+  - **VISUAL SOURCE INDICATORS**: Clear differentiation between "🏈 RICK'S PICK" (blue) and "🤖 ALGORITHM PICK" (gray) with fallback messaging
+  - **COMPREHENSIVE PICK MANAGEMENT**: Admin can select season/week, make spread picks, over/under picks, set confidence levels, and add personal notes
+  - **NO EMPTY GAME CARDS**: Guaranteed fallback system ensures every game always displays a prediction - never shows blank or missing data
+  - **API INTEGRATION**: Rick's picks stored in database with CRUD operations, seamlessly integrated with existing prediction infrastructure
+  - **AUTHENTIC DATA ONLY**: All predictions use research-based algorithmic findings as baseline, Rick's expertise complements data-driven insights
 - July 27, 2025: **PRESEASON RANKINGS INTEGRATION: Week 1 Predictions with Authentic Data Sources**
   - **PRESEASON RANKINGS COLLECTOR**: Added CFBD API integration for preseason AP Poll rankings and recruiting class data
   - **WEEK 1 TOOLTIP**: Added info tooltip next to "Team Analytics Comparisons" explaining preseason data usage for Week 1 vs real stats for later weeks
