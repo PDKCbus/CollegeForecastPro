@@ -4,6 +4,7 @@ import { FeaturedGame } from "@/components/featured-game";
 import { GameCard } from "@/components/game-card";
 import { FeatureHighlights } from "@/components/feature-highlights";
 import { CTASection } from "@/components/cta-section";
+import { SeasonStatsSection } from "@/components/season-stats-section";
 import { Button } from "@/components/ui/button";
 import { useQuery, useMutation, useInfiniteQuery } from "@tanstack/react-query";
 import { useState, useEffect, useCallback } from "react";
@@ -53,8 +54,8 @@ export default function Home() {
     let categoryMatch = true;
     if (activeFilter === "top25") {
       // Check if either team has a ranking <= 25
-      const homeRanked = game.homeTeam?.rank && game.homeTeam.rank <= 25;
-      const awayRanked = game.awayTeam?.rank && game.awayTeam.rank <= 25;
+      const homeRanked = !!(game.homeTeam?.rank && game.homeTeam.rank <= 25);
+      const awayRanked = !!(game.awayTeam?.rank && game.awayTeam.rank <= 25);
       categoryMatch = homeRanked || awayRanked;
     }
     
@@ -173,7 +174,8 @@ export default function Home() {
           </div>
         )}
         
-
+        {/* Season Stats Section */}
+        <SeasonStatsSection />
         
         {isLoading ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
