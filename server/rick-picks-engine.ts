@@ -156,28 +156,39 @@ export class RicksPicksPredictionEngine {
   }
 
   calculateEloFactor(game: any): number {
+    // CRITICAL: Only use ELO if BOTH teams have valid ratings
+    // Never allow NULL/undefined ELO to be treated as 0 (terrible team)
+    
     // Check for CFBD ELO data in game object first (authentic source)
-    if (game.homePregameElo && game.awayPregameElo) {
+    if (game.homePregameElo && game.awayPregameElo && 
+        typeof game.homePregameElo === 'number' && typeof game.awayPregameElo === 'number') {
       const eloAdvantage = game.homePregameElo - game.awayPregameElo;
       return eloAdvantage / 25; // Convert to point spread
     }
     
     // Check for CFBD ELO data nested in cfbdEloData
-    if (game.cfbdEloData && game.cfbdEloData.homePregameELO && game.cfbdEloData.awayPregameELO) {
+    if (game.cfbdEloData && game.cfbdEloData.homePregameELO && game.cfbdEloData.awayPregameELO &&
+        typeof game.cfbdEloData.homePregameELO === 'number' && typeof game.cfbdEloData.awayPregameELO === 'number') {
       const eloAdvantage = game.cfbdEloData.homePregameELO - game.cfbdEloData.awayPregameELO;
       return eloAdvantage / 25; // Convert to point spread
     }
     
-    // Check for current ELO ratings in team objects
-    if (game.homeTeam.currentEloRating && game.awayTeam.currentEloRating) {
+    // Check for current ELO ratings in team objects - both must be valid
+    if (game.homeTeam.currentEloRating && game.awayTeam.currentEloRating &&
+        typeof game.homeTeam.currentEloRating === 'number' && typeof game.awayTeam.currentEloRating === 'number') {
       const eloAdvantage = (game.homeTeam.currentEloRating + 50) - game.awayTeam.currentEloRating; // +50 home advantage
       return eloAdvantage / 25;
     }
     
-    // Fallback to our basic ELO if available
-    if (!game.homeTeam.eloRating || !game.awayTeam.eloRating) {
-      return 0;
+    // Fallback to our basic ELO if BOTH teams have valid ratings
+    if (game.homeTeam.eloRating && game.awayTeam.eloRating &&
+        typeof game.homeTeam.eloRating === 'number' && typeof game.awayTeam.eloRating === 'number') {
+      const eloAdvantage = (game.homeTeam.eloRating + 50) - game.awayTeam.eloRating;
+      return eloAdvantage / 25;
     }
+    
+    // NO ELO DATA AVAILABLE - return 0 (no ELO factor)
+    return 0;
     
     // ELO-based spread with declining home field advantage (2.0 points modern era)
     const eloHomeAdvantage = 50; // Reduced from traditional 65
@@ -254,18 +265,21 @@ export class RicksPicksPredictionEngine {
     let eloAdvantage = 0;
     let hasEloData = false;
     
-    // Check for ELO data in game object first
-    if (game.homePregameElo && game.awayPregameElo) {
+    // Check for ELO data in game object first (both teams must have valid ELO)
+    if (game.homePregameElo && game.awayPregameElo && 
+        typeof game.homePregameElo === 'number' && typeof game.awayPregameElo === 'number') {
       eloAdvantage = game.homePregameElo - game.awayPregameElo;
       hasEloData = true;
     }
-    // Check for nested CFBD ELO data
-    else if (game.cfbdEloData && game.cfbdEloData.homePregameELO) {
+    // Check for nested CFBD ELO data (both teams must have valid ELO)
+    else if (game.cfbdEloData && game.cfbdEloData.homePregameELO && game.cfbdEloData.awayPregameELO &&
+             typeof game.cfbdEloData.homePregameELO === 'number' && typeof game.cfbdEloData.awayPregameELO === 'number') {
       eloAdvantage = game.cfbdEloData.homePregameELO - game.cfbdEloData.awayPregameELO;
       hasEloData = true;
     }
-    // Check for current team ELO ratings
-    else if (game.homeTeam.currentEloRating && game.awayTeam.currentEloRating) {
+    // Check for current team ELO ratings (both teams must have valid ELO)
+    else if (game.homeTeam.currentEloRating && game.awayTeam.currentEloRating &&
+             typeof game.homeTeam.currentEloRating === 'number' && typeof game.awayTeam.currentEloRating === 'number') {
       eloAdvantage = game.homeTeam.currentEloRating - game.awayTeam.currentEloRating;
       hasEloData = true;
     }
@@ -285,6 +299,36 @@ export class RicksPicksPredictionEngine {
       if (winProb > 0.65) {
         keyFactors.push(`High win probability: ${(winProb * 100).toFixed(1)}%`);
       }
+    }
+    
+    // Ranking factors (official AP/Coaches Poll rankings)
+    const homeRank = game.homeTeamRank || game.homeTeam.rank;
+    const awayRank = game.awayTeamRank || game.awayTeam.rank;
+    
+    if (homeRank && awayRank) {
+      // Both teams ranked - analyze ranking differential
+      const rankDiff = awayRank - homeRank; // Positive means home team ranked higher
+      if (Math.abs(rankDiff) >= 10) {
+        const favoredTeam = rankDiff > 0 ? 'Home' : 'Away';
+        keyFactors.push(`Ranking edge: ${favoredTeam} ranked ${Math.abs(rankDiff)} spots higher`);
+      }
+    } else if (homeRank && !awayRank) {
+      // Only home team ranked
+      if (homeRank <= 15) {
+        keyFactors.push(`Ranked home team (#${homeRank}) vs unranked`);
+      }
+    } else if (awayRank && !homeRank) {
+      // Only away team ranked
+      if (awayRank <= 15) {
+        keyFactors.push(`Ranked away team (#${awayRank}) vs unranked`);
+      }
+    }
+    
+    // Top 5 vs Top 25 special cases
+    if (homeRank && homeRank <= 5 && awayRank && awayRank > 15) {
+      keyFactors.push(`Elite home team (#${homeRank}) vs lower-ranked (#${awayRank})`);
+    } else if (awayRank && awayRank <= 5 && homeRank && homeRank > 15) {
+      keyFactors.push(`Elite away team (#${awayRank}) vs lower-ranked (#${homeRank})`);
     }
     
     // Travel distance factors

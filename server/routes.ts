@@ -10,6 +10,7 @@ import { comprehensiveDataSync } from "./comprehensive-data-sync";
 import { RicksPicksPredictionEngine } from "./rick-picks-engine";
 import CFBDELOService from "./cfbd-elo-integration";
 import ELORatingsCollector from "./elo-ratings-collector";
+import RankingsCollector from "./rankings-collector";
 import { z } from "zod";
 import { insertGameSchema, insertTeamSchema, insertPredictionSchema, insertSentimentAnalysisSchema } from "@shared/schema";
 
@@ -2165,6 +2166,66 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error('Team ELO lookup error:', error);
       res.status(500).json({ message: 'Failed to get team ELO rating', error: String(error) });
+    }
+  });
+
+  // Collect current rankings
+  app.post('/api/rankings/collect-current', async (req, res) => {
+    try {
+      const rankingsCollector = new RankingsCollector();
+      const { year, week } = req.body;
+      const currentYear = year || new Date().getFullYear();
+      
+      const ranksUpdated = await rankingsCollector.collectCurrentRankings(currentYear, week);
+      
+      res.json({
+        success: true,
+        ranksUpdated,
+        message: `Updated ${ranksUpdated} teams with rankings for ${currentYear}${week ? ` week ${week}` : ''}`
+      });
+    } catch (error) {
+      console.error('Rankings collection error:', error);
+      res.status(500).json({ message: 'Failed to collect rankings', error: String(error) });
+    }
+  });
+
+  // Collect historical rankings
+  app.post('/api/rankings/collect-historical', async (req, res) => {
+    try {
+      const rankingsCollector = new RankingsCollector();
+      const { startYear, endYear } = req.body;
+      
+      res.json({
+        success: true,
+        message: 'Historical rankings collection started - this will take several minutes',
+        status: 'processing'
+      });
+      
+      // Run collection in background
+      rankingsCollector.collectHistoricalRankings(startYear, endYear).catch(error => {
+        console.error('Background rankings collection failed:', error);
+      });
+      
+    } catch (error) {
+      console.error('Historical rankings collection error:', error);
+      res.status(500).json({ message: 'Failed to start historical rankings collection', error: String(error) });
+    }
+  });
+
+  // Enrich upcoming games with rankings
+  app.post('/api/rankings/enrich-upcoming', async (req, res) => {
+    try {
+      const rankingsCollector = new RankingsCollector();
+      const ranksUpdated = await rankingsCollector.enrichUpcomingGamesWithRankings();
+      
+      res.json({
+        success: true,
+        ranksUpdated,
+        message: `Enriched upcoming games with current rankings (${ranksUpdated} teams updated)`
+      });
+    } catch (error) {
+      console.error('Upcoming games rankings enrichment error:', error);
+      res.status(500).json({ message: 'Failed to enrich upcoming games with rankings', error: String(error) });
     }
   });
 

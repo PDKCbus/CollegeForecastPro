@@ -18,7 +18,8 @@ export const teams = pgTable("teams", {
   color: text("color"),
   altColor: text("alt_color"),
   logoUrl: text("logo_url"),
-  rank: integer("rank"),
+  rank: integer("rank"), // AP/Coaches Poll ranking (1-25)
+  weeklyRank: integer("weekly_rank"), // Ranking for specific week
   wins: integer("wins").default(0),
   losses: integer("losses").default(0),
   // ELO Rating System
@@ -90,6 +91,9 @@ export const games = pgTable("games", {
   awayPostgameElo: real("away_postgame_elo"), // Away team ELO after game
   homeWinProbability: real("home_win_probability"), // CFBD calculated win probability
   awayWinProbability: real("away_win_probability"), // CFBD calculated win probability
+  // Team Rankings for the week
+  homeTeamRank: integer("home_team_rank"), // Home team AP ranking (1-25, null if unranked)
+  awayTeamRank: integer("away_team_rank"), // Away team AP ranking (1-25, null if unranked)
 });
 
 export const predictions = pgTable("predictions", {
