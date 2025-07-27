@@ -2328,26 +2328,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
           // Get upcoming games for current week if no week specified
           const currentWeek = week ? parseInt(week as string) : 1; // Default to Week 1
           
-          const upcomingGames = await db
-            .select({
-              id: games.id,
-              homeTeamId: games.homeTeamId,
-              awayTeamId: games.awayTeamId,
-              startDate: games.startDate,
-              week: games.week,
-              season: games.season,
-              spread: games.spread,
-              overUnder: games.overUnder,
-              homeTeam: {
-                id: teams.id,
-                name: teams.name,
-                abbreviation: teams.abbreviation,
-                logoUrl: teams.logoUrl,
-                rank: teams.rank
-              }
-            })
+          // Get games with team data using separate queries
+          const gamesList = await db
+            .select()
             .from(games)
-            .innerJoin(teams, eq(games.homeTeamId, teams.id))
             .where(
               and(
                 eq(games.season, parseInt(season as string)),
@@ -2357,7 +2341,68 @@ export async function registerRoutes(app: Express): Promise<Server> {
             )
             .orderBy(games.startDate);
 
-          res.json({ games: upcomingGames });
+          // Enrich with team data
+          const upcomingGames = await Promise.all(
+            gamesList.map(async (game) => {
+              const [homeTeam, awayTeam] = await Promise.all([
+                db.select().from(teams).where(eq(teams.id, game.homeTeamId)).limit(1),
+                db.select().from(teams).where(eq(teams.id, game.awayTeamId)).limit(1)
+              ]);
+
+              return {
+                ...game,
+                homeTeamName: homeTeam[0]?.name || 'Unknown',
+                homeTeamAbbr: homeTeam[0]?.abbreviation || 'UNK',
+                homeTeamLogo: homeTeam[0]?.logoUrl || null,
+                homeTeamWins: homeTeam[0]?.wins || 0,
+                homeTeamLosses: homeTeam[0]?.losses || 0,
+                awayTeamName: awayTeam[0]?.name || 'Unknown',
+                awayTeamAbbr: awayTeam[0]?.abbreviation || 'UNK',
+                awayTeamLogo: awayTeam[0]?.logoUrl || null,
+                awayTeamWins: awayTeam[0]?.wins || 0,
+                awayTeamLosses: awayTeam[0]?.losses || 0,
+              };
+            })
+          );
+
+          // Transform data to match AdminGame interface
+          const transformedGames = upcomingGames.map(game => ({
+            id: game.id,
+            homeTeamId: game.homeTeamId,
+            awayTeamId: game.awayTeamId,
+            startDate: game.startDate,
+            week: game.week,
+            season: game.season,
+            spread: game.spread,
+            overUnder: game.overUnder,
+            // Weather data
+            temperature: game.temperature,
+            windSpeed: game.windSpeed,
+            weatherCondition: game.weatherCondition,
+            precipitation: game.precipitation,
+            isDome: game.isDome,
+            // Team objects
+            homeTeam: {
+              id: game.homeTeamId,
+              name: game.homeTeamName,
+              abbreviation: game.homeTeamAbbr,
+              logoUrl: game.homeTeamLogo,
+              rank: game.homeTeamRank,
+              wins: game.homeTeamWins,
+              losses: game.homeTeamLosses,
+            },
+            awayTeam: {
+              id: game.awayTeamId,
+              name: game.awayTeamName,
+              abbreviation: game.awayTeamAbbr,
+              logoUrl: game.awayTeamLogo,
+              rank: game.awayTeamRank,
+              wins: game.awayTeamWins,
+              losses: game.awayTeamLosses,
+            }
+          }));
+
+          res.json({ games: transformedGames });
         } catch (error) {
           console.error("❌ Failed to fetch games for picks:", error);
           res.status(500).json({ error: "Failed to fetch games" });
