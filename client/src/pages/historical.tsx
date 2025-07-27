@@ -119,13 +119,12 @@ export default function Historical() {
     { label: "Top 25", value: "ranked", isActive: selectedFilter === "ranked" },
   ];
 
+  // Apply only basic filters since API already handles season/week filtering
   const filteredGames = Array.isArray(games) ? games.filter((game: any) => {
-    if (selectedWeek !== "all" && game.week?.toString() !== selectedWeek) return false;
-    if (selectedSeason !== "all" && game.season?.toString() !== selectedSeason) return false;
-    if (selectedConference !== "all" && game.homeTeam?.conference !== selectedConference && game.awayTeam?.conference !== selectedConference) return false;
-    if (selectedFilter === "conference" && !game.isConferenceGame) return false;
-    if (selectedFilter === "rivalry" && !game.isRivalryGame) return false;
-    if (selectedFilter === "ranked" && !game.homeTeam?.rank && !game.awayTeam?.rank) return false;
+    // Season and week filtering is now handled by the API, but we keep this for client-side consistency
+    if (selectedFilter === "ranked" && (!game.homeTeam?.rank && !game.awayTeam?.rank)) return false;
+    // Note: Conference games and rivalry games require additional data that we don't currently have
+    // For now, we'll show all games and can enhance filtering later
     return true;
   }) : [];
 
