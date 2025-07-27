@@ -111,11 +111,11 @@ export default function Home() {
       <Hero />
       
       {/* Rick's Season Performance Section - positioned directly under Beat The Books header */}
-      <section className="container mx-auto px-4 py-12">
+      <section className="container mx-auto px-4 py-8 md:py-12">
         <SeasonStatsSection />
       </section>
       
-      <main className="container mx-auto px-4 py-12">
+      <main className="container mx-auto px-4 py-8 md:py-12">
         <FilterBar 
           weeks={weeks} 
           selectedWeek={selectedWeek}
@@ -128,7 +128,7 @@ export default function Home() {
         />
         
         {/* Game of the Week Section */}
-        <section id="featured-games" className="mb-12 text-center mt-12">
+        <section id="featured-games" className="mb-8 md:mb-12 text-center mt-8 md:mt-12">
           <h2 className="text-3xl font-bold bg-gradient-to-r from-accent to-primary bg-clip-text text-transparent flex items-center justify-center gap-3 mb-6">
             <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-trophy text-accent">
               <path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/>
@@ -144,7 +144,7 @@ export default function Home() {
         </section>
 
         {/* Featured Game */}
-        <section className="mb-12">
+        <section className="mb-8 md:mb-12">
           {isFeaturedLoading ? (
             <div className="h-64 w-full bg-surface rounded-xl animate-pulse"></div>
           ) : featuredGame ? (
@@ -157,7 +157,7 @@ export default function Home() {
         </section>
         
         {/* Today's Top Picks Section */}
-        <section className="mb-12 text-center">
+        <section className="mb-8 md:mb-12 text-center">
           <h2 className="text-3xl font-bold text-white mb-8">Today's Top Picks</h2>
         </section>
         
