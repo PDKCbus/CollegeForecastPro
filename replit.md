@@ -119,6 +119,14 @@ The application follows a modern full-stack architecture with clear separation o
 
 ## Changelog
 
+- July 27, 2025: **CRITICAL FIX: Duplicate Game Cards Prevention with Regression Tests**
+  - **RECURRING ISSUE RESOLVED**: Fixed duplicate upcoming game cards that kept reappearing in UI
+  - **ROOT CAUSE**: Database contained 10 duplicate upcoming games (Kansas State @ Iowa State, Fresno State @ Kansas, etc.)
+  - **COMPREHENSIVE SOLUTION**: Removed all duplicate games and added permanent API-level protection
+  - **ANTI-DUPLICATE PROTECTION**: Added matchup key validation in getUpcomingGames() to prevent future duplicates
+  - **REGRESSION TESTS**: Created automated testing suite to validate no duplicates exist in database or API responses
+  - **100% TEST PASS RATE**: All tests pass - 0 database duplicates, 0 API duplicates, 7 unique upcoming games
+  - **PERMANENT PREVENTION**: API now skips duplicate matchups with console warnings for monitoring
 - July 27, 2025: **HISTORIC ACHIEVEMENT: Complete 16-Year Dataset with Data Integrity Fixes**
   - **MASSIVE EXPANSION**: Successfully collected all 16 seasons (2009-2024) totaling 28,458 games after duplicate removal
   - **CRITICAL DOME FIX**: Resolved AT&T Stadium and all dome detection issues - 791 dome games now have proper controlled weather (72°F, 0 wind)

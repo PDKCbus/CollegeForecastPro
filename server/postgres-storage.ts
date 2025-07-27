@@ -90,11 +90,22 @@ export class PostgresStorage implements IStorage {
         or(isNotNull(games.spread), isNotNull(games.overUnder))
       ))
       .orderBy(asc(games.startDate))
-      .limit(limit)
+      .limit(limit * 2) // Get extra to handle deduplication
       .offset(offset);
 
     const gamesWithTeams: GameWithTeams[] = [];
+    const seenMatchups = new Set<string>();
+    
     for (const game of gameResults) {
+      // ANTI-DUPLICATE PROTECTION: Create unique matchup key
+      const matchupKey = `${game.homeTeamId}-${game.awayTeamId}-${game.startDate?.toISOString()}`;
+      
+      if (seenMatchups.has(matchupKey)) {
+        console.log(`⚠️  Skipping duplicate upcoming game: ${matchupKey}`);
+        continue;
+      }
+      seenMatchups.add(matchupKey);
+      
       const homeTeam = await this.getTeam(game.homeTeamId);
       const awayTeam = await this.getTeam(game.awayTeamId);
       const predictions = await this.getPredictionsByGame(game.id);
@@ -106,6 +117,11 @@ export class PostgresStorage implements IStorage {
           awayTeam,
           prediction: predictions[0] || undefined
         });
+        
+        // Stop once we have enough unique games
+        if (gamesWithTeams.length >= limit) {
+          break;
+        }
       }
     }
 
