@@ -167,7 +167,11 @@ export class MemStorage implements IStorage {
   async getUpcomingGames(limit = 10, offset = 0): Promise<GameWithTeams[]> {
     const now = new Date();
     const upcomingGames = Array.from(this.games.values())
-      .filter(game => new Date(game.startDate) > now && !game.completed)
+      .filter(game => 
+        new Date(game.startDate) > now && 
+        !game.completed &&
+        (game.spread !== null || game.overUnder !== null)
+      )
       .sort((a, b) => new Date(a.startDate).getTime() - new Date(b.startDate).getTime());
     
     const paginatedGames = upcomingGames.slice(offset, offset + limit);
@@ -199,7 +203,10 @@ export class MemStorage implements IStorage {
     conference?: string
   ): Promise<GameWithTeams[]> {
     let historicalGames = Array.from(this.games.values())
-      .filter(game => game.completed);
+      .filter(game => 
+        game.completed &&
+        (game.spread !== null || game.overUnder !== null)
+      );
     
     if (season) {
       historicalGames = historicalGames.filter(game => game.season === season);
