@@ -24,6 +24,7 @@ export const teams = pgTable("teams", {
   // ELO Rating System
   eloRating: real("elo_rating").default(1500), // Starting ELO rating
   eloChange: real("elo_change").default(0), // Recent ELO change
+  currentEloRating: real("current_elo_rating"), // CFBD authentic ELO rating
   // Team Performance Analytics
   totalYardsPerGame: real("total_yards_per_game").default(0),
   passingYardsPerGame: real("passing_yards_per_game").default(0),
@@ -82,6 +83,13 @@ export const games = pgTable("games", {
   weatherCondition: text("weather_condition"), // Clear, Cloudy, Rain, Snow, etc.
   isDome: boolean("is_dome").default(false),
   weatherImpactScore: real("weather_impact_score"), // Calculated impact on game
+  // CFBD ELO Integration
+  homePregameElo: real("home_pregame_elo"), // Home team ELO before game
+  awayPregameElo: real("away_pregame_elo"), // Away team ELO before game
+  homePostgameElo: real("home_postgame_elo"), // Home team ELO after game
+  awayPostgameElo: real("away_postgame_elo"), // Away team ELO after game
+  homeWinProbability: real("home_win_probability"), // CFBD calculated win probability
+  awayWinProbability: real("away_win_probability"), // CFBD calculated win probability
 });
 
 export const predictions = pgTable("predictions", {

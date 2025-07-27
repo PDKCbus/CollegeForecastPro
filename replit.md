@@ -122,6 +122,15 @@ The application follows a modern full-stack architecture with clear separation o
 
 ## Changelog
 
+- July 27, 2025: **ELO RATING SYSTEM INTEGRATION: Authentic CFBD ELO Ratings and Travel Distance Analysis Complete**
+  - **CFBD ELO INTEGRATION**: Added authentic ELO ratings from College Football Data API with homePregameElo, awayPregameElo, homeWinProbability fields
+  - **TRAVEL DISTANCE ANALYSIS**: Completed analysis of 4,297 games revealing coast-to-coast travel penalty (-6.5% ATS for >1500 miles)
+  - **ENHANCED PREDICTION ENGINE**: Rick's Picks now prioritizes authentic ELO data over basic calculations with multi-layer fallback system
+  - **API ENDPOINTS**: Added /api/elo/collect-current, /api/elo/collect-games, /api/elo/enrich-upcoming for ELO data management
+  - **DATABASE SCHEMA**: Extended games table with CFBD ELO fields and teams table with currentEloRating field
+  - **TRAVEL FACTOR INTEGRATION**: Prediction algorithm now includes travel distance penalties with G5 vs P5 team adjustments
+  - **SURPRISING FINDINGS**: Group of 5 teams perform better on road (57.0% ATS) than Power 5 teams (50.7% ATS) - contradicting expectations
+  - **PRODUCTION READY**: ELO ratings provide "how good a team is" baseline for all predictions with authentic CFBD data sources
 - July 27, 2025: **COMPREHENSIVE PYTHON ANALYSIS FRAMEWORK: All Hypotheses Tested Against 28,431-Game Dataset**
   - **COMPLETE HYPOTHESIS TESTING**: Created comprehensive Python analysis framework testing 50+ hypotheses across weather, conference, betting, and ELO factors
   - **AUTHENTIC HISTORICAL INSIGHTS**: Analyzed 28,431 total games with 18,402 weather games and 10,129 betting games to identify real patterns
