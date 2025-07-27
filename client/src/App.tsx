@@ -22,7 +22,7 @@ function Router() {
       <Route path="/analysis" component={Analysis} />
       <Route path="/game-analysis" component={GameAnalysis} />
       <Route path="/sentiment" component={Sentiment} />
-      <Route path="/data" component={DataAnalysis} />
+
       <Route path="/season-stats" component={SeasonStats} />
       <Route component={NotFound} />
     </Switch>
