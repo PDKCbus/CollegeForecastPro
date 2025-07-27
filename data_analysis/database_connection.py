@@ -182,6 +182,17 @@ def get_db() -> RicksPicksDB:
     """Get database connection instance"""
     return RicksPicksDB()
 
+def get_database_connection():
+    """Get raw database connection for analysis modules"""
+    import os
+    return psycopg2.connect(
+        host=os.getenv('PGHOST'),
+        port=os.getenv('PGPORT'),
+        database=os.getenv('PGDATABASE'),
+        user=os.getenv('PGUSER'),
+        password=os.getenv('PGPASSWORD')
+    )
+
 def quick_stats() -> Dict[str, Any]:
     """Get quick overview of dataset"""
     db = get_db()
