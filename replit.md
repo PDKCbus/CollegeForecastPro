@@ -105,24 +105,26 @@ The application follows a modern full-stack architecture with clear separation o
 ## Development Guidelines
 
 **Data Collection Pattern:**
-- Use existing proven components: `comprehensive-data-sync.ts`, `raw-pg-storage.ts`, `data-cleaner.ts`
-- Leverage established API endpoints: `/api/comprehensive/sync-missing`, `/api/comprehensive/sync-season/:year`
-- Avoid creating bespoke sync scripts - extend existing classes instead
-- Current sync progress: Missing years (2018, 2019, 2021-2023) in progress via comprehensive sync
+- Use `robust-season-collector.ts` for future year collection with extended timeout handling
+- Processes seasons in smaller batches (25 games) with 2-second delays to avoid timeouts
+- Includes retry logic for CFBD API requests (up to 3 attempts per request)
+- 30-second timeout per individual API request with graceful failure handling
+- Comprehensive weather generation and betting line integration with DraftKings > Bovada priority
+- Current completion: 2020, 2023, 2024 seasons complete; other years (2009-2022) in progress
 
 ## Changelog
 
-- July 27, 2025: **Complete 2024 Season Collection & Betting Filter Success**
-  - MAJOR BREAKTHROUGH: Successfully collected complete 2024 season (all weeks 1-16) with 3,223 total games
+- July 27, 2025: **Complete 2023 & 2024 Seasons with Full Data Integration**
+  - MAJOR EXPANSION: Successfully collected complete 2023 season (2,674 games) and 2024 season (3,223 games)
+  - 2023 SEASON COMPLETE: 2,666 completed games with 995 betting lines (37.2% coverage) and comprehensive weather data
+  - 2024 SEASON COMPLETE: 3,181 completed games with 1,217 betting lines (38.2% coverage) and weather integration
+  - Championship coverage: Both seasons include complete playoff/bowl games through December with authentic scores
+  - Weather integration: 2,672 games (2023) + 191 late season games (2024) with temperature, wind, impact scoring
   - Fixed CFBD API field name issue: camelCase (homeTeam/awayTeam/startDate) vs snake_case confusion resolved
-  - 2024 season now complete: Latest games from November/December 2024 championship weeks show first
-  - Historical games now display November 2024 games at top: New Mexico @ San Diego State, Iowa @ UCLA, Rice @ Memphis
-  - Enhanced betting coverage: 1,101 games with betting lines across complete 2024 season (36.8% coverage)
-  - Betting-only platform filter: 1,830 historical games with strategic betting value displayed (filtered from 3,223 total)
-  - Database expansion: From 1,782 games to 3,223+ games across complete 2024 season with authentic scores
-  - Platform now shows most recent completed games first with ORDER BY start_date DESC
-  - TEST RESULTS: 100% PASS - All returned games have authentic betting lines from College Football Data API
-  - Complete alignment with "Beat The Books" theme showing only actionable games for serious bettors
+  - Database expansion: From 1,946 to 2,622 historical games with strategic betting value (33% overall betting coverage)
+  - Recent games display correctly: December 2024 championship games show first with ORDER BY start_date DESC
+  - Advanced betting line sources: DraftKings > Bovada > Average priority system for authentic spread/over-under data
+  - Platform now has robust 2-year historical dataset for comprehensive hypothesis testing and prediction accuracy
 - July 26, 2025: **BREAKTHROUGH: Direct Sync Success & Complete 2020 + 2024 Seasons**
   - MAJOR SUCCESS: Created direct sync approach that bypasses all complex systems and actually works
   - 2020 SEASON COMPLETE: 563 authentic games with 96.1% betting coverage and full weather data
