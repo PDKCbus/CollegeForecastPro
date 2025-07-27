@@ -388,7 +388,7 @@ export function GameCard({ game }: GameCardProps) {
             const ricksPick = getRicksPick();
             if (ricksPick) {
               const isRicksPick = ricksPick.isRicksPick;
-              const headerText = isRicksPick ? "🏈 RICK'S PICK" : "🤖 ALGORITHM PICK";
+              const headerText = isRicksPick ? "🏈 RICK'S PICK" : "🤓 ANALYSIS PICK";
               const bgColor = isRicksPick ? "bg-blue-600 border-blue-500" : "bg-slate-600 border-slate-500";
               const textColor = isRicksPick ? "text-blue-100" : "text-slate-100";
               
@@ -401,7 +401,7 @@ export function GameCard({ game }: GameCardProps) {
                       {ricksPick.reason}
                       {!isRicksPick && (
                         <span className="block mt-1 text-xs opacity-75">
-                          (Fallback prediction - Rick hasn't made picks yet)
+                          (Data-driven analysis - Rick hasn't made picks yet)
                         </span>
                       )}
                     </div>
