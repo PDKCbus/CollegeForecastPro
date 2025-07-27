@@ -3,8 +3,9 @@
 /**
  * Weekly 2025 Season Collection System
  * 
- * This script collects games for the current or next week of the 2025 season.
- * Designed to run regularly (weekly) to keep upcoming games current.
+ * This script collects games for the current or next week of the 2025 season
+ * and updates completed game status. Designed to run Tuesday mornings to catch
+ * Monday holiday games and update completion status from previous week.
  */
 
 import { RobustSeasonCollector } from './robust-season-collector';
@@ -47,9 +48,38 @@ async function checkExistingGames(week: number): Promise<number> {
   return parseInt(existing[0].count);
 }
 
-async function collectWeeklyGames() {
-  console.log('📅 Weekly 2025 Season Collection Starting...\n');
+async function updateCompletedGames(): Promise<number> {
+  console.log('🏁 Updating completed game status...');
   
+  // Mark games as completed if they have final scores and the game time has passed
+  const now = new Date();
+  const cutoffTime = new Date(now.getTime() - (6 * 60 * 60 * 1000)); // 6 hours ago to be safe
+  
+  const updatedGames = await sql`
+    UPDATE games 
+    SET completed = true
+    WHERE season = 2025 
+      AND completed = false 
+      AND start_date < ${cutoffTime}
+      AND home_score IS NOT NULL 
+      AND away_score IS NOT NULL
+      AND home_score > 0
+      AND away_score > 0
+    RETURNING id
+  `;
+  
+  console.log(`   ✅ Marked ${updatedGames.length} games as completed\n`);
+  return updatedGames.length;
+}
+
+async function collectWeeklyGames() {
+  console.log('📅 Weekly 2025 Season Collection & Update Starting...\n');
+  console.log('🗓️  Recommended schedule: Tuesday mornings to catch Monday holiday games\n');
+  
+  // Step 1: Update completed games from previous weeks
+  const completedCount = await updateCompletedGames();
+  
+  // Step 2: Collect upcoming games
   const currentWeek = await getCurrentWeek();
   const weeksToCollect = await getWeeksToCollect(currentWeek);
   
@@ -84,23 +114,29 @@ async function collectWeeklyGames() {
     await new Promise(resolve => setTimeout(resolve, 1000));
   }
   
-  console.log(`\n✅ Weekly collection complete!`);
+  console.log(`\n✅ Weekly collection & update complete!`);
+  console.log(`   Games marked as completed: ${completedCount}`);
   console.log(`   Total new games processed: ${totalNewGames}`);
   
-  // Verify upcoming games count
-  const upcomingCount = await sql`
-    SELECT COUNT(*) as count
+  // Verify final counts
+  const finalCounts = await sql`
+    SELECT 
+      COUNT(CASE WHEN completed = false THEN 1 END) as upcoming_games,
+      COUNT(CASE WHEN completed = true THEN 1 END) as completed_games
     FROM games 
-    WHERE season = 2025 AND completed = false
+    WHERE season = 2025
   `;
   
-  console.log(`   Total upcoming 2025 games: ${upcomingCount[0].count}`);
+  console.log(`   Total upcoming 2025 games: ${finalCounts[0].upcoming_games}`);
+  console.log(`   Total completed 2025 games: ${finalCounts[0].completed_games}`);
   
   return {
     currentWeek,
     weeksCollected: weeksToCollect,
+    gamesMarkedCompleted: completedCount,
     newGamesProcessed: totalNewGames,
-    totalUpcoming: parseInt(upcomingCount[0].count)
+    totalUpcoming: parseInt(finalCounts[0].upcoming_games),
+    totalCompleted: parseInt(finalCounts[0].completed_games)
   };
 }
 
@@ -109,4 +145,4 @@ if (require.main === module) {
   collectWeeklyGames().catch(console.error);
 }
 
-export { collectWeeklyGames, getCurrentWeek };
+export { collectWeeklyGames, getCurrentWeek, updateCompletedGames };

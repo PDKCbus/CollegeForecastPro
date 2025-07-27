@@ -105,7 +105,8 @@ The application follows a modern full-stack architecture with clear separation o
 ## Development Guidelines
 
 **Data Collection Pattern:**
-- Use `robust-season-collector.ts` for future year collection with extended timeout handling
+- Historical collection complete - use `weekly-2025-collector.ts` for ongoing 2025 season maintenance
+- Tuesday morning schedule recommended to catch Monday holiday games
 - Processes seasons in smaller batches (25 games) with 2-second delays to avoid timeouts
 - Includes retry logic for CFBD API requests (up to 3 attempts per request)
 - 30-second timeout per individual API request with graceful failure handling
