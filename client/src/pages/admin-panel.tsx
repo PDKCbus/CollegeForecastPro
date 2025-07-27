@@ -68,16 +68,22 @@ export default function AdminPanel() {
     setIsLoading(true);
     
     try {
-      const response = await apiRequest('/api/admin/login', {
+      const response = await fetch('/api/admin/login', {
         method: 'POST',
-        body: JSON.stringify(loginForm),
-        headers: { 'Content-Type': 'application/json' }
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(loginForm)
       });
 
-      if (response.success) {
-        setAuthToken(response.token);
+      if (!response.ok) {
+        throw new Error('Invalid credentials');
+      }
+
+      const data = await response.json();
+      
+      if (data.success) {
+        setAuthToken(data.token);
         setIsAuthenticated(true);
-        localStorage.setItem('adminToken', response.token);
+        localStorage.setItem('adminToken', data.token);
         toast({
           title: "Login Successful",
           description: "Welcome to Rick's Picks Admin Panel",
@@ -97,7 +103,7 @@ export default function AdminPanel() {
 
   const handleLogout = async () => {
     try {
-      await apiRequest('/api/admin/logout', {
+      await fetch('/api/admin/logout', {
         method: 'POST',
         headers: { 'Authorization': `Bearer ${authToken}` }
       });
@@ -119,18 +125,20 @@ export default function AdminPanel() {
     
     setIsLoading(true);
     try {
-      const response = await apiRequest(`/api/admin/games-for-picks?season=${selectedSeason}&week=${selectedWeek}`, {
+      const gamesResponse = await fetch(`/api/admin/games-for-picks?season=${selectedSeason}&week=${selectedWeek}`, {
         headers: { 'Authorization': `Bearer ${authToken}` }
       });
-      setGames(response.games || []);
+      const gamesData = await gamesResponse.json();
+      setGames(gamesData.games || []);
       
       // Load existing picks for this week
-      const picksResponse = await apiRequest(`/api/admin/ricks-picks/${selectedWeek}?season=${selectedSeason}`, {
+      const picksResponse = await fetch(`/api/admin/ricks-picks/${selectedWeek}?season=${selectedSeason}`, {
         headers: { 'Authorization': `Bearer ${authToken}` }
       });
+      const picksData = await picksResponse.json();
       
       const picksMap: Record<number, RicksPick> = {};
-      (picksResponse.picks || []).forEach((pick: RicksPick) => {
+      (picksData.picks || []).forEach((pick: RicksPick) => {
         picksMap[pick.gameId] = pick;
       });
       setCurrentPicks(picksMap);
@@ -150,7 +158,7 @@ export default function AdminPanel() {
     if (!authToken) return;
     
     try {
-      const response = await apiRequest('/api/admin/ricks-pick', {
+      const response = await fetch('/api/admin/ricks-pick', {
         method: 'POST',
         body: JSON.stringify({ gameId, ...pickData }),
         headers: { 
@@ -159,10 +167,11 @@ export default function AdminPanel() {
         }
       });
 
-      if (response.success) {
+      const data = await response.json();
+      if (data.success) {
         setCurrentPicks(prev => ({
           ...prev,
-          [gameId]: { ...prev[gameId], ...pickData, gameId, id: response.pick.id }
+          [gameId]: { ...prev[gameId], ...pickData, gameId, id: data.pick.id }
         }));
         
         toast({
