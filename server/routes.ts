@@ -150,8 +150,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const limitNum = parseInt(limit as string) || 20;
       const offset = pageNum * limitNum;
       
-      // Build WHERE clause directly without parameterized queries to avoid postgres issues
-      let whereConditions = ["g.completed = true", "g.season <= 2024"];
+      // Build WHERE clause - prioritize games with betting relevance (major programs)
+      let whereConditions = [
+        "g.completed = true", 
+        "g.season <= 2024",
+        "(g.spread IS NOT NULL OR g.over_under IS NOT NULL)"
+      ];
       
       if (season && season !== 'all') {
         const seasonNum = parseInt(season as string);
@@ -189,7 +193,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
         ${whereClause}
         ORDER BY 
           g.season DESC,
-          (CASE WHEN g.spread IS NOT NULL OR g.over_under IS NOT NULL THEN 1 ELSE 0 END) DESC,
+          (CASE 
+            WHEN ht.name IN ('Alabama', 'Georgia', 'Michigan', 'Ohio State', 'Texas', 'Oklahoma', 'Notre Dame', 'USC', 'Florida', 'LSU', 'Penn State', 'Tennessee', 'Clemson', 'Auburn', 'Wisconsin', 'Miami', 'Oregon') 
+            OR at.name IN ('Alabama', 'Georgia', 'Michigan', 'Ohio State', 'Texas', 'Oklahoma', 'Notre Dame', 'USC', 'Florida', 'LSU', 'Penn State', 'Tennessee', 'Clemson', 'Auburn', 'Wisconsin', 'Miami', 'Oregon') 
+            THEN 1 ELSE 0 END) DESC,
+          g.week DESC,
           g.start_date DESC
         LIMIT ${limitNum} OFFSET ${offset}
       `;
