@@ -110,7 +110,9 @@ The application follows a modern full-stack architecture with clear separation o
 - Includes retry logic for CFBD API requests (up to 3 attempts per request)
 - 30-second timeout per individual API request with graceful failure handling
 - Comprehensive weather generation and betting line integration with DraftKings > Bovada priority
-- Current completion: 2015, 2016, 2017, 2018, 2019, 2020, 2021, 2022, 2023, 2024 seasons complete; other years (2009-2014) ready for collection
+- **Weather Analysis Dataset**: 2015-2024 seasons (10 years) provide reliable venue data for weather hypothesis testing
+- **CFBD Data Quality**: Pre-2015 seasons have limited coverage and unreliable venue mapping, unsuitable for weather analysis
+- Current completion: 2015, 2016, 2017, 2018, 2019, 2020, 2021, 2022, 2023, 2024 seasons complete with 23,000+ games
 
 ## Changelog
 
