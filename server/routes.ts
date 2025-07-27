@@ -8,6 +8,7 @@ import { sentimentService } from "./sentiment";
 import { historicalSync } from "./historical-sync";
 import { comprehensiveDataSync } from "./comprehensive-data-sync";
 import { RicksPicksPredictionEngine } from "./rick-picks-engine";
+import CFBDELOService from "./cfbd-elo-integration";
 import { z } from "zod";
 import { insertGameSchema, insertTeamSchema, insertPredictionSchema, insertSentimentAnalysisSchema } from "@shared/schema";
 
@@ -2021,6 +2022,41 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error('Rick\'s Picks bulk prediction error:', error);
       res.status(500).json({ message: 'Failed to generate Rick\'s predictions' });
+    }
+  });
+
+  // CFBD ELO Integration endpoint
+  app.get('/api/cfbd/elo/:gameId', async (req, res) => {
+    try {
+      const gameId = parseInt(req.params.gameId);
+      const eloService = new CFBDELOService();
+      
+      const eloData = await eloService.enrichGameWithELO(gameId);
+      
+      if (eloData) {
+        res.json(eloData);
+      } else {
+        res.status(404).json({ message: 'No CFBD ELO data found for this game' });
+      }
+    } catch (error) {
+      console.error('CFBD ELO error:', error);
+      res.status(500).json({ message: 'Failed to fetch CFBD ELO data' });
+    }
+  });
+
+  // Test CFBD ELO integration
+  app.post('/api/cfbd/test-elo', async (req, res) => {
+    try {
+      const eloService = new CFBDELOService();
+      const testResult = await eloService.testELOIntegration();
+      
+      res.json({ 
+        success: testResult,
+        message: testResult ? 'CFBD ELO integration working' : 'CFBD ELO integration failed'
+      });
+    } catch (error) {
+      console.error('CFBD ELO test error:', error);
+      res.status(500).json({ message: 'CFBD ELO test failed', error: String(error) });
     }
   });
 

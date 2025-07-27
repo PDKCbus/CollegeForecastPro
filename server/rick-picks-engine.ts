@@ -8,6 +8,7 @@ interface GamePredictionFactors {
   conferenceFactor: number;
   bettingMarketFactor: number;
   eloFactor: number;
+  travelFactor: number;
 }
 
 interface RicksPrediction {
@@ -121,7 +122,47 @@ export class RicksPicksPredictionEngine {
     return marketScore;
   }
 
+  calculateTravelFactor(game: any): number {
+    // Travel distance penalties based on our analysis of 4,297 games
+    if (!game.travelDistance) {
+      return 0;
+    }
+
+    let travelPenalty = 0;
+    
+    // Coast-to-coast travel (>1500 miles): -6.5% ATS performance
+    if (game.travelDistance > 1500) {
+      travelPenalty = -2.5; // Away team penalty
+    }
+    // Cross-country travel (800-1500 miles): -2.3% ATS performance  
+    else if (game.travelDistance > 800) {
+      travelPenalty = -1.0;
+    }
+    // Regional travel (300-800 miles): -1.0% ATS performance
+    else if (game.travelDistance > 300) {
+      travelPenalty = -0.5;
+    }
+    
+    // G5 teams actually perform better on road, so reduce penalty
+    if (!this.isPower5(game.awayTeam.conference)) {
+      travelPenalty *= 0.5; // G5 teams handle travel better
+    }
+    
+    return travelPenalty;
+  }
+
+  private isPower5(conference: string): boolean {
+    return ['SEC', 'Big Ten', 'Big 12', 'ACC', 'Pac-12'].includes(conference);
+  }
+
   calculateEloFactor(game: any): number {
+    // Check for CFBD ELO data first (authentic source)
+    if (game.cfbdEloData && game.cfbdEloData.homePregameELO && game.cfbdEloData.awayPregameELO) {
+      const eloAdvantage = game.cfbdEloData.homePregameELO - game.cfbdEloData.awayPregameELO;
+      return eloAdvantage / 25; // Convert to point spread
+    }
+    
+    // Fallback to our basic ELO if available
     if (!game.homeTeam.eloRating || !game.awayTeam.eloRating) {
       return 0;
     }
@@ -138,7 +179,8 @@ export class RicksPicksPredictionEngine {
       weatherFactor: this.calculateWeatherFactor(game),
       conferenceFactor: this.calculateConferenceFactor(game),
       bettingMarketFactor: this.calculateBettingMarketFactor(game),
-      eloFactor: this.calculateEloFactor(game)
+      eloFactor: this.calculateEloFactor(game),
+      travelFactor: this.calculateTravelFactor(game)
     };
 
     const prediction: RicksPrediction = {
@@ -154,7 +196,7 @@ export class RicksPicksPredictionEngine {
 
     // SPREAD ANALYSIS
     if (game.spread !== null) {
-      const adjustedSpread = game.spread + factors.weatherFactor + factors.conferenceFactor + factors.bettingMarketFactor;
+      const adjustedSpread = game.spread + factors.weatherFactor + factors.conferenceFactor + factors.bettingMarketFactor + factors.travelFactor;
       const spreadEdge = Math.abs(adjustedSpread - game.spread);
       
       if (spreadEdge >= 2.0) { // Minimum 2-point edge for play
@@ -195,6 +237,28 @@ export class RicksPicksPredictionEngine {
 
     // KEY FACTORS
     const keyFactors = [];
+    
+    // CFBD ELO factors (highest priority - authentic data)
+    if (game.cfbdEloData && game.cfbdEloData.homePregameELO) {
+      const eloAdvantage = game.cfbdEloData.homePregameELO - game.cfbdEloData.awayPregameELO;
+      if (Math.abs(eloAdvantage) > 50) {
+        keyFactors.push(`CFBD ELO edge: ${eloAdvantage > 0 ? 'Home' : 'Away'} ${Math.abs(eloAdvantage)} points`);
+      }
+      const winProb = Math.max(game.cfbdEloData.homeWinProb, game.cfbdEloData.awayWinProb);
+      if (winProb > 0.65) {
+        keyFactors.push(`High win probability: ${(winProb * 100).toFixed(1)}%`);
+      }
+    }
+    
+    // Travel distance factors
+    if (game.travelDistance && game.travelDistance > 800) {
+      if (game.travelDistance > 1500) {
+        keyFactors.push("Coast-to-coast travel penalty (-6.5% ATS)");
+      } else {
+        keyFactors.push("Cross-country travel factor");
+      }
+    }
+    
     if (Math.abs(factors.weatherFactor) > 1) {
       keyFactors.push(`Weather: ${factors.weatherFactor > 0 ? '+' : ''}${factors.weatherFactor.toFixed(1)}`);
     }
@@ -204,7 +268,7 @@ export class RicksPicksPredictionEngine {
     if (Math.abs(factors.bettingMarketFactor) > 0.5) {
       keyFactors.push(`Market inefficiency`);
     }
-    if (Math.abs(factors.eloFactor) > 2) {
+    if (Math.abs(factors.eloFactor) > 2 && !game.cfbdEloData) {
       keyFactors.push(`ELO edge: ${factors.eloFactor > 0 ? '+' : ''}${factors.eloFactor.toFixed(1)}`);
     }
     
@@ -218,6 +282,23 @@ export class RicksPicksPredictionEngine {
 
   private generateRickNotes(game: any, factors: GamePredictionFactors, prediction: RicksPrediction): string {
     const notes = [];
+    
+    // CFBD ELO commentary (highest priority)
+    if (game.cfbdEloData) {
+      const eloAdvantage = game.cfbdEloData.homePregameELO - game.cfbdEloData.awayPregameELO;
+      if (Math.abs(eloAdvantage) > 100) {
+        notes.push("Major talent gap according to CFBD ELO ratings");
+      } else if (Math.abs(eloAdvantage) < 25) {
+        notes.push("Even matchup per CFBD ELO - expect tight game");
+      }
+    }
+    
+    // Travel commentary
+    if (game.travelDistance && game.travelDistance > 1500) {
+      notes.push("Cross-country travel historically favors home team");
+    } else if (game.travelDistance && game.travelDistance > 800) {
+      notes.push("Long travel distance could impact away team performance");
+    }
     
     // Weather commentary
     if (game.isDome) {
