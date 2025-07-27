@@ -16,6 +16,9 @@ interface RickRecord {
     percentage: number;
   };
   totalGames: number;
+  currentStreak: number;
+  bestTeam: string;
+  bestTeamRecord: string;
 }
 
 interface TeamBettingStats {
@@ -32,11 +35,11 @@ export function SeasonStatsSection() {
     queryKey: ["/api/ricks-record"],
   });
 
-  // Mock data for best performing teams - will replace with real data from API
+  // Current season teams (season hasn't started yet) - Ohio State is user's favorite team
   const bestTeams: TeamBettingStats[] = [
-    { teamName: "Michigan", logo: "", gamesAgainst: 12, spreadRecord: "10-2", accuracy: 83.3, units: 7.8 },
-    { teamName: "Georgia", logo: "", gamesAgainst: 11, spreadRecord: "9-2", accuracy: 81.8, units: 6.9 },
-    { teamName: "Alabama", logo: "", gamesAgainst: 13, spreadRecord: "10-3", accuracy: 76.9, units: 5.4 }
+    { teamName: "Ohio State", logo: "", gamesAgainst: 0, spreadRecord: "0-0", accuracy: 0.0, units: 0.0 },
+    { teamName: "Georgia", logo: "", gamesAgainst: 0, spreadRecord: "0-0", accuracy: 0.0, units: 0.0 },
+    { teamName: "Alabama", logo: "", gamesAgainst: 0, spreadRecord: "0-0", accuracy: 0.0, units: 0.0 }
   ];
 
   if (isLoading) {
@@ -58,7 +61,7 @@ export function SeasonStatsSection() {
     return null;
   }
 
-  const currentStreak = 7; // Mock current win streak
+  const currentStreak = rickRecord?.currentStreak || 0; // Current season win streak
 
   return (
     <div className="mb-12 bg-surface rounded-xl p-6">
@@ -76,7 +79,7 @@ export function SeasonStatsSection() {
               <h3 className="text-sm font-semibold text-white">Against the Spread</h3>
             </div>
             <div className="text-2xl font-bold text-green-400 mb-1">
-              {rickRecord.spread.percentage}%
+              {rickRecord.spread.percentage.toFixed(1)}%
             </div>
             <div className="text-xs text-white/70">
               {rickRecord.spread.wins}-{rickRecord.spread.losses}
@@ -108,10 +111,10 @@ export function SeasonStatsSection() {
               <h3 className="text-sm font-semibold text-white">Best Team</h3>
             </div>
             <div className="text-lg font-bold text-yellow-400 mb-1">
-              {bestTeams[0].teamName}
+              {rickRecord?.bestTeam || bestTeams[0].teamName}
             </div>
             <div className="text-xs text-white/70">
-              {bestTeams[0].accuracy}% ({bestTeams[0].spreadRecord})
+              {rickRecord?.bestTeamRecord || bestTeams[0].spreadRecord} (0.0%)
             </div>
           </CardContent>
         </Card>
@@ -124,7 +127,7 @@ export function SeasonStatsSection() {
               <h3 className="text-sm font-semibold text-white">Over/Under</h3>
             </div>
             <div className="text-2xl font-bold text-blue-400 mb-1">
-              {rickRecord.overUnder.percentage}%
+              {rickRecord.overUnder.percentage.toFixed(1)}%
             </div>
             <div className="text-xs text-white/70">
               {rickRecord.overUnder.wins}-{rickRecord.overUnder.losses}

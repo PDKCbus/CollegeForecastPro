@@ -1027,25 +1027,27 @@ export async function registerRoutes(app: Express): Promise<Server> {
     });
   });
 
-  // Get Rick's overall record statistics - using realistic season performance data
+  // Get Rick's overall record statistics - authentic current season data
   app.get("/api/ricks-record", async (req, res) => {
     try {
-      // Based on actual research findings from 28,431-game analysis
-      // These are realistic season statistics that will be replaced with real data
+      // Current 2025 season statistics (season hasn't started yet)
       const seasonStats = {
         spread: {
-          wins: 456,
-          losses: 378,
-          total: 834,
-          percentage: 54.7
+          wins: 0,
+          losses: 0,
+          total: 0,
+          percentage: 0.0
         },
         overUnder: {
-          wins: 421,
-          losses: 414, 
-          total: 835,
-          percentage: 50.4
+          wins: 0,
+          losses: 0, 
+          total: 0,
+          percentage: 0.0
         },
-        totalGames: 847
+        totalGames: 0,
+        currentStreak: 0,
+        bestTeam: "Ohio State", // User's favorite team as placeholder
+        bestTeamRecord: "0-0"
       };
       
       res.json(seasonStats);
