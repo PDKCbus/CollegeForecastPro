@@ -1,0 +1,502 @@
+import React, { useState, useEffect } from 'react';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { useToast } from '@/hooks/use-toast';
+import { Shield, LogOut, Save, Eye, Plus, Trash2 } from 'lucide-react';
+import { apiRequest } from '@/lib/queryClient';
+
+interface AdminGame {
+  id: number;
+  homeTeamId: number;
+  awayTeamId: number;
+  startDate: string;
+  week: number;
+  season: number;
+  spread: number | null;
+  overUnder: number | null;
+  homeTeam: {
+    id: number;
+    name: string;
+    abbreviation: string;
+    logoUrl: string | null;
+    rank: number | null;
+  };
+}
+
+interface RicksPick {
+  id: number;
+  gameId: number;
+  spreadPick: string | null;
+  spreadConfidence: number;
+  totalPick: string | null;
+  totalConfidence: number;
+  personalNotes: string | null;
+  keyFactors: string[];
+  expectedValue: number;
+  isLocked: boolean;
+}
+
+export default function AdminPanel() {
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [authToken, setAuthToken] = useState<string | null>(null);
+  const [loginForm, setLoginForm] = useState({ username: '', password: '' });
+  const [games, setGames] = useState<AdminGame[]>([]);
+  const [currentPicks, setCurrentPicks] = useState<Record<number, RicksPick>>({});
+  const [selectedWeek, setSelectedWeek] = useState(1);
+  const [selectedSeason, setSelectedSeason] = useState(2025);
+  const [isLoading, setIsLoading] = useState(false);
+  const { toast } = useToast();
+
+  // Check for existing session on load
+  useEffect(() => {
+    const token = localStorage.getItem('adminToken');
+    if (token) {
+      setAuthToken(token);
+      setIsAuthenticated(true);
+      loadGamesForPicks();
+    }
+  }, []);
+
+  const handleLogin = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsLoading(true);
+    
+    try {
+      const response = await apiRequest('/api/admin/login', {
+        method: 'POST',
+        body: JSON.stringify(loginForm),
+        headers: { 'Content-Type': 'application/json' }
+      });
+
+      if (response.success) {
+        setAuthToken(response.token);
+        setIsAuthenticated(true);
+        localStorage.setItem('adminToken', response.token);
+        toast({
+          title: "Login Successful",
+          description: "Welcome to Rick's Picks Admin Panel",
+        });
+        loadGamesForPicks();
+      }
+    } catch (error) {
+      toast({
+        title: "Login Failed",
+        description: "Invalid credentials or server error",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleLogout = async () => {
+    try {
+      await apiRequest('/api/admin/logout', {
+        method: 'POST',
+        headers: { 'Authorization': `Bearer ${authToken}` }
+      });
+    } catch (error) {
+      // Continue with logout even if server request fails
+    }
+    
+    setIsAuthenticated(false);
+    setAuthToken(null);
+    localStorage.removeItem('adminToken');
+    toast({
+      title: "Logged Out",
+      description: "You have been logged out successfully",
+    });
+  };
+
+  const loadGamesForPicks = async () => {
+    if (!authToken) return;
+    
+    setIsLoading(true);
+    try {
+      const response = await apiRequest(`/api/admin/games-for-picks?season=${selectedSeason}&week=${selectedWeek}`, {
+        headers: { 'Authorization': `Bearer ${authToken}` }
+      });
+      setGames(response.games || []);
+      
+      // Load existing picks for this week
+      const picksResponse = await apiRequest(`/api/admin/ricks-picks/${selectedWeek}?season=${selectedSeason}`, {
+        headers: { 'Authorization': `Bearer ${authToken}` }
+      });
+      
+      const picksMap: Record<number, RicksPick> = {};
+      (picksResponse.picks || []).forEach((pick: RicksPick) => {
+        picksMap[pick.gameId] = pick;
+      });
+      setCurrentPicks(picksMap);
+      
+    } catch (error) {
+      toast({
+        title: "Failed to Load Games",
+        description: "Could not load games for picks",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const savePick = async (gameId: number, pickData: Partial<RicksPick>) => {
+    if (!authToken) return;
+    
+    try {
+      const response = await apiRequest('/api/admin/ricks-pick', {
+        method: 'POST',
+        body: JSON.stringify({ gameId, ...pickData }),
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${authToken}` 
+        }
+      });
+
+      if (response.success) {
+        setCurrentPicks(prev => ({
+          ...prev,
+          [gameId]: { ...prev[gameId], ...pickData, gameId, id: response.pick.id }
+        }));
+        
+        toast({
+          title: "Pick Saved",
+          description: "Rick's pick has been saved successfully",
+        });
+      }
+    } catch (error) {
+      toast({
+        title: "Save Failed",
+        description: "Could not save Rick's pick",
+        variant: "destructive",
+      });
+    }
+  };
+
+  // Login Screen
+  if (!isAuthenticated) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-slate-900 to-slate-800 flex items-center justify-center p-4">
+        <Card className="w-full max-w-md">
+          <CardHeader className="text-center">
+            <div className="flex justify-center mb-4">
+              <Shield className="h-12 w-12 text-blue-600" />
+            </div>
+            <CardTitle className="text-2xl">Rick's Picks Admin</CardTitle>
+            <CardDescription>
+              Enter your credentials to access the admin panel
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <form onSubmit={handleLogin} className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="username">Username</Label>
+                <Input
+                  id="username"
+                  type="text"
+                  value={loginForm.username}
+                  onChange={(e) => setLoginForm(prev => ({ ...prev, username: e.target.value }))}
+                  placeholder="Enter your username"
+                  required
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="password">Password</Label>
+                <Input
+                  id="password"
+                  type="password"
+                  value={loginForm.password}
+                  onChange={(e) => setLoginForm(prev => ({ ...prev, password: e.target.value }))}
+                  placeholder="Enter your password"
+                  required
+                />
+              </div>
+              <Button type="submit" className="w-full" disabled={isLoading}>
+                {isLoading ? 'Logging in...' : 'Login'}
+              </Button>
+            </form>
+            <div className="mt-4 p-3 bg-slate-100 rounded-lg text-sm text-slate-600">
+              <strong>Default credentials:</strong><br />
+              Username: rick<br />
+              Password: RicksPicks2025!
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
+  // Main Admin Panel
+  return (
+    <div className="min-h-screen bg-slate-50">
+      {/* Header */}
+      <div className="bg-white border-b border-slate-200 px-6 py-4">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center space-x-3">
+            <Shield className="h-8 w-8 text-blue-600" />
+            <div>
+              <h1 className="text-2xl font-bold text-slate-900">Rick's Picks Admin</h1>
+              <p className="text-sm text-slate-500">Manage weekly picks and predictions</p>
+            </div>
+          </div>
+          <Button onClick={handleLogout} variant="outline" size="sm">
+            <LogOut className="h-4 w-4 mr-2" />
+            Logout
+          </Button>
+        </div>
+      </div>
+
+      {/* Content */}
+      <div className="p-6">
+        <Tabs defaultValue="picks" className="space-y-6">
+          <TabsList>
+            <TabsTrigger value="picks">Make Picks</TabsTrigger>
+            <TabsTrigger value="history">Pick History</TabsTrigger>
+            <TabsTrigger value="settings">Settings</TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="picks" className="space-y-6">
+            {/* Week/Season Selector */}
+            <Card>
+              <CardHeader>
+                <CardTitle>Select Week & Season</CardTitle>
+                <CardDescription>Choose which games to make picks for</CardDescription>
+              </CardHeader>
+              <CardContent className="flex space-x-4">
+                <div className="space-y-2">
+                  <Label>Season</Label>
+                  <Select value={selectedSeason.toString()} onValueChange={(value) => setSelectedSeason(parseInt(value))}>
+                    <SelectTrigger className="w-32">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="2025">2025</SelectItem>
+                      <SelectItem value="2024">2024</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-2">
+                  <Label>Week</Label>
+                  <Select value={selectedWeek.toString()} onValueChange={(value) => setSelectedWeek(parseInt(value))}>
+                    <SelectTrigger className="w-32">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {Array.from({ length: 17 }, (_, i) => i + 1).map(week => (
+                        <SelectItem key={week} value={week.toString()}>Week {week}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="flex items-end">
+                  <Button onClick={loadGamesForPicks} disabled={isLoading}>
+                    {isLoading ? 'Loading...' : 'Load Games'}
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Games List */}
+            <div className="grid gap-6">
+              {games.map(game => (
+                <GamePickCard 
+                  key={game.id} 
+                  game={game} 
+                  currentPick={currentPicks[game.id]} 
+                  onSavePick={(pickData) => savePick(game.id, pickData)}
+                />
+              ))}
+              {games.length === 0 && !isLoading && (
+                <Card>
+                  <CardContent className="text-center py-12">
+                    <p className="text-slate-500">No games found for Week {selectedWeek} of {selectedSeason}</p>
+                  </CardContent>
+                </Card>
+              )}
+            </div>
+          </TabsContent>
+
+          <TabsContent value="history">
+            <Card>
+              <CardHeader>
+                <CardTitle>Pick History</CardTitle>
+                <CardDescription>View and manage previous picks</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <p className="text-slate-500">Pick history feature coming soon...</p>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="settings">
+            <Card>
+              <CardHeader>
+                <CardTitle>Admin Settings</CardTitle>
+                <CardDescription>Manage admin preferences and settings</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <p className="text-slate-500">Settings feature coming soon...</p>
+              </CardContent>
+            </Card>
+          </TabsContent>
+        </Tabs>
+      </div>
+    </div>
+  );
+}
+
+// Individual Game Pick Card Component
+function GamePickCard({ 
+  game, 
+  currentPick, 
+  onSavePick 
+}: { 
+  game: AdminGame; 
+  currentPick?: RicksPick; 
+  onSavePick: (pickData: Partial<RicksPick>) => void; 
+}) {
+  const [formData, setFormData] = useState({
+    spreadPick: currentPick?.spreadPick || '',
+    spreadConfidence: currentPick?.spreadConfidence || 50,
+    totalPick: currentPick?.totalPick || '',
+    totalConfidence: currentPick?.totalConfidence || 50,
+    personalNotes: currentPick?.personalNotes || '',
+    keyFactors: currentPick?.keyFactors?.join(', ') || '',
+    expectedValue: currentPick?.expectedValue || 0,
+  });
+
+  const handleSave = () => {
+    onSavePick({
+      ...formData,
+      keyFactors: formData.keyFactors.split(',').map(f => f.trim()).filter(Boolean),
+    });
+  };
+
+  const formatDate = (dateString: string) => {
+    return new Date(dateString).toLocaleDateString('en-US', {
+      weekday: 'short',
+      month: 'short',
+      day: 'numeric',
+      hour: 'numeric',
+      minute: '2-digit',
+    });
+  };
+
+  return (
+    <Card>
+      <CardHeader>
+        <div className="flex items-center justify-between">
+          <div className="flex items-center space-x-4">
+            <div className="text-center">
+              <p className="font-semibold">{game.homeTeam.name}</p>
+              <p className="text-sm text-slate-500">vs Away Team</p>
+            </div>
+            <div className="text-sm text-slate-500">
+              <p>{formatDate(game.startDate)}</p>
+              <p>Week {game.week}, {game.season}</p>
+            </div>
+          </div>
+          <div className="text-right">
+            {game.spread && <Badge variant="outline">Spread: {game.spread}</Badge>}
+            {game.overUnder && <Badge variant="outline" className="ml-2">O/U: {game.overUnder}</Badge>}
+          </div>
+        </div>
+      </CardHeader>
+      <CardContent className="space-y-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {/* Spread Pick */}
+          <div className="space-y-2">
+            <Label>Spread Pick</Label>
+            <Input
+              value={formData.spreadPick}
+              onChange={(e) => setFormData(prev => ({ ...prev, spreadPick: e.target.value }))}
+              placeholder="e.g., HOME -7, AWAY +3.5, NO PLAY"
+            />
+            <div className="flex items-center space-x-2">
+              <Label className="text-sm">Confidence:</Label>
+              <Input
+                type="number"
+                min="1"
+                max="100"
+                value={formData.spreadConfidence}
+                onChange={(e) => setFormData(prev => ({ ...prev, spreadConfidence: parseInt(e.target.value) }))}
+                className="w-20"
+              />
+              <span className="text-sm text-slate-500">%</span>
+            </div>
+          </div>
+
+          {/* Total Pick */}
+          <div className="space-y-2">
+            <Label>Over/Under Pick</Label>
+            <Input
+              value={formData.totalPick}
+              onChange={(e) => setFormData(prev => ({ ...prev, totalPick: e.target.value }))}
+              placeholder="e.g., OVER 47.5, UNDER 52, NO PLAY"
+            />
+            <div className="flex items-center space-x-2">
+              <Label className="text-sm">Confidence:</Label>
+              <Input
+                type="number"
+                min="1"
+                max="100"
+                value={formData.totalConfidence}
+                onChange={(e) => setFormData(prev => ({ ...prev, totalConfidence: parseInt(e.target.value) }))}
+                className="w-20"
+              />
+              <span className="text-sm text-slate-500">%</span>
+            </div>
+          </div>
+        </div>
+
+        {/* Personal Notes */}
+        <div className="space-y-2">
+          <Label>Personal Notes</Label>
+          <Textarea
+            value={formData.personalNotes}
+            onChange={(e) => setFormData(prev => ({ ...prev, personalNotes: e.target.value }))}
+            placeholder="Your reasoning, insights, and analysis for this game..."
+            rows={3}
+          />
+        </div>
+
+        {/* Key Factors */}
+        <div className="space-y-2">
+          <Label>Key Factors (comma-separated)</Label>
+          <Input
+            value={formData.keyFactors}
+            onChange={(e) => setFormData(prev => ({ ...prev, keyFactors: e.target.value }))}
+            placeholder="Weather advantage, Revenge game, Key injuries, etc."
+          />
+        </div>
+
+        {/* Expected Value */}
+        <div className="space-y-2">
+          <Label>Expected Value</Label>
+          <Input
+            type="number"
+            step="0.1"
+            value={formData.expectedValue}
+            onChange={(e) => setFormData(prev => ({ ...prev, expectedValue: parseFloat(e.target.value) }))}
+            placeholder="0.0"
+            className="w-32"
+          />
+        </div>
+
+        {/* Save Button */}
+        <div className="flex justify-end space-x-2">
+          <Button onClick={handleSave} className="flex items-center space-x-2">
+            <Save className="h-4 w-4" />
+            <span>Save Pick</span>
+          </Button>
+        </div>
+      </CardContent>
+    </Card>
+  );
+}

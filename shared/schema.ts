@@ -277,3 +277,58 @@ export type PlayerWithStats = Player & {
 export type TeamWithSeasonStats = Team & {
   seasonStats?: TeamSeasonStats;
 };
+
+// Rick's Manual Picks - Admin Override System
+export const ricksPicks = pgTable("ricks_picks", {
+  id: serial("id").primaryKey(),
+  gameId: integer("game_id").notNull().references(() => games.id),
+  week: integer("week").notNull(),
+  season: integer("season").notNull(),
+  
+  // Rick's personal picks (overrides algorithm)
+  spreadPick: varchar("spread_pick", { length: 50 }), // "HOME -3.5", "AWAY +7", "NO PLAY"
+  spreadConfidence: integer("spread_confidence").notNull().default(50), // 1-100
+  totalPick: varchar("total_pick", { length: 50 }), // "OVER 45.5", "UNDER 52", "NO PLAY"
+  totalConfidence: integer("total_confidence").notNull().default(50), // 1-100
+  
+  // Rick's personal notes and reasoning
+  personalNotes: text("personal_notes"),
+  keyFactors: text("key_factors").array().default([]), // ["Weather advantage", "Revenge game", etc.]
+  
+  // Pick metadata
+  isLocked: boolean("is_locked").default(false), // Can't edit after game starts
+  expectedValue: real("expected_value").default(0), // Rick's expected betting value
+  
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+// Admin users for Rick's access
+export const adminUsers = pgTable("admin_users", {
+  id: serial("id").primaryKey(),
+  username: varchar("username", { length: 50 }).unique().notNull(),
+  passwordHash: varchar("password_hash", { length: 255 }).notNull(),
+  role: varchar("role", { length: 20 }).notNull().default("admin"), // "admin", "editor"
+  isActive: boolean("is_active").default(true),
+  lastLogin: timestamp("last_login"),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+// Insert schemas for Rick's picks
+export const insertRicksPickSchema = createInsertSchema(ricksPicks).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export const insertAdminUserSchema = createInsertSchema(adminUsers).omit({
+  id: true,
+  createdAt: true,
+  lastLogin: true,
+});
+
+// Types for Rick's picks
+export type RicksPick = typeof ricksPicks.$inferSelect;
+export type InsertRicksPick = z.infer<typeof insertRicksPickSchema>;
+export type AdminUser = typeof adminUsers.$inferSelect;
+export type InsertAdminUser = z.infer<typeof insertAdminUserSchema>;

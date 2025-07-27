@@ -2,7 +2,7 @@ import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { db } from "./db";
-import { games, teams } from "@shared/schema";
+import { games, teams, ricksPicks } from "@shared/schema";
 import { eq, and, desc, lt, or, gte, sql } from "drizzle-orm";
 import { sentimentService } from "./sentiment";
 import { historicalSync } from "./historical-sync";
@@ -623,8 +623,26 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ message: "Invalid game ID" });
       }
 
+      // Get algorithmic predictions
       const predictions = await storage.getPredictionsByGame(gameId);
-      res.json(predictions);
+      
+      // Get Rick's personal picks if they exist
+      let ricksPick = null;
+      try {
+        const [pick] = await db
+          .select()
+          .from(ricksPicks)
+          .where(eq(ricksPicks.gameId, gameId))
+          .limit(1);
+        ricksPick = pick || null;
+      } catch (error) {
+        console.log("No Rick's pick found for game", gameId);
+      }
+
+      res.json({ 
+        algorithmicPredictions: predictions,
+        ricksPick: ricksPick
+      });
     } catch (error) {
       res.status(500).json({ message: "Failed to fetch predictions" });
     }
@@ -2255,6 +2273,217 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(500).json({ message: 'Failed to enrich upcoming games with rankings', error: String(error) });
     }
   });
+
+  // Admin Authentication API
+  app.post("/api/admin/login", async (req, res) => {
+    try {
+      const { username, password } = req.body;
+      
+      if (!username || !password) {
+        return res.status(400).json({ error: "Username and password required" });
+      }
+
+      const { AdminAuth } = await import("./admin-auth");
+      const sessionToken = await AdminAuth.login(username, password);
+      
+      if (!sessionToken) {
+        return res.status(401).json({ error: "Invalid credentials" });
+      }
+
+      res.json({ 
+        success: true, 
+        token: sessionToken,
+        message: "Login successful" 
+      });
+    } catch (error) {
+      console.error("❌ Admin login error:", error);
+      res.status(500).json({ error: "Login failed" });
+    }
+  });
+
+  app.post("/api/admin/logout", async (req, res) => {
+    try {
+      const authHeader = req.headers.authorization;
+      const token = authHeader?.replace('Bearer ', '');
+      
+      if (token) {
+        const { AdminAuth } = await import("./admin-auth");
+        AdminAuth.logout(token);
+      }
+      
+      res.json({ success: true, message: "Logged out successfully" });
+    } catch (error) {
+      res.status(500).json({ error: "Logout failed" });
+    }
+  });
+
+  // Rick's Picks API (Admin Protected)
+  app.get("/api/admin/games-for-picks", async (req, res) => {
+    try {
+      const { requireAdminAuth } = await import("./admin-auth");
+      requireAdminAuth(req, res, async () => {
+        try {
+          const { season = '2025', week } = req.query;
+          
+          // Get upcoming games for current week if no week specified
+          const currentWeek = week ? parseInt(week as string) : 1; // Default to Week 1
+          
+          const upcomingGames = await db
+            .select({
+              id: games.id,
+              homeTeamId: games.homeTeamId,
+              awayTeamId: games.awayTeamId,
+              startDate: games.startDate,
+              week: games.week,
+              season: games.season,
+              spread: games.spread,
+              overUnder: games.overUnder,
+              homeTeam: {
+                id: teams.id,
+                name: teams.name,
+                abbreviation: teams.abbreviation,
+                logoUrl: teams.logoUrl,
+                rank: teams.rank
+              }
+            })
+            .from(games)
+            .innerJoin(teams, eq(games.homeTeamId, teams.id))
+            .where(
+              and(
+                eq(games.season, parseInt(season as string)),
+                eq(games.week, currentWeek),
+                eq(games.completed, false)
+              )
+            )
+            .orderBy(games.startDate);
+
+          res.json({ games: upcomingGames });
+        } catch (error) {
+          console.error("❌ Failed to fetch games for picks:", error);
+          res.status(500).json({ error: "Failed to fetch games" });
+        }
+      });
+    } catch (error) {
+      res.status(500).json({ error: "Authentication failed" });
+    }
+  });
+
+  app.post("/api/admin/ricks-pick", async (req, res) => {
+    try {
+      const { requireAdminAuth } = await import("./admin-auth");
+      requireAdminAuth(req, res, async () => {
+        try {
+          const { 
+            gameId, 
+            spreadPick, 
+            spreadConfidence = 50, 
+            totalPick, 
+            totalConfidence = 50, 
+            personalNotes, 
+            keyFactors = [],
+            expectedValue = 0 
+          } = req.body;
+
+          if (!gameId) {
+            return res.status(400).json({ error: "Game ID is required" });
+          }
+
+          // Get game details for week/season
+          const [gameDetails] = await db
+            .select({ week: games.week, season: games.season })
+            .from(games)
+            .where(eq(games.id, gameId))
+            .limit(1);
+
+          if (!gameDetails) {
+            return res.status(404).json({ error: "Game not found" });
+          }
+
+          // Upsert Rick's pick
+          const [pick] = await db
+            .insert(ricksPicks)
+            .values({
+              gameId,
+              week: gameDetails.week,
+              season: gameDetails.season,
+              spreadPick,
+              spreadConfidence,
+              totalPick,
+              totalConfidence,
+              personalNotes,
+              keyFactors,
+              expectedValue,
+              updatedAt: new Date()
+            })
+            .onConflictDoUpdate({
+              target: ricksPicks.gameId,
+              set: {
+                spreadPick,
+                spreadConfidence,
+                totalPick,
+                totalConfidence,
+                personalNotes,
+                keyFactors,
+                expectedValue,
+                updatedAt: new Date()
+              }
+            })
+            .returning();
+
+          res.json({ 
+            success: true, 
+            pick,
+            message: "Rick's pick saved successfully" 
+          });
+        } catch (error) {
+          console.error("❌ Failed to save Rick's pick:", error);
+          res.status(500).json({ error: "Failed to save pick" });
+        }
+      });
+    } catch (error) {
+      res.status(500).json({ error: "Authentication failed" });
+    }
+  });
+
+  app.get("/api/admin/ricks-picks/:week", async (req, res) => {
+    try {
+      const { requireAdminAuth } = await import("./admin-auth");
+      requireAdminAuth(req, res, async () => {
+        try {
+          const week = parseInt(req.params.week);
+          const { season = '2025' } = req.query;
+          
+          const picks = await db
+            .select()
+            .from(ricksPicks)
+            .where(
+              and(
+                eq(ricksPicks.week, week),
+                eq(ricksPicks.season, parseInt(season as string))
+              )
+            )
+            .orderBy(ricksPicks.updatedAt);
+
+          res.json({ picks });
+        } catch (error) {
+          console.error("❌ Failed to fetch Rick's picks:", error);
+          res.status(500).json({ error: "Failed to fetch picks" });
+        }
+      });
+    } catch (error) {
+      res.status(500).json({ error: "Authentication failed" });
+    }
+  });
+
+  // Initialize admin system on startup
+  (async () => {
+    try {
+      const { AdminAuth } = await import("./admin-auth");
+      await AdminAuth.initializeDefaultAdmin();
+    } catch (error) {
+      console.error("❌ Failed to initialize admin system:", error);
+    }
+  })();
 
   const httpServer = createServer(app);
   return httpServer;
