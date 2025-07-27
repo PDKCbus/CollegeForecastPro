@@ -101,8 +101,7 @@ export class PostgresStorage implements IStorage {
       const matchupKey = `${game.homeTeamId}-${game.awayTeamId}-${game.startDate?.toISOString()}`;
       
       if (seenMatchups.has(matchupKey)) {
-        console.log(`⚠️  Skipping duplicate upcoming game: ${matchupKey}`);
-        continue;
+        continue; // Skip duplicate games silently
       }
       seenMatchups.add(matchupKey);
       
