@@ -20,12 +20,29 @@ interface AdminGame {
   season: number;
   spread: number | null;
   overUnder: number | null;
+  // Weather data
+  temperature: number | null;
+  windSpeed: number | null;
+  weatherCondition: string | null;
+  precipitation: number | null;
+  isDome: boolean;
   homeTeam: {
     id: number;
     name: string;
     abbreviation: string;
     logoUrl: string | null;
     rank: number | null;
+    wins: number;
+    losses: number;
+  };
+  awayTeam: {
+    id: number;
+    name: string;
+    abbreviation: string;
+    logoUrl: string | null;
+    rank: number | null;
+    wins: number;
+    losses: number;
   };
 }
 
@@ -389,34 +406,135 @@ function GamePickCard({
 
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString('en-US', {
-      weekday: 'short',
+      weekday: 'long',
       month: 'short',
-      day: 'numeric',
-      hour: 'numeric',
-      minute: '2-digit',
+      day: 'numeric'
     });
   };
 
+  const formatTime = (dateString: string) => {
+    return new Date(dateString).toLocaleTimeString('en-US', {
+      hour: 'numeric',
+      minute: '2-digit'
+    });
+  };
+
+  const formatTeamRecord = (wins: number, losses: number) => {
+    return `${wins || 0}-${losses || 0}`;
+  };
+
+  const getSpreadDisplay = () => {
+    if (!game.spread) return "N/A";
+    const favoredTeam = game.spread > 0 ? game.awayTeam : game.homeTeam;
+    return `${favoredTeam.abbreviation} -${Math.abs(game.spread).toFixed(1)}`;
+  };
+
+  const getWeatherIcon = () => {
+    if (game.isDome) {
+      return <span className="text-base">🏟️</span>;
+    }
+
+    const hasWeatherData = game.temperature !== null || 
+                          game.windSpeed !== null || 
+                          game.weatherCondition !== null ||
+                          game.precipitation !== null;
+
+    if (!hasWeatherData) return null;
+
+    const condition = game.weatherCondition?.toLowerCase() || '';
+    const temp = game.temperature;
+    const wind = game.windSpeed || 0;
+    const precipitation = game.precipitation || 0;
+
+    if (condition.includes('snow') || (temp && temp < 32 && precipitation > 0)) {
+      return <span className="text-base text-blue-300">❄️</span>;
+    } else if (condition.includes('rain') || precipitation > 0.1) {
+      return <span className="text-base text-blue-400">🌧️</span>;
+    } else if (wind > 15) {
+      return <span className="text-base text-gray-300">💨</span>;
+    } else if (temp && temp < 35) {
+      return <span className="text-base text-blue-300">🥶</span>;
+    } else if (temp && temp > 85) {
+      return <span className="text-base text-red-400">🔥</span>;
+    } else if (condition.includes('clear') || condition.includes('sunny')) {
+      return <span className="text-base text-yellow-400">☀️</span>;
+    } else if (condition.includes('cloud')) {
+      return <span className="text-base text-gray-400">☁️</span>;
+    }
+    
+    return null;
+  };
+
   return (
-    <Card>
-      <CardHeader>
-        <div className="flex items-center justify-between">
-          <div className="flex items-center space-x-4">
-            <div className="text-center">
-              <p className="font-semibold">{game.homeTeam.name}</p>
-              <p className="text-sm text-slate-500">vs Away Team</p>
-            </div>
-            <div className="text-sm text-slate-500">
-              <p>{formatDate(game.startDate)}</p>
-              <p>Week {game.week}, {game.season}</p>
-            </div>
-          </div>
-          <div className="text-right">
-            {game.spread && <Badge variant="outline">Spread: {game.spread}</Badge>}
-            {game.overUnder && <Badge variant="outline" className="ml-2">O/U: {game.overUnder}</Badge>}
+    <Card className="overflow-hidden">
+      {/* Visual Game Card Header */}
+      <div className="bg-slate-800 p-6">
+        <div className="text-sm text-white/70 mb-4 flex justify-between items-center">
+          <div>{formatDate(game.startDate)}</div>
+          <div className="flex items-center gap-3">
+            {getWeatherIcon()}
+            <div>{formatTime(game.startDate)} ET</div>
           </div>
         </div>
-      </CardHeader>
+        
+        {/* Away Team */}
+        <div className="flex justify-between items-center mb-4">
+          <div className="flex items-center space-x-3">
+            <img 
+              src={game.awayTeam.logoUrl || ""} 
+              alt={game.awayTeam.name} 
+              className="w-12 h-12 object-contain" 
+            />
+            <div>
+              <div className="font-semibold text-white">{game.awayTeam.name}</div>
+              {game.awayTeam.rank ? (
+                <div className="text-sm text-yellow-400">#{game.awayTeam.rank}</div>
+              ) : (
+                <div className="text-sm text-white/50">Unranked</div>
+              )}
+            </div>
+          </div>
+          <div className="font-bold text-xl text-white">{formatTeamRecord(game.awayTeam.wins || 0, game.awayTeam.losses || 0)}</div>
+        </div>
+        
+        <div className="text-center text-white/60 text-sm mb-4">@</div>
+        
+        {/* Home Team */}
+        <div className="flex justify-between items-center mb-4">
+          <div className="flex items-center space-x-3">
+            <img 
+              src={game.homeTeam.logoUrl || ""} 
+              alt={game.homeTeam.name} 
+              className="w-12 h-12 object-contain" 
+            />
+            <div>
+              <div className="font-semibold text-white">{game.homeTeam.name}</div>
+              {game.homeTeam.rank ? (
+                <div className="text-sm text-yellow-400">#{game.homeTeam.rank}</div>
+              ) : (
+                <div className="text-sm text-white/50">Unranked</div>
+              )}
+            </div>
+          </div>
+          <div className="font-bold text-xl text-white">{formatTeamRecord(game.homeTeam.wins || 0, game.homeTeam.losses || 0)}</div>
+        </div>
+        
+        {/* Betting Info */}
+        <div className="flex justify-center space-x-4 pt-4 border-t border-slate-700">
+          <div className="text-center px-3 py-2 bg-slate-700 rounded text-sm">
+            <div className="text-white/60 text-xs">SPREAD</div>
+            <div className="font-bold text-white">{getSpreadDisplay()}</div>
+          </div>
+          <div className="text-center px-3 py-2 bg-slate-700 rounded text-sm">
+            <div className="text-white/60 text-xs">O/U</div>
+            <div className="font-bold text-white">{game.overUnder?.toFixed(1) || "N/A"}</div>
+          </div>
+          <div className="text-center px-3 py-2 bg-slate-700 rounded text-sm">
+            <div className="text-white/60 text-xs">WEEK</div>
+            <div className="font-bold text-white">{game.week}</div>
+          </div>
+        </div>
+      </div>
       <CardContent className="space-y-4">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {/* Spread Pick */}
