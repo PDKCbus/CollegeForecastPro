@@ -21,6 +21,39 @@ export const teams = pgTable("teams", {
   rank: integer("rank"),
   wins: integer("wins").default(0),
   losses: integer("losses").default(0),
+  // ELO Rating System
+  eloRating: real("elo_rating").default(1500), // Starting ELO rating
+  eloChange: real("elo_change").default(0), // Recent ELO change
+  // Team Performance Analytics
+  totalYardsPerGame: real("total_yards_per_game").default(0),
+  passingYardsPerGame: real("passing_yards_per_game").default(0),
+  rushingYardsPerGame: real("rushing_yards_per_game").default(0),
+  pointsPerGame: real("points_per_game").default(0),
+  pointsAllowedPerGame: real("points_allowed_per_game").default(0),
+  turnoverDifferential: real("turnover_differential").default(0),
+  thirdDownConversion: real("third_down_conversion").default(0), // Percentage
+  redZoneEfficiency: real("red_zone_efficiency").default(0), // Percentage
+  strengthOfSchedule: real("strength_of_schedule").default(0),
+  // Momentum and Streak Analysis
+  winStreak: integer("win_streak").default(0),
+  lossStreak: integer("loss_streak").default(0),
+  momentumScore: real("momentum_score").default(0), // Calculated momentum
+  last5Games: text("last_5_games"), // W-L-W-W-L format
+  // Injury Impact
+  injuryCount: integer("injury_count").default(0),
+  keyPlayersInjured: text("key_players_injured").array(),
+  injuryImpactScore: real("injury_impact_score").default(0), // 0-10 scale
+  // Recruiting Class Data
+  recruitingClassRank: integer("recruiting_class_rank"),
+  avgRecruitRating: real("avg_recruit_rating").default(0), // 247Sports composite
+  recruitingScore: real("recruiting_score").default(0), // Overall recruiting impact
+  // Advanced Metrics
+  sagRating: real("sag_rating").default(0), // Sagarin rating
+  srsRating: real("srs_rating").default(0), // Simple Rating System
+  sosRating: real("sos_rating").default(0), // Strength of Schedule rating
+  // Season tracking
+  season: integer("season").default(2025),
+  lastUpdated: timestamp("last_updated").defaultNow(),
 });
 
 export const games = pgTable("games", {
