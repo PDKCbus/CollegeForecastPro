@@ -64,8 +64,8 @@ export class RicksPicksPredictionEngine {
       factorScore += 4.0; // Dome advantage
       impactDescription.push("Dome: Controlled climate favors offense (+4.0)");
     } else {
-      // Temperature impact
-      if (weather.temperature !== undefined) {
+      // Temperature impact (only if we have valid temperature data)
+      if (weather.temperature !== undefined && weather.temperature !== null && !isNaN(weather.temperature)) {
         if (weather.temperature < 32) {
           factorScore -= 2.5;
           impactDescription.push(`Freezing temps (${weather.temperature}°F): Reduced offensive efficiency (-2.5)`);
@@ -78,8 +78,8 @@ export class RicksPicksPredictionEngine {
         }
       }
 
-      // Wind impact (high wind reduces scoring by 1.7 points average)
-      if (weather.windSpeed !== undefined) {
+      // Wind impact (high wind reduces scoring by 1.7 points average) - only if we have valid wind data
+      if (weather.windSpeed !== undefined && weather.windSpeed !== null && !isNaN(weather.windSpeed)) {
         if (weather.windSpeed > 20) {
           factorScore -= 2.0;
           impactDescription.push(`High winds (${weather.windSpeed} MPH): Passing game disrupted (-2.0)`);
@@ -89,8 +89,8 @@ export class RicksPicksPredictionEngine {
         }
       }
 
-      // Precipitation impact
-      if (weather.precipitation && weather.precipitation > 0) {
+      // Precipitation impact - only if we have valid precipitation data
+      if (weather.precipitation && weather.precipitation > 0 && !isNaN(weather.precipitation)) {
         factorScore -= 1.5;
         impactDescription.push("Precipitation: Ball handling challenges, favors ground game (-1.5)");
       }

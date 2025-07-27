@@ -82,8 +82,8 @@ export async function applyRicksPicksToUpcomingGames(): Promise<void> {
   }
 }
 
-// Run if called directly
-if (require.main === module) {
+// Run if called directly  
+if (import.meta.url === `file://${process.argv[1]}`) {
   applyRicksPicksToUpcomingGames()
     .then(() => {
       console.log('✅ Rick\'s Picks application completed successfully');
