@@ -122,6 +122,11 @@ The application follows a modern full-stack architecture with clear separation o
 
 ## Changelog
 
+- July 27, 2025: **UI CLEANUP: Removed Redundant Rick's Confidence Display from Game Cards**
+  - **CONFIDENCE SECTION REMOVED**: Eliminated standalone "Rick's Confidence" display from game card components since confidence is now derived from comprehensive hypothesis analysis
+  - **STREAMLINED UI**: Game cards now flow directly from Rick's Pick to Full Analysis button without redundant confidence percentage display
+  - **ANALYTICAL CONFIDENCE RETAINED**: Confidence calculations remain in backend prediction engine for internal scoring but no longer show separate UI element
+  - **USER PREFERENCE IMPLEMENTED**: Confidence now feeds into key factors and prediction quality rather than standalone display element
 - July 27, 2025: **ELO RATING SYSTEM INTEGRATION: Authentic CFBD ELO Ratings and Travel Distance Analysis Complete**
   - **CFBD ELO INTEGRATION**: Added authentic ELO ratings from College Football Data API with homePregameElo, awayPregameElo, homeWinProbability fields
   - **TRAVEL DISTANCE ANALYSIS**: Completed analysis of 4,297 games revealing coast-to-coast travel penalty (-6.5% ATS for >1500 miles)

@@ -356,17 +356,6 @@ export function GameCard({ game }: GameCardProps) {
             return null;
           })()}
 
-          {game.prediction?.confidence && (
-            <div className="bg-accent/10 border border-accent/20 rounded-lg p-2">
-              <div className="text-center">
-                <div className="text-accent font-semibold text-sm">Rick's Confidence</div>
-                <div className="text-xs text-white/60">
-                  {Math.round(game.prediction.confidence * 100)}% confident
-                </div>
-              </div>
-            </div>
-          )}
-          
           {/* Full Analysis Button */}
           <div className="mt-3">
             <Link href={`/game-analysis?game=${game.id}`}>
