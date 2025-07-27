@@ -1266,12 +1266,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
             overUnder = selectedLine?.overUnder || null;
           }
 
-          // Check for existing game by CFBD ID
-          const existingGame = await storage.getGame(game.id);
+          // PERMANENT DUPLICATE PREVENTION: Check for existing game by CFBD ID AND by matchup
+          const existingGameById = await storage.getGame(game.id);
+          
+          // Also check for duplicate matchups (same teams, same date)
+          const existingGames = await storage.getUpcomingGames(500); // Get all upcoming to check duplicates
+          const duplicateMatchup = existingGames.find(g => 
+            g.homeTeamId === homeTeam.id && 
+            g.awayTeamId === awayTeam.id &&
+            Math.abs(new Date(g.startDate).getTime() - new Date(game.startDate).getTime()) < 86400000 // Same day
+          );
 
-          if (existingGame) {
-            // Update existing game with latest betting lines
-            await storage.updateGame(existingGame.id, {
+          if (existingGameById || duplicateMatchup) {
+            // Update existing game with latest betting lines (use existing game ID)
+            const gameToUpdate = existingGameById || duplicateMatchup;
+            console.log(`🔄 Updating existing game: ${homeTeam.name} vs ${awayTeam.name}`);
+            await storage.updateGame(gameToUpdate.id, {
               spread: spread,
               overUnder: overUnder,
               startDate: new Date(game.startDate || "2025-08-30T12:00:00Z"),
