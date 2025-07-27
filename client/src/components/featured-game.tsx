@@ -1,4 +1,5 @@
 import { GameWithTeams } from "@/lib/types";
+import { TeamPerformanceIndicators } from "./team-performance-indicators";
 import { Link } from "wouter";
 
 interface FeaturedGameProps {
@@ -47,7 +48,10 @@ export function FeaturedGame({ game }: FeaturedGameProps) {
                 alt={game.homeTeam.name} 
                 className="team-logo mb-2 w-[45px] h-[45px] object-contain" 
               />
-              <div className="font-bold text-lg">{game.homeTeam.name}</div>
+              <div className="flex items-center gap-2">
+                <span className="font-bold text-lg">{game.homeTeam.name}</span>
+                <TeamPerformanceIndicators team={game.homeTeam} variant="compact" />
+              </div>
               {game.homeTeam.rank ? (
                 <div className="text-accent font-bold">#{game.homeTeam.rank}</div>
               ) : (
@@ -82,7 +86,10 @@ export function FeaturedGame({ game }: FeaturedGameProps) {
                 alt={game.awayTeam.name} 
                 className="team-logo mb-2 w-[45px] h-[45px] object-contain" 
               />
-              <div className="font-bold text-lg">{game.awayTeam.name}</div>
+              <div className="flex items-center gap-2">
+                <span className="font-bold text-lg">{game.awayTeam.name}</span>
+                <TeamPerformanceIndicators team={game.awayTeam} variant="compact" />
+              </div>
               {game.awayTeam.rank ? (
                 <div className="text-accent font-bold">#{game.awayTeam.rank}</div>
               ) : (

@@ -1,5 +1,6 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { TeamPerformanceIndicators } from "./team-performance-indicators";
 import { format } from "date-fns";
 import { Clock, Trophy, TrendingUp, Target, Calendar } from "lucide-react";
 
@@ -213,6 +214,7 @@ export function ImprovedHistoricalGameCard({ game }: HistoricalGameCardProps) {
                   <span className="font-semibold text-gray-900 truncate">
                     {game.awayTeam.name}
                   </span>
+                  <TeamPerformanceIndicators team={game.awayTeam as any} variant="inline" maxIndicators={1} />
                 </div>
                 <div className="text-xs text-gray-500 mt-0.5">
                   {game.awayTeam.conference}
@@ -234,6 +236,7 @@ export function ImprovedHistoricalGameCard({ game }: HistoricalGameCardProps) {
             <div className="flex items-center gap-3 justify-end">
               <div className="min-w-0 flex-1 text-right">
                 <div className="flex items-center gap-2 justify-end">
+                  <TeamPerformanceIndicators team={game.homeTeam as any} variant="inline" maxIndicators={1} />
                   <span className="font-semibold text-gray-900 truncate">
                     {game.homeTeam.name}
                   </span>
