@@ -92,8 +92,43 @@ export function GameCard({ game }: GameCardProps) {
     return `${favoredTeam.abbreviation} -${Math.abs(game.spread).toFixed(1)}`;
   };
 
+  // Fetch Rick's personal picks and algorithmic predictions
+  const { data: predictionData } = useQuery({
+    queryKey: ['/api/predictions/game', game.id],
+    queryFn: async () => {
+      const response = await fetch(`/api/predictions/game/${game.id}`);
+      if (!response.ok) throw new Error('Failed to fetch predictions');
+      return response.json();
+    },
+  });
+
   const getRicksPick = () => {
-    // Algorithm-based prediction logic
+    // Priority 1: Rick's personal picks (when available)
+    if (predictionData?.ricksPick) {
+      const pick = predictionData.ricksPick;
+      
+      // Format Rick's spread pick
+      if (pick.spreadPick && pick.spreadPick !== 'NO PLAY') {
+        return {
+          team: pick.spreadPick.includes('HOME') ? game.homeTeam : game.awayTeam,
+          pick: pick.spreadPick,
+          reason: pick.personalNotes || 'Rick\'s Expert Analysis',
+          isRicksPick: true
+        };
+      }
+      
+      // Format Rick's total pick if no spread pick
+      if (pick.totalPick && pick.totalPick !== 'NO PLAY') {
+        return {
+          team: null,
+          pick: pick.totalPick,
+          reason: pick.personalNotes || 'Rick\'s Expert Analysis',
+          isRicksPick: true
+        };
+      }
+    }
+    
+    // Priority 2: Basic algorithmic fallback (always available)
     const homeFieldAdvantage = 4.5;
     const conferenceBonus = {
       'SEC': 2, 'Big Ten': 2, 'Big 12': 2, 'ACC': 2
@@ -110,7 +145,7 @@ export function GameCard({ game }: GameCardProps) {
     
     const rickSpread = homeFieldAdvantage + homeRankBonus + homeConfBonus - awayRankBonus - awayConfBonus;
     
-    // Determine Rick's pick vs Vegas
+    // Determine algorithmic pick vs Vegas
     if (game.spread && Math.abs(rickSpread - (-game.spread)) >= 1.5) {
       const pointDifference = Math.abs(rickSpread - (-game.spread));
       
@@ -122,7 +157,8 @@ export function GameCard({ game }: GameCardProps) {
         return {
           team: underdogTeam,
           pick: `Take ${underdogTeam.abbreviation} +${points}`,
-          reason: `Rick thinks this will be closer than Vegas predicts`
+          reason: `Algorithm thinks this will be closer than Vegas predicts`,
+          isRicksPick: false
         };
       } else {
         // Take the favorite laying points  
@@ -131,7 +167,8 @@ export function GameCard({ game }: GameCardProps) {
         return {
           team: favoriteTeam,
           pick: `Take ${favoriteTeam.abbreviation} -${points}`,
-          reason: `Rick thinks ${favoriteTeam.abbreviation} wins bigger than Vegas expects`
+          reason: `Algorithm thinks ${favoriteTeam.abbreviation} wins bigger than Vegas expects`,
+          isRicksPick: false
         };
       }
     }
@@ -143,11 +180,18 @@ export function GameCard({ game }: GameCardProps) {
       return {
         team: null,
         pick: `${pick} ${game.overUnder.toFixed(1)}`,
-        reason: `Rick predicts ${totalPoints.toFixed(1)} total points`
+        reason: `Algorithm predicts ${totalPoints.toFixed(1)} total points`,
+        isRicksPick: false
       };
     }
     
-    return null;
+    // Default fallback
+    return {
+      team: game.homeTeam,
+      pick: `Take ${game.homeTeam.abbreviation} (Home field advantage)`,
+      reason: 'Home field advantage',
+      isRicksPick: false
+    };
   };
 
   const getWeatherIcon = () => {
@@ -343,12 +387,24 @@ export function GameCard({ game }: GameCardProps) {
           {(() => {
             const ricksPick = getRicksPick();
             if (ricksPick) {
+              const isRicksPick = ricksPick.isRicksPick;
+              const headerText = isRicksPick ? "🏈 RICK'S PICK" : "🤖 ALGORITHM PICK";
+              const bgColor = isRicksPick ? "bg-blue-600 border-blue-500" : "bg-slate-600 border-slate-500";
+              const textColor = isRicksPick ? "text-blue-100" : "text-slate-100";
+              
               return (
-                <div className="bg-blue-600 border border-blue-500 rounded-lg p-3 mb-3">
+                <div className={`${bgColor} border rounded-lg p-3 mb-3`}>
                   <div className="text-center">
-                    <div className="text-white font-bold text-sm mb-1">🏈 RICK'S PICK</div>
+                    <div className="text-white font-bold text-sm mb-1">{headerText}</div>
                     <div className="text-white font-semibold text-lg">{ricksPick.pick}</div>
-                    <div className="text-blue-100 text-xs mt-1">{ricksPick.reason}</div>
+                    <div className={`${textColor} text-xs mt-1`}>
+                      {ricksPick.reason}
+                      {!isRicksPick && (
+                        <span className="block mt-1 text-xs opacity-75">
+                          (Fallback prediction - Rick hasn't made picks yet)
+                        </span>
+                      )}
+                    </div>
                   </div>
                 </div>
               );
