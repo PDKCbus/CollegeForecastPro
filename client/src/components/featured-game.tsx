@@ -67,12 +67,12 @@ export function FeaturedGame({ game }: FeaturedGameProps) {
                     <span className="text-sm">🏟️</span>
                     <span className="ml-1 text-white/60">Dome</span>
                   </>
-                ) : (
+                ) : game.temperature !== null ? (
                   <>
                     <span className="text-sm">☀️</span>
-                    <span className="ml-1 text-yellow-400">75°F</span>
+                    <span className="ml-1 text-yellow-400">{Math.round(game.temperature)}°F</span>
                   </>
-                )}
+                ) : null}
               </div>
             </div>
             

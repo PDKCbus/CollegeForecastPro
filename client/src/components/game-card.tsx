@@ -150,6 +150,7 @@ export function GameCard({ game }: GameCardProps) {
   };
 
   const getWeatherIcon = () => {
+    // Only show weather icons if we have actual weather data or confirmed dome status
     if (game.isDome) {
       return (
         <div className="flex items-center text-xs text-white/60">
@@ -159,56 +160,15 @@ export function GameCard({ game }: GameCardProps) {
       );
     }
 
-    // Since weather data exists in DB but isn't in API response yet, show weather icons
-    // Based on the real data pattern: 80°F Clear or Rain with wind=8mph, impact=0-3
-    // Show variety to demonstrate different weather conditions
-    const gameId = game.id;
-    
-    // Use game ID to show different weather conditions as demonstration
-    if (gameId % 5 === 0) {
-      return (
-        <div className="flex items-center text-xs text-blue-400">
-          <span className="text-base">🌧️</span>
-          <span className="ml-1">Rain</span>
-          <span className="ml-1">🟡</span>
-        </div>
-      );
-    } else if (gameId % 7 === 0) {
-      return (
-        <div className="flex items-center text-xs text-gray-300">
-          <span className="text-base">💨</span>
-          <span className="ml-1">18 mph</span>
-        </div>
-      );
-    } else if (gameId % 11 === 0) {
-      return (
-        <div className="flex items-center text-xs text-blue-300">
-          <span className="text-base">🥶</span>
-          <span className="ml-1">32°F</span>
-        </div>
-      );
-    } else if (gameId % 13 === 0) {
-      return (
-        <div className="flex items-center text-xs text-gray-400">
-          <span className="text-base">☁️</span>
-          <span className="ml-1">Cloudy</span>
-        </div>
-      );
-    } else if (gameId % 17 === 0) {
-      return (
-        <div className="flex items-center text-xs text-blue-200">
-          <span className="text-base">❄️</span>
-          <span className="ml-1">Snow</span>
-          <span className="ml-1">🔴</span>
-        </div>
-      );
-    } else {
-      return (
-        <div className="flex items-center text-xs text-yellow-400">
-          <span className="text-base">☀️</span>
-          <span className="ml-1">80°F</span>
-        </div>
-      );
+    // Check if we have any actual weather data
+    const hasWeatherData = game.temperature !== null || 
+                          game.windSpeed !== null || 
+                          game.weatherCondition !== null ||
+                          game.precipitation !== null;
+
+    // If no weather data available, don't show weather icons
+    if (!hasWeatherData) {
+      return null;
     }
 
     const condition = game.weatherCondition?.toLowerCase() || '';
