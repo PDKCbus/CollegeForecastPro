@@ -141,38 +141,40 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Historical Games API - Clean SQL approach
+  // Historical Games API - Simplified SQL approach without complex parameters
   app.get("/api/games/historical", async (req, res) => {
     try {
       console.log('🔍 Historical games API called with params:', req.query);
       const { page = 0, limit = 20, season, week } = req.query;
       const pageNum = parseInt(page as string) || 0;
       const limitNum = parseInt(limit as string) || 20;
+      const offset = pageNum * limitNum;
       
-      // Build SQL query with filters
-      let whereClause = "WHERE g.completed = true AND g.season < 2025";
-      const params: any[] = [];
-      let paramIndex = 1;
+      // Build WHERE clause directly without parameterized queries to avoid postgres issues
+      let whereConditions = ["g.completed = true", "g.season <= 2024"];
       
       if (season && season !== 'all') {
-        whereClause += ` AND g.season = $${paramIndex}`;
-        params.push(parseInt(season as string));
-        paramIndex++;
+        const seasonNum = parseInt(season as string);
+        if (!isNaN(seasonNum)) {
+          whereConditions.push(`g.season = ${seasonNum}`);
+        }
       }
       
       if (week && week !== 'all') {
-        whereClause += ` AND g.week = $${paramIndex}`;
-        params.push(parseInt(week as string));
-        paramIndex++;
+        const weekNum = parseInt(week as string);
+        if (!isNaN(weekNum)) {
+          whereConditions.push(`g.week = ${weekNum}`);
+        }
       }
+      
+      const whereClause = `WHERE ${whereConditions.join(' AND ')}`;
       
       // Get total count for pagination
       const countQuery = `SELECT COUNT(*) as total FROM games g ${whereClause}`;
-      const countResult = await db.execute(sql`${sql.raw(countQuery)}`);
+      const countResult = await db.execute(sql.raw(countQuery));
       const total = parseInt(countResult[0]?.total || '0');
       
-      // Get paginated games with team data
-      const offset = pageNum * limitNum;
+      // Get paginated games with team data - ORDER BY season DESC puts 2024 first
       const gameQuery = `
         SELECT 
           g.id, g.home_team_id, g.away_team_id, g.start_date, g.season, g.week, 
@@ -189,7 +191,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         LIMIT ${limitNum} OFFSET ${offset}
       `;
       
-      const gamesResult = await db.execute(sql`${sql.raw(gameQuery)}`);
+      const gamesResult = await db.execute(sql.raw(gameQuery));
       
       // Format games for frontend
       const formattedGames = gamesResult.map((row: any) => ({
