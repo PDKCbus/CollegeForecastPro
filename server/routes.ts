@@ -63,16 +63,42 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Test endpoint for historical games betting lines validation
-  app.get("/api/test/betting-lines-filter", async (req, res) => {
+  // Test endpoint for duplicate prevention and betting lines validation
+  app.get("/api/test/duplicate-prevention", async (req, res) => {
     try {
-      console.log('🧪 Running betting lines filter validation test...');
+      console.log('🧪 Running duplicate prevention and betting lines validation test...');
       
-      // Test 1: Check historical games API endpoint
+      // Test 1: Check for database duplicates
+      const dbDuplicates = await db.select({ 
+        count: sql`COUNT(*)` 
+      }).from(games).where(sql`(home_team_id, away_team_id, start_date) IN (
+        SELECT home_team_id, away_team_id, start_date 
+        FROM games 
+        GROUP BY home_team_id, away_team_id, start_date 
+        HAVING COUNT(*) > 1
+      )`);
+      
+      // Test 2: Check upcoming games API endpoint for duplicates
+      const upcomingResponse = await fetch(`http://localhost:5000/api/games/upcoming`);
+      const upcomingData = await upcomingResponse.json();
+      const upcomingGames = upcomingData.games || [];
+      
+      const uniqueMatchups = new Set();
+      const duplicateMatchups = [];
+      
+      for (const game of upcomingGames) {
+        const matchupKey = `${game.homeTeam.id}-${game.awayTeam.id}-${game.startDate}`;
+        if (uniqueMatchups.has(matchupKey)) {
+          duplicateMatchups.push(matchupKey);
+        }
+        uniqueMatchups.add(matchupKey);
+      }
+      
+      // Test 3: Check historical games API endpoint
       const historicalResponse = await fetch(`http://localhost:5000/api/games/historical?page=0&limit=50&season=all&week=all`);
       const historicalData = await historicalResponse.json();
       
-      // Test 2: Check upcoming games API endpoint  
+      // Test 4: Check upcoming games API endpoint  
       const upcomingResponse = await fetch(`http://localhost:5000/api/games/upcoming?limit=50`);
       const upcomingData = await upcomingResponse.json();
       
