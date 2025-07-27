@@ -1,5 +1,6 @@
 import { GameWithTeams } from "@/lib/types";
 import { SentimentDisplay } from "./sentiment-display";
+import { TeamPerformanceIndicators, TeamComparisonIndicator } from "./team-performance-indicators";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -249,8 +250,11 @@ export function GameCard({ game }: GameCardProps) {
               alt={game.homeTeam.name} 
               className="team-logo w-[45px] h-[45px] object-contain" 
             />
-            <div>
-              <div className="font-semibold">{game.homeTeam.name}</div>
+            <div className="flex-1">
+              <div className="flex items-center gap-2">
+                <span className="font-semibold">{game.homeTeam.name}</span>
+                <TeamPerformanceIndicators team={game.homeTeam} variant="inline" maxIndicators={2} />
+              </div>
               {game.homeTeam.rank ? (
                 <div className="text-xs text-accent font-medium">#{game.homeTeam.rank}</div>
               ) : (
@@ -268,8 +272,11 @@ export function GameCard({ game }: GameCardProps) {
               alt={game.awayTeam.name} 
               className="team-logo w-[45px] h-[45px] object-contain" 
             />
-            <div>
-              <div className="font-semibold">{game.awayTeam.name}</div>
+            <div className="flex-1">
+              <div className="flex items-center gap-2">
+                <span className="font-semibold">{game.awayTeam.name}</span>
+                <TeamPerformanceIndicators team={game.awayTeam} variant="inline" maxIndicators={2} />
+              </div>
               {game.awayTeam.rank ? (
                 <div className="text-xs text-accent font-medium">#{game.awayTeam.rank}</div>
               ) : (
@@ -281,6 +288,11 @@ export function GameCard({ game }: GameCardProps) {
         </div>
         
         <div className="mt-4 pt-3 border-t border-surface-light">
+          {/* Team Comparison Indicator */}
+          <div className="mb-3">
+            <TeamComparisonIndicator homeTeam={game.homeTeam} awayTeam={game.awayTeam} />
+          </div>
+          
           <div className="flex justify-between mb-3">
             <div className="flex space-x-2">
               <div className="text-center px-2 py-1 bg-surface-light rounded text-sm">
