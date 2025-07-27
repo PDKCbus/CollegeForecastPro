@@ -5,19 +5,15 @@ import { GameCard } from "@/components/game-card";
 import { FeatureHighlights } from "@/components/feature-highlights";
 import { CTASection } from "@/components/cta-section";
 import { SeasonStatsSection } from "@/components/season-stats-section";
-import { Button } from "@/components/ui/button";
-import { useQuery, useMutation, useInfiniteQuery } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 import { useState, useEffect, useCallback } from "react";
 import { FilterOption, GameWithTeams } from "@/lib/types";
-import { apiRequest, queryClient } from "@/lib/queryClient";
-import { useToast } from "@/hooks/use-toast";
 
 export default function Home() {
   const [selectedWeek, setSelectedWeek] = useState("Week 1");
   const [activeFilter, setActiveFilter] = useState("all");
   const [teamFilter, setTeamFilter] = useState("");
   const [selectedConference, setSelectedConference] = useState("");
-  const { toast } = useToast();
   
   // Show all weeks that have authentic 2025 data
   const weeks = ["Week 1", "Week 2", "Week 3", "Week 4", "Week 5", "Week 6", "Week 7", "Week 8", "Week 9", "Week 10", "Week 11", "Week 12", "Week 13", "Week 14", "Week 15"];
@@ -91,28 +87,7 @@ export default function Home() {
     }
   });
 
-  const syncMutation = useMutation({
-    mutationFn: async () => {
-      const response = await fetch("/api/sync-cfb-data", { method: "POST" });
-      if (!response.ok) throw new Error("Sync failed");
-      return response.json();
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/games/upcoming"] });
-      queryClient.invalidateQueries({ queryKey: ["/api/games/featured"] });
-      toast({
-        title: "Data Synced Successfully",
-        description: "Real betting lines and Rick's picks have been updated from College Football Data API.",
-      });
-    },
-    onError: () => {
-      toast({
-        title: "Sync Failed", 
-        description: "Unable to fetch latest data. Please try again.",
-        variant: "destructive",
-      });
-    }
-  });
+
   
   const handleWeekChange = (week: string) => {
     console.log('Week changed to:', week);
@@ -173,6 +148,11 @@ export default function Home() {
             <p className="text-white/60">Game of the week not available</p>
           </div>
         )}
+        
+        {/* Today's Top Picks Section */}
+        <div className="mb-8 text-center">
+          <h2 className="text-3xl font-bold text-white mb-6">Today's Top Picks</h2>
+        </div>
         
         {/* Season Stats Section */}
         <SeasonStatsSection />

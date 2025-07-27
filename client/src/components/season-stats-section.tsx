@@ -1,6 +1,6 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { useQuery } from "@tanstack/react-query";
-import { TrendingUp, Target, Trophy } from "lucide-react";
+import { TrendingUp, Target, Trophy, Zap, Star } from "lucide-react";
 
 interface RickRecord {
   spread: {
@@ -18,19 +18,35 @@ interface RickRecord {
   totalGames: number;
 }
 
+interface TeamBettingStats {
+  teamName: string;
+  logo: string;
+  gamesAgainst: number;
+  spreadRecord: string;
+  accuracy: number;
+  units: number;
+}
+
 export function SeasonStatsSection() {
   const { data: rickRecord, isLoading } = useQuery<RickRecord>({
     queryKey: ["/api/ricks-record"],
   });
+
+  // Mock data for best performing teams - will replace with real data from API
+  const bestTeams: TeamBettingStats[] = [
+    { teamName: "Michigan", logo: "", gamesAgainst: 12, spreadRecord: "10-2", accuracy: 83.3, units: 7.8 },
+    { teamName: "Georgia", logo: "", gamesAgainst: 11, spreadRecord: "9-2", accuracy: 81.8, units: 6.9 },
+    { teamName: "Alabama", logo: "", gamesAgainst: 13, spreadRecord: "10-3", accuracy: 76.9, units: 5.4 }
+  ];
 
   if (isLoading) {
     return (
       <div className="mb-12 bg-surface rounded-xl p-6">
         <div className="animate-pulse">
           <div className="h-6 bg-surface-light rounded w-48 mb-4"></div>
-          <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-            {[...Array(3)].map((_, i) => (
-              <div key={i} className="h-16 bg-surface-light rounded"></div>
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+            {[...Array(4)].map((_, i) => (
+              <div key={i} className="h-24 bg-surface-light rounded"></div>
             ))}
           </div>
         </div>
@@ -42,6 +58,8 @@ export function SeasonStatsSection() {
     return null;
   }
 
+  const currentStreak = 7; // Mock current win streak
+
   return (
     <div className="mb-12 bg-surface rounded-xl p-6">
       <div className="flex items-center gap-3 mb-6">
@@ -49,33 +67,51 @@ export function SeasonStatsSection() {
         <h2 className="text-2xl font-bold text-white">Rick's Season Performance</h2>
       </div>
       
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        {/* Overall Record */}
-        <Card className="bg-surface-light border-surface-light">
-          <CardContent className="p-4 text-center">
-            <div className="flex items-center justify-center gap-2 mb-2">
-              <TrendingUp className="w-5 h-5 text-accent" />
-              <h3 className="text-lg font-semibold text-white">Overall</h3>
-            </div>
-            <div className="text-3xl font-bold text-accent mb-1">
-              {rickRecord.totalGames}
-            </div>
-            <div className="text-sm text-white/70">Total Predictions</div>
-          </CardContent>
-        </Card>
-
-        {/* Spread Record */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        {/* Overall Spread Record */}
         <Card className="bg-surface-light border-surface-light">
           <CardContent className="p-4 text-center">
             <div className="flex items-center justify-center gap-2 mb-2">
               <Target className="w-5 h-5 text-green-400" />
-              <h3 className="text-lg font-semibold text-white">Spread</h3>
+              <h3 className="text-sm font-semibold text-white">Against the Spread</h3>
             </div>
-            <div className="text-3xl font-bold text-green-400 mb-1">
+            <div className="text-2xl font-bold text-green-400 mb-1">
               {rickRecord.spread.percentage}%
             </div>
-            <div className="text-sm text-white/70">
+            <div className="text-xs text-white/70">
               {rickRecord.spread.wins}-{rickRecord.spread.losses}
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Current Win Streak */}
+        <Card className="bg-surface-light border-surface-light">
+          <CardContent className="p-4 text-center">
+            <div className="flex items-center justify-center gap-2 mb-2">
+              <Zap className="w-5 h-5 text-accent" />
+              <h3 className="text-sm font-semibold text-white">Current Streak</h3>
+            </div>
+            <div className="text-2xl font-bold text-accent mb-1">
+              {currentStreak}W
+            </div>
+            <div className="text-xs text-white/70">
+              Win Streak
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Best Team Performance */}
+        <Card className="bg-surface-light border-surface-light">
+          <CardContent className="p-4 text-center">
+            <div className="flex items-center justify-center gap-2 mb-2">
+              <Star className="w-5 h-5 text-yellow-400" />
+              <h3 className="text-sm font-semibold text-white">Best Team</h3>
+            </div>
+            <div className="text-lg font-bold text-yellow-400 mb-1">
+              {bestTeams[0].teamName}
+            </div>
+            <div className="text-xs text-white/70">
+              {bestTeams[0].accuracy}% ({bestTeams[0].spreadRecord})
             </div>
           </CardContent>
         </Card>
@@ -84,13 +120,13 @@ export function SeasonStatsSection() {
         <Card className="bg-surface-light border-surface-light">
           <CardContent className="p-4 text-center">
             <div className="flex items-center justify-center gap-2 mb-2">
-              <Target className="w-5 h-5 text-blue-400" />
-              <h3 className="text-lg font-semibold text-white">Over/Under</h3>
+              <TrendingUp className="w-5 h-5 text-blue-400" />
+              <h3 className="text-sm font-semibold text-white">Over/Under</h3>
             </div>
-            <div className="text-3xl font-bold text-blue-400 mb-1">
+            <div className="text-2xl font-bold text-blue-400 mb-1">
               {rickRecord.overUnder.percentage}%
             </div>
-            <div className="text-sm text-white/70">
+            <div className="text-xs text-white/70">
               {rickRecord.overUnder.wins}-{rickRecord.overUnder.losses}
             </div>
           </CardContent>
