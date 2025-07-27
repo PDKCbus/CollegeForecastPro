@@ -110,7 +110,7 @@ The application follows a modern full-stack architecture with clear separation o
 - Includes retry logic for CFBD API requests (up to 3 attempts per request)
 - 30-second timeout per individual API request with graceful failure handling
 - Comprehensive weather generation and betting line integration with DraftKings > Bovada priority
-- Current completion: 2020, 2023, 2024 seasons complete; other years (2009-2022) in progress
+- Current completion: 2020, 2022, 2023, 2024 seasons complete; other years (2009-2021) ready for collection
 
 ## Changelog
 

@@ -315,9 +315,16 @@ async function collectYear(year: number) {
   await collector.collectSeason();
 }
 
-// If run directly, collect 2022 as an example
-if (require.main === module) {
-  const year = parseInt(process.argv[2]) || 2022;
+// If run directly, collect the specified year (ES module compatible)
+const isMainModule = import.meta.url === `file://${process.argv[1]}`;
+if (isMainModule) {
+  const year = parseInt(process.argv[2]);
+  
+  if (!year || year < 2009 || year > 2025) {
+    console.error('❌ Please provide a valid year (2009-2025)');
+    console.error('Usage: tsx robust-season-collector.ts <year>');
+    process.exit(1);
+  }
   
   if (!process.env.CFBD_API_KEY) {
     console.error('❌ CFBD_API_KEY environment variable required');
@@ -325,7 +332,7 @@ if (require.main === module) {
   }
   
   collectYear(year).catch(error => {
-    console.error('Collection failed:', error.message);
+    console.error(`❌ ${year} collection failed:`, error.message);
     process.exit(1);
   });
 }
