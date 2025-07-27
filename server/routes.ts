@@ -274,14 +274,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         LEFT JOIN teams ht ON g.home_team_id = ht.id
         LEFT JOIN teams at ON g.away_team_id = at.id
         ${whereClause}
-        ORDER BY 
-          g.season DESC,
-          (CASE 
-            WHEN ht.name IN ('Alabama', 'Georgia', 'Michigan', 'Ohio State', 'Texas', 'Oklahoma', 'Notre Dame', 'USC', 'Florida', 'LSU', 'Penn State', 'Tennessee', 'Clemson', 'Auburn', 'Wisconsin', 'Miami', 'Oregon') 
-            OR at.name IN ('Alabama', 'Georgia', 'Michigan', 'Ohio State', 'Texas', 'Oklahoma', 'Notre Dame', 'USC', 'Florida', 'LSU', 'Penn State', 'Tennessee', 'Clemson', 'Auburn', 'Wisconsin', 'Miami', 'Oregon') 
-            THEN 1 ELSE 0 END) DESC,
-          g.week DESC,
-          g.start_date DESC
+        ORDER BY g.start_date DESC
         LIMIT ${limitNum} OFFSET ${offset}
       `;
       
