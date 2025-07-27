@@ -98,18 +98,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const historicalResponse = await fetch(`http://localhost:5000/api/games/historical?page=0&limit=50&season=all&week=all`);
       const historicalData = await historicalResponse.json();
       
-      // Test 4: Check upcoming games API endpoint  
-      const upcomingResponse = await fetch(`http://localhost:5000/api/games/upcoming?limit=50`);
-      const upcomingData = await upcomingResponse.json();
-      
       // Validate historical games
       const historicalGames = historicalData.games || [];
       const historicalFailures = historicalGames.filter((game: any) => 
         game.spread === null && game.overUnder === null
       );
-      
-      // Validate upcoming games
-      const upcomingGames = upcomingData.games || [];
       const upcomingFailures = upcomingGames.filter((game: any) => 
         game.spread === null && game.overUnder === null
       );
