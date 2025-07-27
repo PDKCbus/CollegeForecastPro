@@ -125,7 +125,7 @@ The application follows a modern full-stack architecture with clear separation o
 - July 27, 2025: **RICK'S PICKS ADMIN SYSTEM: Personal Picks with Algorithmic Fallback Completed**
   - **ADMIN PANEL INTEGRATION**: Complete admin system allows Rick to make weekly picks via secure login interface (default: rick/RicksPicks2025!)
   - **DUAL PREDICTION SYSTEM**: Game cards display Rick's personal picks when available, automatically fall back to algorithmic predictions when missing
-  - **VISUAL SOURCE INDICATORS**: Clear differentiation between "🏈 RICK'S PICK" (blue) and "🤖 ALGORITHM PICK" (gray) with fallback messaging
+  - **VISUAL SOURCE INDICATORS**: Clear differentiation between "🏈 RICK'S PICK" (blue) and "🤓 ANALYSIS PICK" (gray) with data-driven messaging
   - **COMPREHENSIVE PICK MANAGEMENT**: Admin can select season/week, make spread picks, over/under picks, set confidence levels, and add personal notes
   - **NO EMPTY GAME CARDS**: Guaranteed fallback system ensures every game always displays a prediction - never shows blank or missing data
   - **API INTEGRATION**: Rick's picks stored in database with CRUD operations, seamlessly integrated with existing prediction infrastructure
