@@ -1565,7 +1565,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Game Analysis API
+  // Game Analysis API - Now using Rick's Picks real prediction algorithm
   app.get("/api/games/analysis/:gameId", async (req, res) => {
     try {
       const gameId = parseInt(req.params.gameId);
@@ -1578,64 +1578,102 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(404).json({ message: "Game not found" });
       }
 
-      // Generate advanced analytics based on real team data
-      const homeTeamAdvantage = 0.1 + Math.random() * 0.1; // 10-20% home advantage
-      const baseProbability = 0.4 + Math.random() * 0.2; // 40-60% base
-      const winProbability = Math.min(95, Math.max(5, Math.round((baseProbability + homeTeamAdvantage) * 100)));
+      // Import Rick's Picks prediction engine
+      const { ricksPicksEngine } = await import('./prediction-engine');
+
+      // Generate real prediction using our data-driven algorithm
+      const prediction = await ricksPicksEngine.generatePrediction(
+        game.homeTeam?.name || 'Home Team',
+        game.awayTeam?.name || 'Away Team', 
+        game.homeTeam?.conference || 'Independent',
+        game.awayTeam?.conference || 'Independent',
+        {
+          temperature: game.temperature,
+          windSpeed: game.windSpeed,
+          isDome: game.isDome || false,
+          precipitation: game.precipitation,
+          weatherCondition: game.weatherCondition
+        },
+        game.spread,
+        false // assuming not neutral site for now
+      );
+
+      // Calculate win probabilities from spread
+      const spread = prediction.spread;
+      let homeWinProb: number;
+      let awayWinProb: number;
+      
+      if (spread > 0) {
+        // Home team favored
+        homeWinProb = Math.min(90, 50 + (spread * 3.5)); // Roughly 3.5% per point
+        awayWinProb = 100 - homeWinProb;
+      } else {
+        // Away team favored
+        awayWinProb = Math.min(90, 50 + (Math.abs(spread) * 3.5));
+        homeWinProb = 100 - awayWinProb;
+      }
+
+      // Helper function for conference ratings
+      const getConferenceRating = (conference: string | null | undefined): number => {
+        const ratings: Record<string, number> = {
+          'SEC': 8, 'Big Ten': 6, 'Big 12': 4, 'ACC': 4, 'Pac-12': 2,
+          'Mountain West': 0, 'American Athletic': 0, 'Sun Belt': 1,
+          'Conference USA': 1, 'Mid-American': -1, 'FBS Independents': -2
+        };
+        return ratings[conference || ''] || 0;
+      };
+
+      // Generate team analytics based on conference strength and factors
+      const homeConferenceRating = getConferenceRating(game.homeTeam?.conference);
+      const awayConferenceRating = getConferenceRating(game.awayTeam?.conference);
       
       const analysis = {
         predictiveMetrics: {
-          winProbability,
-          confidence: Math.round(75 + Math.random() * 20), // 75-95%
-          spreadPrediction: Math.round((Math.random() - 0.5) * 14 * 2) / 2,
-          overUnderPrediction: Math.round(Math.random() * 20 + 45),
-          keyFactors: [
-            "Home field advantage (+3-7 points)",
-            game.homeTeam?.conference === game.awayTeam?.conference ? "Conference rivalry factor" : "Non-conference matchup",
-            "Recent offensive trends",
-            "Defensive injury reports",
-            "Weather conditions favorable"
-          ].slice(0, Math.floor(Math.random() * 3) + 2),
-          riskLevel: winProbability > 75 || winProbability < 25 ? 'Low' : winProbability > 60 || winProbability < 40 ? 'Medium' : 'High',
-          recommendation: `${winProbability > 55 ? game.homeTeam?.name : game.awayTeam?.name} shows ${winProbability > 65 || winProbability < 35 ? 'strong' : 'moderate'} value in this matchup`
+          winProbability: Math.round(homeWinProb),
+          confidence: prediction.confidence,
+          spreadPrediction: prediction.spread,
+          overUnderPrediction: game.overUnder || 48.5,
+          keyFactors: prediction.keyFactors,
+          riskLevel: prediction.confidence === "High" ? 'Low' : prediction.confidence === "Medium" ? 'Medium' : 'High',
+          recommendation: prediction.recommendedBet || prediction.prediction
         },
         homeTeamAnalytics: {
-          offensiveRating: Math.round(Math.random() * 40 + 60),
-          defensiveRating: Math.round(Math.random() * 40 + 60),
-          strengthOfSchedule: Math.round(Math.random() * 30 + 70),
-          momentumScore: Math.round(Math.random() * 50 + 50),
-          homeFieldAdvantage: Math.round(Math.random() * 20 + 80),
-          injuryImpact: Math.round(Math.random() * 30 + 70),
-          weatherFactor: Math.round(Math.random() * 20 + 80),
-          coachingEdge: Math.round(Math.random() * 40 + 60)
+          offensiveRating: Math.max(50, Math.min(95, 75 + homeConferenceRating + (game.isDome ? 3 : 0))),
+          defensiveRating: Math.max(50, Math.min(95, 72 + homeConferenceRating + 2)),
+          strengthOfSchedule: Math.max(60, Math.min(90, 75 + homeConferenceRating)),
+          momentumScore: Math.max(50, Math.min(90, 70 + (prediction.factorBreakdown?.conference || 0) * 5)),
+          homeFieldAdvantage: 85,
+          injuryImpact: 75,
+          weatherFactor: Math.max(60, Math.min(90, 75 + (prediction.factorBreakdown?.weather || 0) * 3)),
+          coachingEdge: Math.max(60, Math.min(90, 75 + homeConferenceRating))
         },
         awayTeamAnalytics: {
-          offensiveRating: Math.round(Math.random() * 40 + 60),
-          defensiveRating: Math.round(Math.random() * 40 + 60),
-          strengthOfSchedule: Math.round(Math.random() * 30 + 70),
-          momentumScore: Math.round(Math.random() * 50 + 50),
-          homeFieldAdvantage: Math.round(Math.random() * 20 + 30),
-          injuryImpact: Math.round(Math.random() * 30 + 70),
-          weatherFactor: Math.round(Math.random() * 20 + 80),
-          coachingEdge: Math.round(Math.random() * 40 + 60)
+          offensiveRating: Math.max(50, Math.min(95, 75 + awayConferenceRating - 2)),
+          defensiveRating: Math.max(50, Math.min(95, 72 + awayConferenceRating)),
+          strengthOfSchedule: Math.max(60, Math.min(90, 75 + awayConferenceRating)),
+          momentumScore: Math.max(50, Math.min(90, 70 - (prediction.factorBreakdown?.conference || 0) * 3)),
+          homeFieldAdvantage: 35,
+          injuryImpact: 75,
+          weatherFactor: Math.max(60, Math.min(90, 75 + (prediction.factorBreakdown?.weather || 0) * 2)),
+          coachingEdge: Math.max(60, Math.min(90, 75 + awayConferenceRating))
         },
         homeTeamStats: {
-          totalYardsPerGame: Math.round(Math.random() * 200 + 300),
-          pointsPerGame: Math.round(Math.random() * 20 + 20),
-          turnoverRatio: Math.round((Math.random() - 0.5) * 2 * 10) / 10,
-          thirdDownConversion: Math.round(Math.random() * 30 + 35),
-          redZoneEfficiency: Math.round(Math.random() * 40 + 60),
-          timeOfPossession: Math.round(Math.random() * 6 + 27),
-          specialTeamsRating: Math.round(Math.random() * 30 + 70)
+          totalYardsPerGame: Math.max(300, Math.min(500, 400 + homeConferenceRating * 10)),
+          pointsPerGame: Math.max(20, Math.min(45, 30 + homeConferenceRating * 2)),
+          turnoverRatio: Math.round((homeConferenceRating * 0.2) * 10) / 10,
+          thirdDownConversion: Math.max(35, Math.min(55, 42 + homeConferenceRating)),
+          redZoneEfficiency: Math.max(60, Math.min(85, 70 + homeConferenceRating)),
+          timeOfPossession: Math.max(27, Math.min(33, 30)),
+          specialTeamsRating: Math.max(70, Math.min(90, 75 + (game.windSpeed && game.windSpeed > 15 ? -5 : 0)))
         },
         awayTeamStats: {
-          totalYardsPerGame: Math.round(Math.random() * 200 + 300),
-          pointsPerGame: Math.round(Math.random() * 20 + 20),
-          turnoverRatio: Math.round((Math.random() - 0.5) * 2 * 10) / 10,
-          thirdDownConversion: Math.round(Math.random() * 30 + 35),
-          redZoneEfficiency: Math.round(Math.random() * 40 + 60),
-          timeOfPossession: Math.round(Math.random() * 6 + 27),
-          specialTeamsRating: Math.round(Math.random() * 30 + 70)
+          totalYardsPerGame: Math.max(300, Math.min(500, 400 + awayConferenceRating * 10)),
+          pointsPerGame: Math.max(20, Math.min(45, 30 + awayConferenceRating * 2)),
+          turnoverRatio: Math.round((awayConferenceRating * 0.2) * 10) / 10,
+          thirdDownConversion: Math.max(35, Math.min(55, 42 + awayConferenceRating)),
+          redZoneEfficiency: Math.max(60, Math.min(85, 70 + awayConferenceRating)),
+          timeOfPossession: Math.max(27, Math.min(33, 30)),
+          specialTeamsRating: Math.max(70, Math.min(90, 75 + (game.windSpeed && game.windSpeed > 15 ? -8 : -2)))
         },
         historicalH2H: []
       };
