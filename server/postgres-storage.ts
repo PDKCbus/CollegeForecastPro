@@ -85,7 +85,10 @@ export class PostgresStorage implements IStorage {
     const now = new Date();
     const gameResults = await db.select()
       .from(games)
-      .where(gte(games.startDate, now))
+      .where(and(
+        gte(games.startDate, now),
+        or(isNotNull(games.spread), isNotNull(games.overUnder))
+      ))
       .orderBy(asc(games.startDate))
       .limit(limit)
       .offset(offset);
@@ -117,7 +120,11 @@ export class PostgresStorage implements IStorage {
   async getGamesByWeek(season: number, week: number): Promise<GameWithTeams[]> {
     const gameResults = await db.select()
       .from(games)
-      .where(and(eq(games.season, season), eq(games.week, week)))
+      .where(and(
+        eq(games.season, season), 
+        eq(games.week, week),
+        or(isNotNull(games.spread), isNotNull(games.overUnder))
+      ))
       .orderBy(desc(games.startDate));
 
     const gamesWithTeams: GameWithTeams[] = [];
@@ -152,7 +159,8 @@ export class PostgresStorage implements IStorage {
   ): Promise<GameWithTeams[]> {
     let queryConditions = [
       eq(games.completed, true), // Only completed games
-      lt(games.season, 2025)     // Only historical seasons (not current 2025)
+      lt(games.season, 2025),    // Only historical seasons (not current 2025)
+      or(isNotNull(games.spread), isNotNull(games.overUnder)) // Only games with betting lines
     ];
 
     // Apply filters
