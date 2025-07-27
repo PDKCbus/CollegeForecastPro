@@ -66,6 +66,69 @@ export function ImprovedHistoricalGameCard({ game }: HistoricalGameCardProps) {
     return team.logoUrl || team.logo || `https://a.espncdn.com/i/teamlogos/ncaa/500/default.png`;
   };
 
+  // Weather display function for historical games
+  const getWeatherDisplay = () => {
+    // Check if game has actual weather data from the database
+    const temp = (game as any).temperature;
+    const windSpeed = (game as any).windSpeed || (game as any).wind_speed;
+    const weatherCondition = (game as any).weatherCondition || (game as any).weather_condition;
+    const precipitation = (game as any).precipitation;
+    const isDome = (game as any).isDome || (game as any).is_dome;
+
+    // Show dome indicator if confirmed dome venue
+    if (isDome) {
+      return (
+        <div className="flex items-center gap-1 text-sm text-gray-600">
+          <span className="text-base">🏟️</span>
+          <span>Dome</span>
+        </div>
+      );
+    }
+
+    // Only show weather if we have actual data
+    const hasWeatherData = temp !== null || windSpeed !== null || weatherCondition !== null || precipitation !== null;
+    
+    if (!hasWeatherData) {
+      return null;
+    }
+
+    const condition = weatherCondition?.toLowerCase() || '';
+    let icon = '';
+    let label = '';
+
+    // Determine weather icon based on actual data
+    if (precipitation > 0) {
+      if (condition.includes('snow') || (temp && temp < 35)) {
+        icon = '❄️';
+        label = 'Snow';
+      } else {
+        icon = '🌧️';
+        label = 'Rain';
+      }
+    } else if (windSpeed > 15) {
+      icon = '💨';
+      label = `${windSpeed} mph`;
+    } else if (temp && temp < 40) {
+      icon = '🥶';
+      label = `${Math.round(temp)}°F`;
+    } else if (condition.includes('cloud')) {
+      icon = '☁️';
+      label = 'Cloudy';
+    } else if (temp) {
+      icon = '☀️';
+      label = `${Math.round(temp)}°F`;
+    } else {
+      return null;
+    }
+
+    return (
+      <div className="flex items-center gap-1 text-sm text-gray-600">
+        <span className="text-base">{icon}</span>
+        <span>{label}</span>
+      </div>
+    );
+  };
+
   const getSpreadBadge = () => {
     if (spread === 0) return null;
     
@@ -120,7 +183,10 @@ export function ImprovedHistoricalGameCard({ game }: HistoricalGameCardProps) {
                 Historical Result
               </Badge>
             </div>
-            <span className="text-xs text-gray-500">Week {game.week}</span>
+            <div className="flex items-center gap-2">
+              {getWeatherDisplay()}
+              <span className="text-xs text-gray-500">Week {game.week}</span>
+            </div>
           </div>
 
           {/* Teams Display - Exact same as GameCard */}
