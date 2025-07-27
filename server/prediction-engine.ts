@@ -55,16 +55,20 @@ export class RicksPicksPredictionEngine {
   /**
    * Calculate weather impact factor
    * Based on finding: Dome games average 7.9 more points than outdoor
+   * Only includes weather factors when we have actual data
    */
   private calculateWeatherFactor(weather: WeatherConditions): { score: number; impact: string[] } {
     let factorScore = 0;
     const impactDescription: string[] = [];
 
+    // Only apply weather factors if we have confirmed dome status OR valid weather data
     if (weather.isDome) {
       factorScore += 4.0; // Dome advantage
       impactDescription.push("Dome: Controlled climate favors offense (+4.0)");
-    } else {
-      // Temperature impact (only if we have valid temperature data)
+    } else if (this.hasValidWeatherData(weather)) {
+      // Only apply outdoor weather factors if we have actual weather data
+      
+      // Temperature impact
       if (weather.temperature !== undefined && weather.temperature !== null && !isNaN(weather.temperature)) {
         if (weather.temperature < 32) {
           factorScore -= 2.5;
@@ -78,7 +82,7 @@ export class RicksPicksPredictionEngine {
         }
       }
 
-      // Wind impact (high wind reduces scoring by 1.7 points average) - only if we have valid wind data
+      // Wind impact
       if (weather.windSpeed !== undefined && weather.windSpeed !== null && !isNaN(weather.windSpeed)) {
         if (weather.windSpeed > 20) {
           factorScore -= 2.0;
@@ -89,14 +93,27 @@ export class RicksPicksPredictionEngine {
         }
       }
 
-      // Precipitation impact - only if we have valid precipitation data
+      // Precipitation impact
       if (weather.precipitation && weather.precipitation > 0 && !isNaN(weather.precipitation)) {
         factorScore -= 1.5;
         impactDescription.push("Precipitation: Ball handling challenges, favors ground game (-1.5)");
       }
     }
+    // If no valid weather data and not a dome, we simply don't include weather as a factor
 
     return { score: factorScore, impact: impactDescription };
+  }
+
+  /**
+   * Check if we have valid weather data to make weather-based predictions
+   */
+  private hasValidWeatherData(weather: WeatherConditions): boolean {
+    const hasTemp = weather.temperature !== undefined && weather.temperature !== null && !isNaN(weather.temperature);
+    const hasWind = weather.windSpeed !== undefined && weather.windSpeed !== null && !isNaN(weather.windSpeed);
+    const hasPrecip = weather.precipitation !== undefined && weather.precipitation !== null && !isNaN(weather.precipitation);
+    
+    // We need at least one valid weather data point to make weather predictions
+    return hasTemp || hasWind || hasPrecip;
   }
 
   /**
