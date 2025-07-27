@@ -122,6 +122,12 @@ The application follows a modern full-stack architecture with clear separation o
 
 ## Changelog
 
+- July 27, 2025: **WEATHER DISPLAY: Historical Game Cards Weather Emojis Completed**
+  - **WEATHER EMOJIS ON HISTORICAL GAMES**: Added weather display to historical game cards with dome, temperature, wind, precipitation indicators
+  - **API ENHANCEMENT**: Updated historical games endpoint to include temperature, windSpeed, weatherCondition, precipitation, isDome from database
+  - **COMPONENT INTEGRATION**: Enhanced ImprovedHistoricalGameCard with intelligent weather display logic (🏟️ dome, 🥶 cold, 🌧️ rain, ❄️ snow, 💨 wind)
+  - **AUTHENTIC DATA ONLY**: Weather icons only display when actual database weather data exists - no fake fallbacks or hardcoded values
+  - **UI POSITIONING**: Weather emojis positioned next to date/week in header for quick reference during historical game analysis
 - July 27, 2025: **WEATHER ENRICHMENT SYSTEM: Tuesday Maintenance Integration Completed**
   - **WEEKLY WEATHER UPDATES**: Created automated weather enrichment for games within 7 days of kickoff
   - **REALISTIC PREDICTIONS**: Fixed algorithm to only include weather factors when actual data is available (no more "null°F")

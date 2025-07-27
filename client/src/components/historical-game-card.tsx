@@ -64,15 +64,7 @@ export function HistoricalGameCard({ game }: HistoricalGameCardProps) {
     const precipitation = (game as any).precipitation;
     const isDome = (game as any).isDome || (game as any).is_dome;
 
-    console.log('Historical Game Weather Data:', { 
-      id: game.id, 
-      temp, 
-      windSpeed, 
-      weatherCondition, 
-      precipitation, 
-      isDome,
-      gameObject: game 
-    });
+
 
     // Show dome indicator if confirmed dome venue
     if (isDome) {
