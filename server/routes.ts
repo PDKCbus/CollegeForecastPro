@@ -63,6 +63,89 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Test endpoint for historical games betting lines validation
+  app.get("/api/test/betting-lines-filter", async (req, res) => {
+    try {
+      console.log('🧪 Running betting lines filter validation test...');
+      
+      // Test 1: Check historical games API endpoint
+      const historicalResponse = await fetch(`http://localhost:5000/api/games/historical?page=0&limit=50&season=all&week=all`);
+      const historicalData = await historicalResponse.json();
+      
+      // Test 2: Check upcoming games API endpoint  
+      const upcomingResponse = await fetch(`http://localhost:5000/api/games/upcoming?limit=50`);
+      const upcomingData = await upcomingResponse.json();
+      
+      // Validate historical games
+      const historicalGames = historicalData.games || [];
+      const historicalFailures = historicalGames.filter((game: any) => 
+        game.spread === null && game.overUnder === null
+      );
+      
+      // Validate upcoming games
+      const upcomingGames = upcomingData.games || [];
+      const upcomingFailures = upcomingGames.filter((game: any) => 
+        game.spread === null && game.overUnder === null
+      );
+      
+      // Get database counts for comparison
+      const totalHistorical = await db.execute(sql.raw('SELECT COUNT(*) as count FROM games WHERE completed = true'));
+      const historicalWithBetting = await db.execute(sql.raw('SELECT COUNT(*) as count FROM games WHERE completed = true AND (spread IS NOT NULL OR over_under IS NOT NULL)'));
+      const totalUpcoming = await db.execute(sql.raw('SELECT COUNT(*) as count FROM games WHERE start_date >= NOW() AND completed = false'));
+      const upcomingWithBetting = await db.execute(sql.raw('SELECT COUNT(*) as count FROM games WHERE start_date >= NOW() AND completed = false AND (spread IS NOT NULL OR over_under IS NOT NULL)'));
+      
+      const testResults = {
+        testStatus: historicalFailures.length === 0 && upcomingFailures.length === 0 ? 'PASS' : 'FAIL',
+        timestamp: new Date().toISOString(),
+        historicalGames: {
+          totalTested: historicalGames.length,
+          gamesWithoutBetting: historicalFailures.length,
+          failureRate: `${((historicalFailures.length / Math.max(historicalGames.length, 1)) * 100).toFixed(2)}%`,
+          apiTotal: historicalData.pagination?.total || 0,
+          dbTotal: parseInt(totalHistorical[0]?.count || '0'),
+          dbWithBetting: parseInt(historicalWithBetting[0]?.count || '0')
+        },
+        upcomingGames: {
+          totalTested: upcomingGames.length,
+          gamesWithoutBetting: upcomingFailures.length,
+          failureRate: `${((upcomingFailures.length / Math.max(upcomingGames.length, 1)) * 100).toFixed(2)}%`,
+          apiTotal: upcomingData.total || upcomingGames.length,
+          dbTotal: parseInt(totalUpcoming[0]?.count || '0'),
+          dbWithBetting: parseInt(upcomingWithBetting[0]?.count || '0')
+        },
+        failureDetails: {
+          historicalFailures: historicalFailures.map((game: any) => ({
+            id: game.id,
+            homeTeam: game.homeTeam?.name,
+            awayTeam: game.awayTeam?.name,
+            season: game.season,
+            week: game.week
+          })),
+          upcomingFailures: upcomingFailures.map((game: any) => ({
+            id: game.id,
+            homeTeam: game.homeTeam?.name,
+            awayTeam: game.awayTeam?.name,
+            season: game.season,
+            week: game.week
+          }))
+        }
+      };
+      
+      console.log(`✅ Betting filter test: ${testResults.testStatus}`);
+      console.log(`📊 Historical: ${historicalFailures.length}/${historicalGames.length} games without betting lines`);
+      console.log(`📊 Upcoming: ${upcomingFailures.length}/${upcomingGames.length} games without betting lines`);
+      
+      res.json(testResults);
+    } catch (error) {
+      console.error('Error in betting lines filter test:', error);
+      res.status(500).json({ 
+        testStatus: 'ERROR',
+        message: "Betting filter test failed", 
+        error: error.message 
+      });
+    }
+  });
+
   // Test endpoint for historical games data
   app.get("/api/test/historical", async (req, res) => {
     try {
