@@ -79,6 +79,16 @@ async function collectWeeklyGames() {
   // Step 1: Update completed games from previous weeks
   const completedCount = await updateCompletedGames();
   
+  // Step 2: Enrich weather data for upcoming games (within 7 days)
+  console.log('🌦️ Checking for games needing weather data...');
+  try {
+    const { enrichWeatherForUpcomingGames } = await import('./server/weather-enrichment');
+    const weatherEnrichedCount = await enrichWeatherForUpcomingGames();
+    console.log(`   Weather data updated for ${weatherEnrichedCount} games\n`);
+  } catch (error) {
+    console.log('   ⚠️ Weather enrichment skipped:', (error as Error).message);
+  }
+  
   // Step 2: Collect upcoming games
   const currentWeek = await getCurrentWeek();
   const weeksToCollect = await getWeeksToCollect(currentWeek);

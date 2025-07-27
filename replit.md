@@ -105,8 +105,10 @@ The application follows a modern full-stack architecture with clear separation o
 ## Development Guidelines
 
 **Data Collection Pattern:**
-- Historical collection complete - use `weekly-2025-collector.ts` for ongoing 2025 season maintenance
+- Historical collection complete - use `weekly-2025-collector.ts` for ongoing 2025 season maintenance  
 - Tuesday morning schedule recommended to catch Monday holiday games
+- **Weather enrichment integrated**: Weekly collector now updates weather data for games within 7 days
+- Weather APIs provide forecast data for games 1-7 days out, ensuring Rick's Picks has real weather factors
 - Processes seasons in smaller batches (25 games) with 2-second delays to avoid timeouts
 - Includes retry logic for CFBD API requests (up to 3 attempts per request)
 - 30-second timeout per individual API request with graceful failure handling
@@ -120,6 +122,12 @@ The application follows a modern full-stack architecture with clear separation o
 
 ## Changelog
 
+- July 27, 2025: **WEATHER ENRICHMENT SYSTEM: Tuesday Maintenance Integration Completed**
+  - **WEEKLY WEATHER UPDATES**: Created automated weather enrichment for games within 7 days of kickoff
+  - **REALISTIC PREDICTIONS**: Fixed algorithm to only include weather factors when actual data is available (no more "null°F")
+  - **TUESDAY INTEGRATION**: Weather enrichment now runs as part of weekly-2025-collector.ts maintenance routine
+  - **API ENDPOINT**: `/api/weather/enrich-upcoming` manually triggers weather updates for upcoming games
+  - **FORECAST WINDOW**: Weather APIs provide reliable data 1-7 days out, ensuring Rick's Picks has real weather factors when games approach
 - July 27, 2025: **RICK'S PICKS REAL PREDICTION ALGORITHM: Data-Driven Points System Implemented**
   - **AUTHENTIC PREDICTIONS**: Created RicksPicksPredictionEngine using actual research findings from 28,431-game analysis
   - **POINTS-BASED SCORING**: Weather (+4.0 dome advantage), conference strength (SEC +5.7), home field (declining to +2.0), betting value

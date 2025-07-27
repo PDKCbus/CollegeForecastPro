@@ -1709,8 +1709,32 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Weather enrichment endpoint for upcoming games
-  app.post('/api/weather/enrich-upcoming', async (_req: Request, res: Response) => {
+  // Weather enrichment endpoint for upcoming games (within 7 days)
+  app.post('/api/weather/enrich-upcoming', async (_req, res) => {
+    try {
+      const { enrichWeatherForUpcomingGames } = await import('./weather-enrichment');
+      
+      setImmediate(async () => {
+        try {
+          const enrichedCount = await enrichWeatherForUpcomingGames();
+          console.log(`✅ Weather enrichment completed: ${enrichedCount} games updated`);
+        } catch (error) {
+          console.error('❌ Weather enrichment failed:', error);
+        }
+      });
+      
+      res.json({ 
+        message: 'Weather enrichment started for upcoming games (within 7 days)',
+        status: 'processing'
+      });
+    } catch (error) {
+      console.error('Weather enrichment error:', error);
+      res.status(500).json({ message: 'Failed to start weather enrichment' });
+    }
+  });
+
+  // Legacy weather enrichment endpoint for upcoming games
+  app.post('/api/weather/enrich-upcoming-legacy', async (_req: Request, res: Response) => {
     try {
       const { weatherService } = await import('./weather-service');
       
