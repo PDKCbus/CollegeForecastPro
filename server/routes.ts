@@ -1685,6 +1685,30 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Apply Rick's Picks real predictions to all upcoming games
+  app.post('/api/predictions/apply-ricks-picks', async (_req, res) => {
+    try {
+      const { applyRicksPicksToUpcomingGames } = await import('./apply-predictions');
+      
+      setImmediate(async () => {
+        try {
+          await applyRicksPicksToUpcomingGames();
+          console.log('✅ Rick\'s Picks applied to all upcoming games');
+        } catch (error) {
+          console.error('❌ Failed to apply Rick\'s Picks:', error);
+        }
+      });
+      
+      res.json({ 
+        message: 'Rick\'s Picks generation started for all upcoming games',
+        status: 'processing'
+      });
+    } catch (error) {
+      console.error('Apply predictions error:', error);
+      res.status(500).json({ message: 'Failed to start Rick\'s Picks generation' });
+    }
+  });
+
   // Weather enrichment endpoint for upcoming games
   app.post('/api/weather/enrich-upcoming', async (_req: Request, res: Response) => {
     try {
