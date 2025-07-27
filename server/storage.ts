@@ -3,7 +3,9 @@ import {
   teams, 
   games, 
   predictions,
-  sentimentAnalysis, 
+  sentimentAnalysis,
+  ricksPicks,
+  adminUsers,
   type User, 
   type InsertUser, 
   type Team, 
@@ -13,7 +15,11 @@ import {
   type Prediction, 
   type InsertPrediction,
   type SentimentAnalysis,
-  type InsertSentimentAnalysis, 
+  type InsertSentimentAnalysis,
+  type RicksPick,
+  type InsertRicksPick,
+  type AdminUser,
+  type InsertAdminUser,
   type GameWithTeams
 } from "@shared/schema";
 
@@ -58,6 +64,19 @@ export interface IStorage {
   getSentimentByTeam(teamId: number): Promise<SentimentAnalysis[]>;
   createSentimentAnalysis(sentiment: InsertSentimentAnalysis): Promise<SentimentAnalysis>;
   updateSentimentAnalysis(id: number, sentiment: Partial<SentimentAnalysis>): Promise<SentimentAnalysis | undefined>;
+  
+  // Rick's Picks operations
+  getRicksPick(gameId: number): Promise<RicksPick | undefined>;
+  getRicksPicksByWeek(season: number, week: number): Promise<RicksPick[]>;
+  createRicksPick(pick: InsertRicksPick): Promise<RicksPick>;
+  updateRicksPick(gameId: number, pick: Partial<RicksPick>): Promise<RicksPick | undefined>;
+  deleteRicksPick(gameId: number): Promise<boolean>;
+  lockRicksPick(gameId: number): Promise<boolean>;
+  
+  // Admin User operations
+  getAdminUser(username: string): Promise<AdminUser | undefined>;
+  createAdminUser(adminUser: InsertAdminUser): Promise<AdminUser>;
+  updateAdminUserLastLogin(username: string): Promise<boolean>;
 }
 
 export class MemStorage implements IStorage {

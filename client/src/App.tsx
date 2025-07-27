@@ -12,6 +12,7 @@ import Sentiment from "@/pages/sentiment";
 import DataAnalysis from "@/pages/data-analysis";
 import GameAnalysis from "@/pages/game-analysis";
 import SeasonStats from "@/pages/season-stats";
+import AdminPanel from "@/pages/admin-panel";
 import NotFound from "@/pages/not-found";
 
 function Router() {
@@ -22,8 +23,8 @@ function Router() {
       <Route path="/analysis" component={Analysis} />
       <Route path="/game-analysis" component={GameAnalysis} />
       <Route path="/sentiment" component={Sentiment} />
-
       <Route path="/season-stats" component={SeasonStats} />
+      <Route path="/admin" component={AdminPanel} />
       <Route component={NotFound} />
     </Switch>
   );
