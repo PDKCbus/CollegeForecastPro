@@ -187,7 +187,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
         LEFT JOIN teams ht ON g.home_team_id = ht.id
         LEFT JOIN teams at ON g.away_team_id = at.id
         ${whereClause}
-        ORDER BY g.season DESC, g.week DESC, g.start_date DESC
+        ORDER BY 
+          g.season DESC,
+          (CASE WHEN g.spread IS NOT NULL OR g.over_under IS NOT NULL THEN 1 ELSE 0 END) DESC,
+          g.start_date DESC
         LIMIT ${limitNum} OFFSET ${offset}
       `;
       
