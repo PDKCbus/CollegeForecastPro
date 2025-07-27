@@ -79,7 +79,17 @@ async function collectWeeklyGames() {
   // Step 1: Update completed games from previous weeks
   const completedCount = await updateCompletedGames();
   
-  // Step 2: Enrich weather data for upcoming games (within 7 days)
+  // Step 2: Update preseason rankings for Week 1 predictions
+  console.log('📊 Updating preseason rankings for authentic Week 1 predictions...');
+  try {
+    const { PreseasonRankingsCollector } = await import("./server/preseason-rankings-collector");
+    await PreseasonRankingsCollector.updatePreseasonTeamRatings(2025);
+    console.log('   ✅ Preseason rankings updated for accurate Week 1 analytics\n');
+  } catch (error) {
+    console.log('   ⚠️ Preseason collection failed (continuing with existing data):', (error as Error).message);
+  }
+
+  // Step 3: Enrich weather data for upcoming games (within 7 days)
   console.log('🌦️ Checking for games needing weather data...');
   try {
     const { enrichWeatherForUpcomingGames } = await import('./server/weather-enrichment');
@@ -89,7 +99,7 @@ async function collectWeeklyGames() {
     console.log('   ⚠️ Weather enrichment skipped:', (error as Error).message);
   }
   
-  // Step 2: Collect upcoming games
+  // Step 4: Collect upcoming games
   const currentWeek = await getCurrentWeek();
   const weeksToCollect = await getWeeksToCollect(currentWeek);
   

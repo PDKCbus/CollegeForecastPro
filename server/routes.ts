@@ -1937,6 +1937,33 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Preseason rankings endpoints
+  app.post("/api/preseason/collect", async (req, res) => {
+    try {
+      const { PreseasonRankingsCollector } = await import("./preseason-rankings-collector");
+      const { season = 2025 } = req.body;
+      
+      const result = await PreseasonRankingsCollector.triggerPreseasonCollection(season);
+      res.json(result);
+    } catch (error) {
+      console.error("Error collecting preseason data:", error);
+      res.status(500).json({ error: "Failed to collect preseason data" });
+    }
+  });
+
+  app.get("/api/preseason/rankings/:season", async (req, res) => {
+    try {
+      const { PreseasonRankingsCollector } = await import("./preseason-rankings-collector");
+      const season = parseInt(req.params.season);
+      
+      const rankings = await PreseasonRankingsCollector.collectPreseasonRankings(season);
+      res.json(rankings);
+    } catch (error) {
+      console.error("Error fetching preseason rankings:", error);
+      res.status(500).json({ error: "Failed to fetch preseason rankings" });
+    }
+  });
+
   // Team analytics endpoints
   app.get("/api/teams/:teamId/analytics", async (req, res) => {
     try {

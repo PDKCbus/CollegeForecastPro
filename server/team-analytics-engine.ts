@@ -195,6 +195,7 @@ export class TeamAnalyticsEngine {
 
   /**
    * Get comprehensive team analytics
+   * For Week 1, uses preseason rankings and recruiting data
    */
   static async getTeamAnalytics(teamId: number, season: number = 2025): Promise<TeamAnalytics | null> {
     try {

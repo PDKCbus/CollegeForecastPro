@@ -122,6 +122,13 @@ The application follows a modern full-stack architecture with clear separation o
 
 ## Changelog
 
+- July 27, 2025: **PRESEASON RANKINGS INTEGRATION: Week 1 Predictions with Authentic Data Sources**
+  - **PRESEASON RANKINGS COLLECTOR**: Added CFBD API integration for preseason AP Poll rankings and recruiting class data
+  - **WEEK 1 TOOLTIP**: Added info tooltip next to "Team Analytics Comparisons" explaining preseason data usage for Week 1 vs real stats for later weeks
+  - **AUTHENTIC BASELINES**: UCF vs Jacksonville State now uses Big 12 vs C-USA conference strength and recruiting rankings instead of synthetic data
+  - **API ENDPOINTS**: Added /api/preseason/collect and /api/preseason/rankings/:season for preseason data management
+  - **AUTOMATED INTEGRATION**: Weekly collector now triggers preseason data updates for accurate Week 1 predictions
+  - **SEAMLESS TRANSITION**: Week 1 uses preseason projections, Week 2+ automatically switches to real performance data
 - July 27, 2025: **UI CLEANUP: Removed Redundant Rick's Confidence Display from Game Cards**
   - **CONFIDENCE SECTION REMOVED**: Eliminated standalone "Rick's Confidence" display from game card components since confidence is now derived from comprehensive hypothesis analysis
   - **STREAMLINED UI**: Game cards now flow directly from Rick's Pick to Full Analysis button without redundant confidence percentage display
