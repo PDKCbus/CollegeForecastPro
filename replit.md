@@ -106,7 +106,11 @@ The application follows a modern full-stack architecture with clear separation o
 
 **Data Collection Pattern:**
 - Historical collection complete - use `weekly-2025-collector.ts` for ongoing 2025 season maintenance  
-- Tuesday morning schedule recommended to catch Monday holiday games
+- **AUTOMATED BETTING LINE REFRESH SYSTEM**: Three-tier schedule for optimal prediction accuracy
+  - **Tuesday 7:00 AM**: Full weekly collection (new games + weather + betting lines)
+  - **Thursday 8:00 AM**: Mid-week line refresh (capture early week movement)
+  - **Saturday 9:00 AM**: Pre-game line refresh (capture final movements before kickoff)
+- **Mid-Week Line Tracking**: System detects significant line movement (≥0.5 points) and logs major shifts
 - **Weather enrichment integrated**: Weekly collector now updates weather data for games within 7 days
 - Weather APIs provide forecast data for games 1-7 days out, ensuring Rick's Picks has real weather factors
 - Processes seasons in smaller batches (25 games) with 2-second delays to avoid timeouts
@@ -122,6 +126,15 @@ The application follows a modern full-stack architecture with clear separation o
 
 ## Changelog
 
+- July 28, 2025: **MID-WEEK BETTING LINE REFRESH SYSTEM: Automated Thursday/Saturday Line Updates Completed**
+  - **THREE-TIER SCHEDULE**: Tuesday (full collection), Thursday (mid-week refresh), Saturday (pre-game refresh)
+  - **AUTOMATED LINE TRACKING**: System detects significant movement (≥0.5 points) and logs major shifts throughout the week
+  - **API ENDPOINTS**: `/api/lines/refresh-midweek`, `/api/lines/movement-report`, `/api/scheduler/status`
+  - **SCHEDULER INTEGRATION**: BettingLinesScheduler runs automatically on server startup with hourly task checking
+  - **MANUAL TRIGGERS**: Admin can manually trigger Tuesday/Thursday/Saturday refreshes for testing and maintenance
+  - **SPORTSBOOK PRIORITY**: DraftKings > Bovada > consensus for most accurate betting line sources
+  - **PRODUCTION READY**: Integrated with existing weekly collector and automatic 4-hour sync cycles
+  - **OPTIMAL PREDICTION ACCURACY**: Rick's picks now use freshest possible betting data for maximum edge
 - July 28, 2025: **HEAD-TO-HEAD HISTORY FEATURE: Complete Historical Matchup Analysis from 15-Year Dataset**
   - **3-DOT MENU EXPANSION**: Added "View Head-to-Head History" option with BarChart3 icon alongside Twitter sentiment analysis
   - **COMPREHENSIVE DIALOG**: Shows series summary with all-time wins since 2009, recent matchups with scores/venues/spread results
