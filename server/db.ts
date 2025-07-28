@@ -16,6 +16,10 @@ export async function initializeDatabase() {
     await client`SELECT 1`;
     console.log('Database connection successful');
     
+    // Initialize admin auth system
+    const { AdminAuth } = await import('./admin-auth');
+    await AdminAuth.initialize();
+    
     return true;
   } catch (error) {
     console.error('Database initialization failed:', error);
