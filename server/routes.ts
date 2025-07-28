@@ -3,7 +3,7 @@ import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { db } from "./db";
 import { games, teams, ricksPicks } from "@shared/schema";
-import { eq, and, desc, lt, or, gte, sql } from "drizzle-orm";
+import { eq, and, desc, lt, or, gte, sql, isNotNull } from "drizzle-orm";
 import { sentimentService } from "./sentiment";
 import { historicalSync } from "./historical-sync";
 import { comprehensiveDataSync } from "./comprehensive-data-sync";
@@ -2328,7 +2328,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           // Get upcoming games for current week if no week specified
           const currentWeek = week ? parseInt(week as string) : 1; // Default to Week 1
           
-          // Get games with team data using separate queries
+          // Get games with betting data - prioritize games with spreads/totals for admin picks
           const gamesList = await db
             .select()
             .from(games)
@@ -2336,10 +2336,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
               and(
                 eq(games.season, parseInt(season as string)),
                 eq(games.week, currentWeek),
-                eq(games.completed, false)
+                eq(games.completed, false),
+                // Prioritize games with betting data for Rick's picks
+                or(
+                  isNotNull(games.spread),
+                  isNotNull(games.overUnder)
+                )
               )
             )
-            .orderBy(games.startDate);
+            .orderBy(games.startDate)
+            .limit(30); // Focus on games Rick can actually make picks on
 
           // Enrich with team data
           const upcomingGames = await Promise.all(
