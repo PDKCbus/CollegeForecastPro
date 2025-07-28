@@ -166,7 +166,7 @@ export async function refreshMidWeekBettingLines(): Promise<void> {
 }
 
 // CLI execution
-if (require.main === module) {
+if (import.meta.main) {
   refreshMidWeekBettingLines()
     .then(() => {
       console.log('🎯 Mid-week line refresh completed successfully');

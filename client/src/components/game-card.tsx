@@ -6,7 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
-import { Calendar, Clock, MapPin, MoreHorizontal, Twitter, TrendingUp, TrendingDown, BarChart3, Cloud, CloudRain, CloudSnow, Sun, Wind, Thermometer } from "lucide-react";
+import { Calendar, Clock, MapPin, MoreHorizontal, Twitter, TrendingUp, TrendingDown, BarChart3, Cloud, CloudRain, CloudSnow, Sun, Wind, Thermometer, Share2, Copy, Check } from "lucide-react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { useState } from "react";
 import { Link } from "wouter";
@@ -19,6 +19,7 @@ interface GameCardProps {
 export function GameCard({ game }: GameCardProps) {
   const [sentimentDialogOpen, setSentimentDialogOpen] = useState(false);
   const [headToHeadDialogOpen, setHeadToHeadDialogOpen] = useState(false);
+  const [linkCopied, setLinkCopied] = useState(false);
 
   const formatDate = (dateString: Date) => {
     const date = new Date(dateString);
@@ -57,6 +58,37 @@ export function GameCard({ game }: GameCardProps) {
 
   const formatTeamRecord = (wins: number, losses: number) => {
     return `${wins}-${losses}`;
+  };
+
+  const handleShareGame = async () => {
+    const gameUrl = `${window.location.origin}/game-analysis?game=${game.id}`;
+    const shareTitle = `${game.awayTeam.name} @ ${game.homeTeam.name} - Rick's Picks Analysis`;
+    
+    try {
+      if (navigator.share) {
+        // Use native sharing if available (mobile)
+        await navigator.share({
+          title: shareTitle,
+          text: `Get Rick's expert analysis and betting picks for ${game.awayTeam.name} @ ${game.homeTeam.name}`,
+          url: gameUrl,
+        });
+      } else {
+        // Fallback to clipboard copy
+        await navigator.clipboard.writeText(gameUrl);
+        setLinkCopied(true);
+        setTimeout(() => setLinkCopied(false), 2000);
+      }
+    } catch (error) {
+      // Fallback for browsers without clipboard API
+      const textArea = document.createElement('textarea');
+      textArea.value = gameUrl;
+      document.body.appendChild(textArea);
+      textArea.select();
+      document.execCommand('copy');
+      document.body.removeChild(textArea);
+      setLinkCopied(true);
+      setTimeout(() => setLinkCopied(false), 2000);
+    }
   };
 
   const getTwitterFavorite = () => {
@@ -424,6 +456,22 @@ export function GameCard({ game }: GameCardProps) {
                 >
                   <BarChart3 className="mr-2 h-4 w-4" />
                   View Head-to-Head History
+                </DropdownMenuItem>
+                <DropdownMenuItem 
+                  onClick={handleShareGame}
+                  className="text-white hover:bg-surface-light cursor-pointer"
+                >
+                  {linkCopied ? (
+                    <>
+                      <Check className="mr-2 h-4 w-4 text-green-400" />
+                      Link Copied!
+                    </>
+                  ) : (
+                    <>
+                      <Share2 className="mr-2 h-4 w-4" />
+                      Share Game Analysis
+                    </>
+                  )}
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>

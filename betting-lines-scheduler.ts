@@ -180,7 +180,7 @@ export class BettingLinesScheduler {
 }
 
 // CLI execution for manual testing
-if (require.main === module) {
+if (import.meta.main) {
   const scheduler = BettingLinesScheduler.getInstance();
   
   const command = process.argv[2];
