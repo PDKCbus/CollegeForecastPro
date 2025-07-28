@@ -62,35 +62,22 @@ export function GameCard({ game }: GameCardProps) {
 
   const handleShareGame = async () => {
     const gameUrl = `${window.location.origin}/game-analysis?game=${game.id}`;
-    const shareTitle = `${game.awayTeam.name} @ ${game.homeTeam.name} - Rick's Picks Analysis`;
     
     try {
-      if (navigator.share) {
-        // Use native sharing if available - this will show the native share menu
-        await navigator.share({
-          title: shareTitle,
-          text: `Get Rick's expert analysis and betting picks for ${game.awayTeam.name} @ ${game.homeTeam.name}`,
-          url: gameUrl,
-        });
-      } else {
-        // Fallback to clipboard copy for desktop browsers
-        await navigator.clipboard.writeText(gameUrl);
-        setLinkCopied(true);
-        setTimeout(() => setLinkCopied(false), 2000);
-      }
+      // Always copy to clipboard for consistent behavior
+      await navigator.clipboard.writeText(gameUrl);
+      setLinkCopied(true);
+      setTimeout(() => setLinkCopied(false), 2000);
     } catch (error) {
-      // Handle user cancellation or other errors
-      if (error.name !== 'AbortError') {
-        // Fallback for browsers without clipboard API
-        const textArea = document.createElement('textarea');
-        textArea.value = gameUrl;
-        document.body.appendChild(textArea);
-        textArea.select();
-        document.execCommand('copy');
-        document.body.removeChild(textArea);
-        setLinkCopied(true);
-        setTimeout(() => setLinkCopied(false), 2000);
-      }
+      // Fallback for browsers without clipboard API
+      const textArea = document.createElement('textarea');
+      textArea.value = gameUrl;
+      document.body.appendChild(textArea);
+      textArea.select();
+      document.execCommand('copy');
+      document.body.removeChild(textArea);
+      setLinkCopied(true);
+      setTimeout(() => setLinkCopied(false), 2000);
     }
   };
 
@@ -471,8 +458,8 @@ export function GameCard({ game }: GameCardProps) {
                     </>
                   ) : (
                     <>
-                      <Share2 className="mr-2 h-4 w-4" />
-                      Share Game Analysis
+                      <Copy className="mr-2 h-4 w-4" />
+                      Copy Link
                     </>
                   )}
                 </DropdownMenuItem>
