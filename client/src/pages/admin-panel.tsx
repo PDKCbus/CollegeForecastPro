@@ -574,94 +574,99 @@ function GamePickCard({
           </div>
         </div>
       </div>
-      <CardContent className="space-y-4">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {/* Spread Pick */}
-          <div className="space-y-2">
-            <Label>Spread Pick</Label>
-            <Input
-              value={formData.spreadPick}
-              onChange={(e) => setFormData(prev => ({ ...prev, spreadPick: e.target.value }))}
-              placeholder="e.g., HOME -7, AWAY +3.5, NO PLAY"
-            />
-            <div className="flex items-center space-x-2">
-              <Label className="text-sm">Confidence:</Label>
-              <Input
-                type="number"
-                min="1"
-                max="100"
-                value={formData.spreadConfidence}
-                onChange={(e) => setFormData(prev => ({ ...prev, spreadConfidence: parseInt(e.target.value) }))}
-                className="w-20"
-              />
-              <span className="text-sm text-slate-500">%</span>
+      <CardContent className="space-y-6">
+        {/* Spread Pick Buttons - Only show if spread exists */}
+        {game.spread && (
+          <div className="space-y-3">
+            <Label className="text-base font-medium">Spread Pick</Label>
+            <div className="grid grid-cols-3 gap-2">
+              <Button
+                variant={formData.spreadPick === `${game.homeTeam.abbreviation} ${game.spread > 0 ? '+' : ''}${game.spread}` ? "default" : "outline"}
+                onClick={() => setFormData(prev => ({ 
+                  ...prev, 
+                  spreadPick: `${game.homeTeam.abbreviation} ${game.spread > 0 ? '+' : ''}${game.spread}` 
+                }))}
+                className="text-sm"
+              >
+                {game.homeTeam.abbreviation} {game.spread > 0 ? '+' : ''}{game.spread}
+              </Button>
+              <Button
+                variant={formData.spreadPick === `${game.awayTeam.abbreviation} ${game.spread < 0 ? '+' : ''}${-game.spread}` ? "default" : "outline"}
+                onClick={() => setFormData(prev => ({ 
+                  ...prev, 
+                  spreadPick: `${game.awayTeam.abbreviation} ${game.spread < 0 ? '+' : ''}${-game.spread}` 
+                }))}
+                className="text-sm"
+              >
+                {game.awayTeam.abbreviation} {game.spread < 0 ? '+' : ''}{-game.spread}
+              </Button>
+              <Button
+                variant={formData.spreadPick === 'NO PLAY' ? "default" : "outline"}
+                onClick={() => setFormData(prev => ({ ...prev, spreadPick: 'NO PLAY' }))}
+                className="text-sm"
+              >
+                NO PLAY
+              </Button>
             </div>
+            {formData.spreadPick && formData.spreadPick !== 'NO PLAY' && (
+              <div className="text-sm text-green-600 font-medium">
+                Selected: {formData.spreadPick}
+              </div>
+            )}
           </div>
+        )}
 
-          {/* Total Pick */}
-          <div className="space-y-2">
-            <Label>Over/Under Pick</Label>
-            <Input
-              value={formData.totalPick}
-              onChange={(e) => setFormData(prev => ({ ...prev, totalPick: e.target.value }))}
-              placeholder="e.g., OVER 47.5, UNDER 52, NO PLAY"
-            />
-            <div className="flex items-center space-x-2">
-              <Label className="text-sm">Confidence:</Label>
-              <Input
-                type="number"
-                min="1"
-                max="100"
-                value={formData.totalConfidence}
-                onChange={(e) => setFormData(prev => ({ ...prev, totalConfidence: parseInt(e.target.value) }))}
-                className="w-20"
-              />
-              <span className="text-sm text-slate-500">%</span>
+        {/* Over/Under Pick Buttons - Only show if total exists */}
+        {game.overUnder && (
+          <div className="space-y-3">
+            <Label className="text-base font-medium">Over/Under Pick</Label>
+            <div className="grid grid-cols-3 gap-2">
+              <Button
+                variant={formData.totalPick === `OVER ${game.overUnder}` ? "default" : "outline"}
+                onClick={() => setFormData(prev => ({ ...prev, totalPick: `OVER ${game.overUnder}` }))}
+                className="text-sm"
+              >
+                OVER {game.overUnder}
+              </Button>
+              <Button
+                variant={formData.totalPick === `UNDER ${game.overUnder}` ? "default" : "outline"}
+                onClick={() => setFormData(prev => ({ ...prev, totalPick: `UNDER ${game.overUnder}` }))}
+                className="text-sm"
+              >
+                UNDER {game.overUnder}
+              </Button>
+              <Button
+                variant={formData.totalPick === 'NO PLAY' ? "default" : "outline"}
+                onClick={() => setFormData(prev => ({ ...prev, totalPick: 'NO PLAY' }))}
+                className="text-sm"
+              >
+                NO PLAY
+              </Button>
             </div>
+            {formData.totalPick && formData.totalPick !== 'NO PLAY' && (
+              <div className="text-sm text-green-600 font-medium">
+                Selected: {formData.totalPick}
+              </div>
+            )}
           </div>
-        </div>
+        )}
 
         {/* Personal Notes */}
-        <div className="space-y-2">
-          <Label>Personal Notes</Label>
+        <div className="space-y-3">
+          <Label className="text-base font-medium">Personal Notes</Label>
           <Textarea
             value={formData.personalNotes}
             onChange={(e) => setFormData(prev => ({ ...prev, personalNotes: e.target.value }))}
             placeholder="Your reasoning, insights, and analysis for this game..."
-            rows={3}
-          />
-        </div>
-
-        {/* Key Factors */}
-        <div className="space-y-2">
-          <Label>Key Factors (comma-separated)</Label>
-          <Input
-            value={formData.keyFactors}
-            onChange={(e) => setFormData(prev => ({ ...prev, keyFactors: e.target.value }))}
-            placeholder="Weather advantage, Revenge game, Key injuries, etc."
-          />
-        </div>
-
-        {/* Expected Value */}
-        <div className="space-y-2">
-          <Label>Expected Value</Label>
-          <Input
-            type="number"
-            step="0.1"
-            value={formData.expectedValue}
-            onChange={(e) => setFormData(prev => ({ ...prev, expectedValue: parseFloat(e.target.value) }))}
-            placeholder="0.0"
-            className="w-32"
+            className="min-h-20 text-sm"
           />
         </div>
 
         {/* Save Button */}
-        <div className="flex justify-end space-x-2">
-          <Button onClick={handleSave} className="flex items-center space-x-2">
-            <Save className="h-4 w-4" />
-            <span>Save Pick</span>
-          </Button>
-        </div>
+        <Button onClick={handleSave} className="w-full">
+          <Save className="h-4 w-4 mr-2" />
+          Save Pick
+        </Button>
       </CardContent>
     </Card>
   );

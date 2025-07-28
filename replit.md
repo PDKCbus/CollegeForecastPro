@@ -376,3 +376,5 @@ The application follows a modern full-stack architecture with clear separation o
 ## User Preferences
 
 Preferred communication style: Simple, everyday language.
+Admin UI preferences: Simple button interface for spread/over-under picks instead of complex form fields.
+Branding preference: "🤓 ANALYSIS PICK" over "🤖 ALGORITHM PICK" for algorithmic predictions.
