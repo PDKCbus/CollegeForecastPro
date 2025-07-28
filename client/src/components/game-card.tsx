@@ -368,9 +368,9 @@ export function GameCard({ game }: GameCardProps) {
                 
                 return (
                   <>
-                    <div className={`text-center px-3 py-2 ${spreadBgColor} rounded text-sm min-w-[80px]`}>
+                    <div className={`text-center px-4 py-3 ${spreadBgColor} rounded min-w-[100px]`}>
                       <div className="text-white/60 text-xs">SPREAD</div>
-                      <div className="font-bold text-white">{getSpreadDisplay()}</div>
+                      <div className="font-bold text-white text-base">{getSpreadDisplay()}</div>
                       {ricksPickData.hasSpreadPick && (
                         <div className="text-xs mt-1">
                           <span className="text-blue-200">Rick:</span>
@@ -378,9 +378,9 @@ export function GameCard({ game }: GameCardProps) {
                         </div>
                       )}
                     </div>
-                    <div className={`text-center px-3 py-2 ${totalBgColor} rounded text-sm min-w-[80px]`}>
+                    <div className={`text-center px-4 py-3 ${totalBgColor} rounded min-w-[100px]`}>
                       <div className="text-white/60 text-xs">O/U</div>
-                      <div className="font-bold text-white">{game.overUnder?.toFixed(1) || "N/A"}</div>
+                      <div className="font-bold text-white text-base">{game.overUnder?.toFixed(1) || "N/A"}</div>
                       {ricksPickData.hasTotalPick && (
                         <div className="text-xs mt-1">
                           <span className="text-blue-200">Rick:</span>
