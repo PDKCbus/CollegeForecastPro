@@ -102,6 +102,28 @@ export function GameCard({ game }: GameCardProps) {
     },
   });
 
+  // Check if Rick has made specific picks for this game
+  const getRicksPickData = () => {
+    const picks = game.ricksPicks || [];
+    if (picks.length > 0) {
+      const pick = picks[0];
+      return {
+        hasSpreadPick: pick.spreadPick && pick.spreadPick !== 'NO PLAY',
+        hasTotalPick: pick.totalPick && pick.totalPick !== 'NO PLAY',
+        spreadPick: pick.spreadPick,
+        totalPick: pick.totalPick,
+        personalNotes: pick.personalNotes
+      };
+    }
+    return {
+      hasSpreadPick: false,
+      hasTotalPick: false,
+      spreadPick: null,
+      totalPick: null,
+      personalNotes: null
+    };
+  };
+
   const getRicksPick = () => {
     // Priority 1: Rick's personal picks (when available)
     if (predictionData?.ricksPick) {
@@ -339,26 +361,36 @@ export function GameCard({ game }: GameCardProps) {
           
           <div className="flex justify-between mb-3">
             <div className="flex space-x-2">
-              <div className="text-center px-2 py-1 bg-surface-light rounded text-sm">
-                <div className="text-white/60 text-xs">SPREAD</div>
-                <div className="font-bold text-white">{getSpreadDisplay()}</div>
-                {game.prediction?.notes && game.prediction.notes.includes('SPREAD:') && (
-                  <div className="text-xs mt-1">
-                    <span className="text-accent">Rick:</span>
-                    <span className="text-white/80"> {game.prediction.notes.split('|')[0].replace('SPREAD:', '').trim()}</span>
-                  </div>
-                )}
-              </div>
-              <div className="text-center px-2 py-1 bg-surface-light rounded text-sm">
-                <div className="text-white/60 text-xs">O/U</div>
-                <div className="font-bold text-white">{game.overUnder?.toFixed(1) || "N/A"}</div>
-                {game.prediction?.notes && game.prediction.notes.includes('O/U:') && (
-                  <div className="text-xs mt-1">
-                    <span className="text-accent">Rick:</span>
-                    <span className="text-white/80"> {game.prediction.notes.split('|')[1]?.replace('O/U:', '').trim() || 'No pick'}</span>
-                  </div>
-                )}
-              </div>
+              {(() => {
+                const ricksPickData = getRicksPickData();
+                const spreadBgColor = ricksPickData.hasSpreadPick ? 'bg-blue-600' : 'bg-surface-light';
+                const totalBgColor = ricksPickData.hasTotalPick ? 'bg-blue-600' : 'bg-surface-light';
+                
+                return (
+                  <>
+                    <div className={`text-center px-2 py-1 ${spreadBgColor} rounded text-sm`}>
+                      <div className="text-white/60 text-xs">SPREAD</div>
+                      <div className="font-bold text-white">{getSpreadDisplay()}</div>
+                      {ricksPickData.hasSpreadPick && (
+                        <div className="text-xs mt-1">
+                          <span className="text-blue-200">Rick:</span>
+                          <span className="text-white/90"> {ricksPickData.spreadPick}</span>
+                        </div>
+                      )}
+                    </div>
+                    <div className={`text-center px-2 py-1 ${totalBgColor} rounded text-sm`}>
+                      <div className="text-white/60 text-xs">O/U</div>
+                      <div className="font-bold text-white">{game.overUnder?.toFixed(1) || "N/A"}</div>
+                      {ricksPickData.hasTotalPick && (
+                        <div className="text-xs mt-1">
+                          <span className="text-blue-200">Rick:</span>
+                          <span className="text-white/90"> {ricksPickData.totalPick}</span>
+                        </div>
+                      )}
+                    </div>
+                  </>
+                );
+              })()}
             </div>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>

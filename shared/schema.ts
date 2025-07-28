@@ -262,11 +262,12 @@ export type PlayerStats = typeof playerStats.$inferSelect;
 export type InsertTeamSeasonStats = z.infer<typeof insertTeamSeasonStatsSchema>;
 export type TeamSeasonStats = typeof teamSeasonStats.$inferSelect;
 
-// Custom combined types for frontend use
+// Custom combined types for frontend use  
 export type GameWithTeams = Game & {
   homeTeam: Team;
   awayTeam: Team;
   prediction?: Prediction;
+  ricksPicks?: RicksPick[];
 };
 
 export type PlayerWithStats = Player & {

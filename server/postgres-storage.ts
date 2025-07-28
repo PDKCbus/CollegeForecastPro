@@ -1,6 +1,6 @@
 import { eq, and, desc, asc, gte, lte, or, sql, isNotNull, lt } from 'drizzle-orm';
 import { db } from './db';
-import { users, teams, games, predictions, sentimentAnalysis } from '../shared/schema';
+import { users, teams, games, predictions, sentimentAnalysis, ricksPicks } from '../shared/schema';
 import type {
   User, InsertUser,
   Team, InsertTeam,
@@ -109,12 +109,25 @@ export class PostgresStorage implements IStorage {
       const awayTeam = await this.getTeam(game.awayTeamId);
       const predictions = await this.getPredictionsByGame(game.id);
 
+      // Get Rick's picks for this game
+      let ricksPicks = [];
+      try {
+        const picks = await db
+          .select()
+          .from(ricksPicks)
+          .where(eq(ricksPicks.gameId, game.id));
+        ricksPicks = picks;
+      } catch (error) {
+        // No picks found, continue
+      }
+
       if (homeTeam && awayTeam) {
         gamesWithTeams.push({
           ...game,
           homeTeam,
           awayTeam,
-          prediction: predictions[0] || undefined
+          prediction: predictions[0] || undefined,
+          ricksPicks: ricksPicks
         });
         
         // Stop once we have enough unique games
