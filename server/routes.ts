@@ -1991,6 +1991,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Initial sync on server start
   setTimeout(autoSync, 5000);
 
+  // Initialize betting lines scheduler on server start
+  setTimeout(async () => {
+    try {
+      const { BettingLinesScheduler } = await import('../betting-lines-scheduler');
+      const scheduler = BettingLinesScheduler.getInstance();
+      scheduler.startScheduler();
+      console.log('📊 Betting lines scheduler initialized successfully');
+    } catch (error) {
+      console.error('❌ Failed to initialize betting lines scheduler:', error);
+    }
+  }, 10000); // Start after 10 seconds to allow server to fully initialize
+
   // Fill missing scores for existing games
   app.post('/api/historical/fill-scores', async (req, res) => {
     try {
@@ -2642,6 +2654,144 @@ export async function registerRoutes(app: Express): Promise<Server> {
       console.error("❌ Failed to initialize admin system:", error);
     }
   })();
+
+  // Mid-week betting line refresh API endpoints
+  app.post("/api/lines/refresh-midweek", async (req, res) => {
+    try {
+      const { refreshMidWeekBettingLines } = await import('../mid-week-line-refresh');
+      console.log('🎯 Starting manual mid-week betting lines refresh...');
+      
+      // Run in background to avoid request timeout
+      refreshMidWeekBettingLines().then(() => {
+        console.log('✅ Mid-week line refresh completed successfully!');
+      }).catch((error) => {
+        console.error('❌ Mid-week line refresh failed:', error);
+      });
+      
+      res.json({ 
+        message: "Mid-week betting lines refresh started", 
+        note: "Updating spreads and totals for upcoming games within 7 days",
+        timing: "Thursday/Saturday morning automation",
+        expectedUpdates: "20-50 games with fresh DraftKings/Bovada lines",
+        status: "processing",
+        estimatedTime: "2-5 minutes"
+      });
+    } catch (error) {
+      console.error('Error starting mid-week line refresh:', error);
+      res.status(500).json({ message: "Failed to start line refresh", error: error.message });
+    }
+  });
+
+  app.get("/api/lines/movement-report", async (req, res) => {
+    try {
+      // Get games with recent line movement (last 24 hours)
+      const lineMovement = await db.execute(sql`
+        SELECT g.id, g.season, g.week, g.start_date, g.spread, g.over_under,
+               ht.name as home_team, ht.abbreviation as home_abbr,
+               at.name as away_team, at.abbreviation as away_abbr
+        FROM games g
+        JOIN teams ht ON g.home_team_id = ht.id
+        JOIN teams at ON g.away_team_id = at.id
+        WHERE g.completed = false 
+          AND g.start_date >= NOW()
+          AND g.start_date <= NOW() + INTERVAL '7 days'
+          AND g.season = 2025
+          AND (g.spread IS NOT NULL OR g.over_under IS NOT NULL)
+        ORDER BY g.start_date ASC
+        LIMIT 20
+      `);
+
+      res.json({
+        games: lineMovement.map((game: any) => ({
+          id: game.id,
+          matchup: `${game.away_team} @ ${game.home_team}`,
+          week: game.week,
+          kickoff: game.start_date,
+          currentSpread: game.spread,
+          currentTotal: game.over_under,
+          notes: "Live line tracking - check for movement vs opening lines"
+        })),
+        lastUpdated: new Date().toISOString(),
+        nextRefresh: "Next scheduled refresh: Thursday/Saturday mornings"
+      });
+    } catch (error) {
+      console.error('Error generating line movement report:', error);
+      res.status(500).json({ message: "Failed to generate line movement report" });
+    }
+  });
+
+  // Betting lines scheduler endpoints
+  app.get("/api/scheduler/status", async (req, res) => {
+    try {
+      const { BettingLinesScheduler } = await import('../betting-lines-scheduler');
+      const scheduler = BettingLinesScheduler.getInstance();
+      const status = scheduler.getStatus();
+      
+      res.json({
+        message: "Betting lines scheduler status",
+        ...status,
+        description: "Automated betting line refresh system for optimal prediction accuracy"
+      });
+    } catch (error) {
+      console.error('Error getting scheduler status:', error);
+      res.status(500).json({ message: "Failed to get scheduler status" });
+    }
+  });
+
+  app.post("/api/scheduler/start", async (req, res) => {
+    try {
+      const { BettingLinesScheduler } = await import('../betting-lines-scheduler');
+      const scheduler = BettingLinesScheduler.getInstance();
+      scheduler.startScheduler();
+      
+      res.json({ 
+        message: "Betting lines scheduler started successfully",
+        schedule: {
+          tuesday: "7:00 AM - Full weekly collection (games + weather + lines)",
+          thursday: "8:00 AM - Mid-week line refresh (capture movement)",
+          saturday: "9:00 AM - Pre-game line refresh (final updates)"
+        }
+      });
+    } catch (error) {
+      console.error('Error starting scheduler:', error);
+      res.status(500).json({ message: "Failed to start scheduler" });
+    }
+  });
+
+  app.post("/api/scheduler/manual/:day", async (req, res) => {
+    try {
+      const { BettingLinesScheduler } = await import('../betting-lines-scheduler');
+      const scheduler = BettingLinesScheduler.getInstance();
+      const day = req.params.day;
+      
+      let result: string;
+      switch (day) {
+        case 'tuesday':
+          await scheduler.manualTuesdayCollection();
+          result = 'Manual Tuesday collection completed';
+          break;
+        case 'thursday':
+          await scheduler.manualThursdayRefresh();
+          result = 'Manual Thursday line refresh completed';
+          break;
+        case 'saturday':
+          await scheduler.manualSaturdayRefresh();
+          result = 'Manual Saturday line refresh completed';
+          break;
+        default:
+          return res.status(400).json({ message: "Invalid day. Use: tuesday, thursday, or saturday" });
+      }
+      
+      res.json({ 
+        message: result,
+        day: day,
+        timestamp: new Date().toISOString()
+      });
+    } catch (error) {
+      console.error(`Error running manual ${req.params.day} task:`, error);
+      res.status(500).json({ message: `Failed to run manual ${req.params.day} task` });
+    }
+  });
 
   const httpServer = createServer(app);
   return httpServer;
