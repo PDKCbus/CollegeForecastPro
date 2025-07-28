@@ -10,6 +10,7 @@ import { TrendingUp, TrendingDown, Target, BarChart3, Trophy, Activity, Zap, Bra
 import { GameWithTeams } from "@/lib/types";
 import { Link } from "wouter";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { PlayerInjuryPanel } from "@/components/player-injury-panel";
 
 interface PredictiveMetrics {
   winProbability: number;
@@ -475,9 +476,10 @@ export default function GameAnalysis() {
 
           <div className="mt-8">
             <Tabs defaultValue="analytics" className="w-full">
-              <TabsList className="grid w-full grid-cols-2 lg:grid-cols-4 h-auto">
+              <TabsList className="grid w-full grid-cols-2 lg:grid-cols-5 h-auto">
                 <TabsTrigger value="analytics" className="text-xs sm:text-sm">Team Analytics</TabsTrigger>
                 <TabsTrigger value="stats" className="text-xs sm:text-sm">Advanced Stats</TabsTrigger>
+                <TabsTrigger value="players" className="text-xs sm:text-sm">Player Impact</TabsTrigger>
                 <TabsTrigger value="factors" className="text-xs sm:text-sm">Key Factors</TabsTrigger>
                 <TabsTrigger value="recommendation" className="text-xs sm:text-sm">Recommendation</TabsTrigger>
               </TabsList>
@@ -639,6 +641,16 @@ export default function GameAnalysis() {
                   </div>
                 </CardContent>
               </Card>
+            </TabsContent>
+
+            <TabsContent value="players" className="space-y-6">
+              <PlayerInjuryPanel
+                gameId={selectedGame.id}
+                homeTeamId={selectedGame.homeTeamId}
+                awayTeamId={selectedGame.awayTeamId}
+                homeTeamName={selectedGame.homeTeam?.name || 'Home Team'}
+                awayTeamName={selectedGame.awayTeam?.name || 'Away Team'}
+              />
             </TabsContent>
 
             <TabsContent value="factors" className="space-y-6">
