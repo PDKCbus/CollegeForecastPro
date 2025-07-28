@@ -312,28 +312,6 @@ export function GameCard({ game }: GameCardProps) {
         <div className="flex justify-between items-center">
           <div className="flex items-center space-x-3">
             <img 
-              src={game.homeTeam.logoUrl || ""} 
-              alt={game.homeTeam.name} 
-              className="team-logo w-[45px] h-[45px] object-contain" 
-            />
-            <div className="flex-1">
-              <div className="flex items-center gap-2">
-                <span className="font-semibold">{game.homeTeam.name}</span>
-                <TeamPerformanceIndicators team={game.homeTeam} variant="inline" maxIndicators={2} />
-              </div>
-              {game.homeTeam.rank ? (
-                <div className="text-xs text-accent font-medium">#{game.homeTeam.rank}</div>
-              ) : (
-                <div className="text-xs text-white/50">Unranked</div>
-              )}
-            </div>
-          </div>
-          <div className="font-bold text-xl">{formatTeamRecord(game.homeTeam.wins || 0, game.homeTeam.losses || 0)}</div>
-        </div>
-        
-        <div className="flex justify-between items-center mt-4">
-          <div className="flex items-center space-x-3">
-            <img 
               src={game.awayTeam.logoUrl || ""} 
               alt={game.awayTeam.name} 
               className="team-logo w-[45px] h-[45px] object-contain" 
@@ -351,6 +329,28 @@ export function GameCard({ game }: GameCardProps) {
             </div>
           </div>
           <div className="font-bold text-xl">{formatTeamRecord(game.awayTeam.wins || 0, game.awayTeam.losses || 0)}</div>
+        </div>
+        
+        <div className="flex justify-between items-center mt-4">
+          <div className="flex items-center space-x-3">
+            <img 
+              src={game.homeTeam.logoUrl || ""} 
+              alt={game.homeTeam.name} 
+              className="team-logo w-[45px] h-[45px] object-contain" 
+            />
+            <div className="flex-1">
+              <div className="flex items-center gap-2">
+                <span className="font-semibold">{game.homeTeam.name}</span>
+                <TeamPerformanceIndicators team={game.homeTeam} variant="inline" maxIndicators={2} />
+              </div>
+              {game.homeTeam.rank ? (
+                <div className="text-xs text-accent font-medium">#{game.homeTeam.rank}</div>
+              ) : (
+                <div className="text-xs text-white/50">Unranked</div>
+              )}
+            </div>
+          </div>
+          <div className="font-bold text-xl">{formatTeamRecord(game.homeTeam.wins || 0, game.homeTeam.losses || 0)}</div>
         </div>
         
         <div className="mt-4 pt-3 border-t border-surface-light">
