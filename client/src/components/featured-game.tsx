@@ -17,12 +17,20 @@ export function FeaturedGame({ game }: FeaturedGameProps) {
     return date.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
   };
 
+  // Helper function to format spreads properly for football (whole numbers or .5 only)
+  const formatSpread = (spread: number) => {
+    // Round to nearest 0.5
+    const roundedSpread = Math.round(spread * 2) / 2;
+    // If it's a whole number, show without decimal
+    return roundedSpread % 1 === 0 ? roundedSpread.toString() : roundedSpread.toFixed(1);
+  };
+
   const getSpreadDisplay = () => {
     if (game.spread === null || game.spread === undefined) return "N/A";
     
     const team = game.spread > 0 ? game.awayTeam.abbreviation : game.homeTeam.abbreviation;
     const value = Math.abs(game.spread);
-    return `${team} -${value.toFixed(1)}`;
+    return `${team} -${formatSpread(value)}`;
   };
 
   return (
@@ -116,7 +124,7 @@ export function FeaturedGame({ game }: FeaturedGameProps) {
             </div>
             <div className="text-center p-3 bg-surface-light rounded-lg">
               <div className="text-xs text-white/60 mb-1">O/U</div>
-              <div className="font-bold">{game.overUnder?.toFixed(1) || "N/A"}</div>
+              <div className="font-bold">{game.overUnder ? formatSpread(game.overUnder) : "N/A"}</div>
             </div>
           </div>
         </div>

@@ -60,6 +60,14 @@ export function GameCard({ game }: GameCardProps) {
     return `${wins}-${losses}`;
   };
 
+  // Helper function to format spreads properly for football (whole numbers or .5 only)
+  const formatSpread = (spread: number) => {
+    // Round to nearest 0.5
+    const roundedSpread = Math.round(spread * 2) / 2;
+    // If it's a whole number, show without decimal
+    return roundedSpread % 1 === 0 ? roundedSpread.toString() : roundedSpread.toFixed(1);
+  };
+
   const handleShareGame = async () => {
     const gameUrl = `${window.location.origin}/game-analysis?game=${game.id}`;
     
@@ -118,7 +126,7 @@ export function GameCard({ game }: GameCardProps) {
     if (game.spread === null || game.spread === undefined) return "N/A";
     
     const favoredTeam = game.spread > 0 ? game.awayTeam : game.homeTeam;
-    return `${favoredTeam.abbreviation} -${Math.abs(game.spread).toFixed(1)}`;
+    return `${favoredTeam.abbreviation} -${formatSpread(Math.abs(game.spread))}`;
   };
 
   // Fetch Rick's personal picks and algorithmic predictions
@@ -204,7 +212,7 @@ export function GameCard({ game }: GameCardProps) {
       if (rickSpread > -game.spread) {
         // Take the underdog getting points
         const underdogTeam = game.spread < 0 ? game.awayTeam : game.homeTeam;
-        const points = Math.abs(game.spread).toFixed(1);
+        const points = formatSpread(Math.abs(game.spread));
         return {
           team: underdogTeam,
           pick: `Take ${underdogTeam.abbreviation} +${points}`,
@@ -214,7 +222,7 @@ export function GameCard({ game }: GameCardProps) {
       } else {
         // Take the favorite laying points  
         const favoriteTeam = game.spread < 0 ? game.homeTeam : game.awayTeam;
-        const points = Math.abs(game.spread).toFixed(1);
+        const points = formatSpread(Math.abs(game.spread));
         return {
           team: favoriteTeam,
           pick: `Take ${favoriteTeam.abbreviation} -${points}`,

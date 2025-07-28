@@ -126,6 +126,12 @@ The application follows a modern full-stack architecture with clear separation o
 
 ## Changelog
 
+- July 28, 2025: **SPREAD FORMATTING FIX: Proper Football Betting Line Display Implemented**
+  - **FIXED DECIMAL ROUNDING**: All spreads now display as whole numbers or .5 increments only (proper football betting format)
+  - **SITE-WIDE CONSISTENCY**: Updated game cards, game analysis page, featured game, and betting recommendations
+  - **AUTHENTIC BETTING FORMAT**: Eliminated long decimals like "+9.059999999999" - now shows clean values like "+9" or "+9.5"
+  - **HELPER FUNCTION**: Created formatSpread() utility that rounds to nearest 0.5 and displays appropriately
+  - **USER EXPERIENCE**: Professional betting line display matches industry standards across all components
 - July 28, 2025: **MID-WEEK BETTING LINE REFRESH SYSTEM: Automated Thursday/Saturday Line Updates Completed**
   - **THREE-TIER SCHEDULE**: Tuesday (full collection), Thursday (mid-week refresh), Saturday (pre-game refresh)
   - **AUTOMATED LINE TRACKING**: System detects significant movement (≥0.5 points) and logs major shifts throughout the week

@@ -46,6 +46,14 @@ export default function GameAnalysis() {
   const [selectedGameId, setSelectedGameId] = useState<string>("");
   const [location] = useLocation();
 
+  // Helper function to format spreads properly for football (whole numbers or .5 only)
+  const formatSpread = (spread: number) => {
+    // Round to nearest 0.5
+    const roundedSpread = Math.round(spread * 2) / 2;
+    // If it's a whole number, show without decimal
+    return roundedSpread % 1 === 0 ? roundedSpread.toString() : roundedSpread.toFixed(1);
+  };
+
   // Extract game ID from URL parameters and scroll to top
   useEffect(() => {
     const urlParams = new URLSearchParams(window.location.search);
@@ -365,7 +373,7 @@ export default function GameAnalysis() {
             />
             <MetricCard
               title="Spread Prediction"
-              value={analysis.predictiveMetrics.spreadPrediction > 0 ? `+${analysis.predictiveMetrics.spreadPrediction}` : analysis.predictiveMetrics.spreadPrediction}
+              value={analysis.predictiveMetrics.spreadPrediction > 0 ? `+${formatSpread(analysis.predictiveMetrics.spreadPrediction)}` : formatSpread(analysis.predictiveMetrics.spreadPrediction)}
               icon={BarChart3}
             />
             <MetricCard
@@ -395,13 +403,13 @@ export default function GameAnalysis() {
                     <div>
                       <div className="text-sm text-muted-foreground">Vegas Line</div>
                       <div className="font-medium">
-                        {selectedGame.homeTeam?.name} {selectedGame.spread ? (selectedGame.spread > 0 ? `+${selectedGame.spread}` : selectedGame.spread) : 'No line'}
+                        {selectedGame.homeTeam?.name} {selectedGame.spread ? (selectedGame.spread > 0 ? `+${formatSpread(selectedGame.spread)}` : formatSpread(selectedGame.spread)) : 'No line'}
                       </div>
                     </div>
                     <div>
                       <div className="text-sm text-muted-foreground">Our Prediction</div>
                       <div className="font-medium">
-                        {selectedGame.homeTeam?.name} {analysis.predictiveMetrics.spreadPrediction > 0 ? `+${analysis.predictiveMetrics.spreadPrediction}` : analysis.predictiveMetrics.spreadPrediction}
+                        {selectedGame.homeTeam?.name} {analysis.predictiveMetrics.spreadPrediction > 0 ? `+${formatSpread(analysis.predictiveMetrics.spreadPrediction)}` : formatSpread(analysis.predictiveMetrics.spreadPrediction)}
                       </div>
                     </div>
                   </div>
@@ -418,8 +426,8 @@ export default function GameAnalysis() {
                             If our prediction is LOWER than Vegas (more negative), we think the favorite will cover more
                           */}
                           {analysis.predictiveMetrics.spreadPrediction > selectedGame.spread
-                            ? `Take ${selectedGame.awayTeam?.name} +${Math.abs(selectedGame.spread)}` // Take the underdog
-                            : `Take ${selectedGame.homeTeam?.name} ${selectedGame.spread}` // Take the favorite
+                            ? `Take ${selectedGame.awayTeam?.name} +${formatSpread(Math.abs(selectedGame.spread))}` // Take the underdog
+                            : `Take ${selectedGame.homeTeam?.name} ${formatSpread(selectedGame.spread)}` // Take the favorite
                           }
                         </Badge>
                       ) : (
@@ -451,8 +459,8 @@ export default function GameAnalysis() {
                             : 'bg-purple-600 hover:bg-purple-700'
                         } text-white`}>
                           {analysis.predictiveMetrics.overUnderPrediction > selectedGame.overUnder
-                            ? `Take the OVER ${selectedGame.overUnder}`
-                            : `Take the UNDER ${selectedGame.overUnder}`
+                            ? `Take the OVER ${formatSpread(selectedGame.overUnder)}`
+                            : `Take the UNDER ${formatSpread(selectedGame.overUnder)}`
                           }
                         </Badge>
                       ) : (
