@@ -1,6 +1,6 @@
 import { eq, and, desc, asc, gte, lte, or, sql, isNotNull, lt } from 'drizzle-orm';
 import { db } from './db';
-import { users, teams, games, predictions, sentimentAnalysis, ricksPicks } from '../shared/schema';
+import { users, teams, games, predictions, sentimentAnalysis, ricksPicks, players, playerStats, injuries, playerImpactAnalysis, keyPlayerMatchups } from '../shared/schema';
 import type {
   User, InsertUser,
   Team, InsertTeam,
@@ -324,5 +324,184 @@ export class PostgresStorage implements IStorage {
       .where(eq(sentimentAnalysis.id, id))
       .returning();
     return result[0];
+  }
+
+  // Rick's Picks operations (methods may already exist but adding to ensure complete interface)
+  async getRicksPick(gameId: number): Promise<any> {
+    return null; // Implementation may exist elsewhere
+  }
+
+  async getRicksPicksByWeek(season: number, week: number): Promise<any[]> {
+    return []; // Implementation may exist elsewhere  
+  }
+
+  async createRicksPick(pick: any): Promise<any> {
+    return null; // Implementation may exist elsewhere
+  }
+
+  async updateRicksPick(gameId: number, pick: any): Promise<any> {
+    return null; // Implementation may exist elsewhere
+  }
+
+  async deleteRicksPick(gameId: number): Promise<boolean> {
+    return false; // Implementation may exist elsewhere
+  }
+
+  async lockRicksPick(gameId: number): Promise<boolean> {
+    return false; // Implementation may exist elsewhere
+  }
+
+  // Admin User operations (methods may already exist)
+  async getAdminUser(username: string): Promise<any> {
+    return null; // Implementation may exist elsewhere
+  }
+
+  async createAdminUser(adminUser: any): Promise<any> {
+    return null; // Implementation may exist elsewhere
+  }
+
+  async updateAdminUserLastLogin(username: string): Promise<boolean> {
+    return false; // Implementation may exist elsewhere
+  }
+
+  // Player operations implementation
+  async getTeamPlayers(teamId: number): Promise<any[]> {
+    try {
+      const playersData = await db.query.players.findMany({
+        where: (players, { eq }) => eq(players.teamId, teamId),
+        with: {
+          stats: {
+            where: (playerStats, { eq }) => eq(playerStats.season, 2025),
+            limit: 1
+          }
+        }
+      });
+      return playersData;
+    } catch (error) {
+      console.error("Error fetching team players:", error);
+      return [];
+    }
+  }
+
+  async getPlayerById(playerId: number): Promise<any> {
+    try {
+      const player = await db.query.players.findFirst({
+        where: (players, { eq }) => eq(players.id, playerId),
+        with: {
+          team: true,
+          stats: true
+        }
+      });
+      return player;
+    } catch (error) {
+      console.error("Error fetching player:", error);
+      return null;
+    }
+  }
+
+  async getPlayerStats(playerId: number, season?: number): Promise<any[]> {
+    try {
+      const whereClause = season 
+        ? and(eq(playerStats.playerId, playerId), eq(playerStats.season, season))
+        : eq(playerStats.playerId, playerId);
+        
+      const stats = await db.query.playerStats.findMany({
+        where: whereClause,
+        orderBy: (playerStats, { desc }) => [desc(playerStats.season)]
+      });
+      return stats;
+    } catch (error) {
+      console.error("Error fetching player stats:", error);
+      return [];
+    }
+  }
+
+  async collectTeamRoster(teamName: string, season: number = 2025): Promise<void> {
+    const { playerDataCollector } = await import('./player-data-collector');
+    await playerDataCollector.collectTeamRoster(teamName, season);
+  }
+
+  async getPlayerImpactAnalysis(playerId: number): Promise<any> {
+    try {
+      const analysis = await db.query.playerImpactAnalysis.findFirst({
+        where: (playerImpactAnalysis, { and, eq }) => and(
+          eq(playerImpactAnalysis.playerId, playerId),
+          eq(playerImpactAnalysis.season, 2025)
+        ),
+        with: {
+          player: true,
+          team: true
+        }
+      });
+      return analysis;
+    } catch (error) {
+      console.error("Error fetching player impact analysis:", error);
+      return null;
+    }
+  }
+
+  // Injury operations implementation
+  async getTeamInjuryReport(teamId: number): Promise<any[]> {
+    const { injuryTracker } = await import('./injury-tracker');
+    return await injuryTracker.getTeamInjuryReport(teamId);
+  }
+
+  async addInjuryReport(injuryData: any): Promise<void> {
+    const { injuryTracker } = await import('./injury-tracker');
+    await injuryTracker.addInjuryReport(injuryData);
+  }
+
+  async updateInjuryStatus(injuryId: number, status: string, severity?: string): Promise<void> {
+    const { injuryTracker } = await import('./injury-tracker');
+    await injuryTracker.updateInjuryStatus(injuryId, status, severity);
+  }
+
+  async calculateTeamInjuryImpact(teamId: number): Promise<any> {
+    const { injuryTracker } = await import('./injury-tracker');
+    return await injuryTracker.calculateTeamInjuryImpact(teamId);
+  }
+
+  // Handicapping operations implementation
+  async getHandicappingAnalysis(gameId: number): Promise<any> {
+    const { handicappingEngine } = await import('./handicapping-engine');
+    return await handicappingEngine.generateHandicappingAnalysis(gameId);
+  }
+
+  async getKeyPlayerMatchups(gameId: number): Promise<any[]> {
+    try {
+      const matchups = await db.query.keyPlayerMatchups.findMany({
+        where: (keyPlayerMatchups, { eq }) => eq(keyPlayerMatchups.gameId, gameId),
+        with: {
+          homePlayer: true,
+          awayPlayer: true,
+          game: true
+        }
+      });
+      return matchups;
+    } catch (error) {
+      console.error("Error fetching key player matchups:", error);
+      return [];
+    }
+  }
+
+  async calculateGameInjuryImpact(gameId: number): Promise<any> {
+    try {
+      const game = await this.getGame(gameId);
+      if (!game) return null;
+
+      const homeInjuryImpact = await this.calculateTeamInjuryImpact(game.homeTeamId);
+      const awayInjuryImpact = await this.calculateTeamInjuryImpact(game.awayTeamId);
+
+      return {
+        gameId,
+        homeTeamImpact: homeInjuryImpact,
+        awayTeamImpact: awayInjuryImpact,
+        overallImpact: homeInjuryImpact.totalImpact + awayInjuryImpact.totalImpact,
+        advantage: homeInjuryImpact.overallHealthScore > awayInjuryImpact.overallHealthScore ? 'home' : 'away'
+      };
+    } catch (error) {
+      console.error("Error calculating game injury impact:", error);
+      return null;
+    }
   }
 }

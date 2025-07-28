@@ -472,6 +472,85 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Player and Injury Management Routes
+  app.get('/api/players/team/:teamId', async (req, res) => {
+    try {
+      const teamId = parseInt(req.params.teamId);
+      const players = await storage.getTeamPlayers(teamId);
+      res.json(players);
+    } catch (error) {
+      console.error("Error fetching team players:", error);
+      res.status(500).json({ message: "Failed to fetch team players" });
+    }
+  });
+
+  app.get('/api/injuries/team/:teamId', async (req, res) => {
+    try {
+      const teamId = parseInt(req.params.teamId);
+      const injuryReport = await storage.getTeamInjuryReport(teamId);
+      res.json(injuryReport);
+    } catch (error) {
+      console.error("Error fetching injury report:", error);
+      res.status(500).json({ message: "Failed to fetch injury report" });
+    }
+  });
+
+  app.post('/api/injuries/add', async (req, res) => {
+    try {
+      const injuryData = req.body;
+      await storage.addInjuryReport(injuryData);
+      res.json({ message: "Injury report added successfully" });
+    } catch (error) {
+      console.error("Error adding injury report:", error);
+      res.status(500).json({ message: "Failed to add injury report" });
+    }
+  });
+
+  app.get('/api/handicapping/game/:gameId', async (req, res) => {
+    try {
+      const gameId = parseInt(req.params.gameId);
+      const handicappingAnalysis = await storage.getHandicappingAnalysis(gameId);
+      res.json(handicappingAnalysis);
+    } catch (error) {
+      console.error("Error fetching handicapping analysis:", error);
+      res.status(500).json({ message: "Failed to fetch handicapping analysis" });
+    }
+  });
+
+  app.post('/api/players/collect-roster/:teamName', async (req, res) => {
+    try {
+      const teamName = req.params.teamName;
+      const season = req.body.season || 2025;
+      await storage.collectTeamRoster(teamName, season);
+      res.json({ message: `Roster collection started for ${teamName}` });
+    } catch (error) {
+      console.error("Error collecting roster:", error);
+      res.status(500).json({ message: "Failed to start roster collection" });
+    }
+  });
+
+  app.get('/api/players/impact/:playerId', async (req, res) => {
+    try {
+      const playerId = parseInt(req.params.playerId);
+      const impactAnalysis = await storage.getPlayerImpactAnalysis(playerId);
+      res.json(impactAnalysis);
+    } catch (error) {
+      console.error("Error fetching player impact:", error);
+      res.status(500).json({ message: "Failed to fetch player impact analysis" });
+    }
+  });
+
+  app.get('/api/handicapping/injury-impact/:gameId', async (req, res) => {
+    try {
+      const gameId = parseInt(req.params.gameId);
+      const injuryImpact = await storage.calculateGameInjuryImpact(gameId);
+      res.json(injuryImpact);
+    } catch (error) {
+      console.error("Error calculating injury impact:", error);
+      res.status(500).json({ message: "Failed to calculate injury impact" });
+    }
+  });
+
   app.get("/api/games/upcoming", async (req, res) => {
     try {
       const limit = req.query.limit ? parseInt(req.query.limit as string) : 20;

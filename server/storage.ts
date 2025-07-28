@@ -77,6 +77,24 @@ export interface IStorage {
   getAdminUser(username: string): Promise<AdminUser | undefined>;
   createAdminUser(adminUser: InsertAdminUser): Promise<AdminUser>;
   updateAdminUserLastLogin(username: string): Promise<boolean>;
+
+  // Player operations
+  getTeamPlayers(teamId: number): Promise<any[]>;
+  getPlayerById(playerId: number): Promise<any>;
+  getPlayerStats(playerId: number, season?: number): Promise<any[]>;
+  collectTeamRoster(teamName: string, season?: number): Promise<void>;
+  getPlayerImpactAnalysis(playerId: number): Promise<any>;
+
+  // Injury operations  
+  getTeamInjuryReport(teamId: number): Promise<any[]>;
+  addInjuryReport(injuryData: any): Promise<void>;
+  updateInjuryStatus(injuryId: number, status: string, severity?: string): Promise<void>;
+  calculateTeamInjuryImpact(teamId: number): Promise<any>;
+
+  // Handicapping operations
+  getHandicappingAnalysis(gameId: number): Promise<any>;
+  getKeyPlayerMatchups(gameId: number): Promise<any[]>;
+  calculateGameInjuryImpact(gameId: number): Promise<any>;
 }
 
 export class MemStorage implements IStorage {

@@ -270,9 +270,111 @@ export type GameWithTeams = Game & {
   ricksPicks?: RicksPick[];
 };
 
+// Enhanced injury and handicapping tables
+export const injuries = pgTable("injuries", {
+  id: serial("id").primaryKey(),
+  playerId: integer("player_id").references(() => players.id).notNull(),
+  teamId: integer("team_id").references(() => teams.id).notNull(),
+  injuryType: text("injury_type").notNull(), // Knee, Ankle, Shoulder, Concussion, etc.
+  bodyPart: text("body_part").notNull(), // Specific injury location
+  severity: text("severity").notNull(), // Questionable, Doubtful, Out, Day-to-Day
+  status: text("status").notNull(), // Active, Recovered, Season-Ending
+  gamesMissed: integer("games_missed").default(0),
+  expectedReturn: timestamp("expected_return"),
+  impactScore: real("impact_score").default(0), // 1-10 scale based on player importance
+  injuryDate: timestamp("injury_date").notNull(),
+  reportedDate: timestamp("reported_date").defaultNow(),
+  lastUpdated: timestamp("last_updated").defaultNow(),
+  season: integer("season").default(2025),
+  week: integer("week"),
+});
+
+export const depthChart = pgTable("depth_chart", {
+  id: serial("id").primaryKey(),
+  teamId: integer("team_id").references(() => teams.id).notNull(),
+  playerId: integer("player_id").references(() => players.id).notNull(),
+  position: text("position").notNull(),
+  depthOrder: integer("depth_order").notNull(), // 1 = starter, 2 = backup, etc.
+  positionGroup: text("position_group").notNull(), // Offense, Defense, Special Teams
+  season: integer("season").default(2025),
+  week: integer("week"),
+  isInjured: boolean("is_injured").default(false),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+export const playerImpactAnalysis = pgTable("player_impact_analysis", {
+  id: serial("id").primaryKey(),
+  playerId: integer("player_id").references(() => players.id).notNull(),
+  teamId: integer("team_id").references(() => teams.id).notNull(),
+  gameId: integer("game_id").references(() => games.id),
+  impactRating: real("impact_rating").notNull(), // 1-10 scale
+  offensiveImpact: real("offensive_impact").default(0),
+  defensiveImpact: real("defensive_impact").default(0),
+  specialTeamsImpact: real("special_teams_impact").default(0),
+  replacementPlayerRating: real("replacement_player_rating").default(0),
+  teamPerformanceWithPlayer: real("team_performance_with").default(0),
+  teamPerformanceWithoutPlayer: real("team_performance_without").default(0),
+  keyStats: text("key_stats").array(), // Top statistical categories
+  weeklyTrend: text("weekly_trend"), // Improving, Declining, Stable
+  season: integer("season").default(2025),
+  calculatedAt: timestamp("calculated_at").defaultNow(),
+});
+
+export const keyPlayerMatchups = pgTable("key_player_matchups", {
+  id: serial("id").primaryKey(),
+  gameId: integer("game_id").references(() => games.id).notNull(),
+  homePlayerId: integer("home_player_id").references(() => players.id).notNull(),
+  awayPlayerId: integer("away_player_id").references(() => players.id).notNull(),
+  matchupType: text("matchup_type").notNull(), // QB vs Defense, RB vs Run Defense, etc.
+  advantageRating: real("advantage_rating").notNull(), // -10 to +10 scale
+  keyFactors: text("key_factors").array(),
+  handicappingNotes: text("handicapping_notes"),
+  season: integer("season").default(2025),
+  week: integer("week").notNull(),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+// Insert schemas for new tables
+export const insertInjurySchema = createInsertSchema(injuries).omit({
+  id: true,
+  reportedDate: true,
+  lastUpdated: true,
+});
+
+export const insertDepthChartSchema = createInsertSchema(depthChart).omit({
+  id: true,
+  updatedAt: true,
+});
+
+export const insertPlayerImpactAnalysisSchema = createInsertSchema(playerImpactAnalysis).omit({
+  id: true,
+  calculatedAt: true,
+});
+
+export const insertKeyPlayerMatchupSchema = createInsertSchema(keyPlayerMatchups).omit({
+  id: true,
+  createdAt: true,
+});
+
+// Types for new tables
+export type InsertInjury = z.infer<typeof insertInjurySchema>;
+export type Injury = typeof injuries.$inferSelect;
+
+export type InsertDepthChart = z.infer<typeof insertDepthChartSchema>;
+export type DepthChart = typeof depthChart.$inferSelect;
+
+export type InsertPlayerImpactAnalysis = z.infer<typeof insertPlayerImpactAnalysisSchema>;
+export type PlayerImpactAnalysis = typeof playerImpactAnalysis.$inferSelect;
+
+export type InsertKeyPlayerMatchup = z.infer<typeof insertKeyPlayerMatchupSchema>;
+export type KeyPlayerMatchup = typeof keyPlayerMatchups.$inferSelect;
+
 export type PlayerWithStats = Player & {
   stats?: PlayerStats[];
   team: Team;
+  injuries?: Injury[];
+  depthChart?: DepthChart;
+  impactAnalysis?: PlayerImpactAnalysis;
 };
 
 export type TeamWithSeasonStats = Team & {
