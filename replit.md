@@ -122,6 +122,10 @@ The application follows a modern full-stack architecture with clear separation o
 
 ## Changelog
 
+- July 28, 2025: **UI CLEANUP: Removed "Even Matchup" Scale Emoji from Game Cards**
+  - **ELIMINATED UNNECESSARY ELEMENT**: Removed "⚖️ Even Matchup" display from home page game cards per user feedback
+  - **CLEANER GAME CARDS**: TeamComparisonIndicator now returns null for balanced matchups instead of showing scale emoji
+  - **STREAMLINED INTERFACE**: Focus on essential game information without redundant "even matchup" indicators
 - July 27, 2025: **RICK'S PICKS ADMIN SYSTEM: Personal Picks with Algorithmic Fallback Completed**
   - **ADMIN PANEL INTEGRATION**: Complete admin system allows Rick to make weekly picks via secure login interface (default: rick/RicksPicks2025!)
   - **DUAL PREDICTION SYSTEM**: Game cards display Rick's personal picks when available, automatically fall back to algorithmic predictions when missing

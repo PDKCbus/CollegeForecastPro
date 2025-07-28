@@ -2467,7 +2467,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
               updatedAt: new Date()
             })
             .onConflictDoUpdate({
-              target: ricksPicks.gameId,
+              target: [ricksPicks.gameId, ricksPicks.season, ricksPicks.week],
               set: {
                 spreadPick,
                 spreadConfidence,

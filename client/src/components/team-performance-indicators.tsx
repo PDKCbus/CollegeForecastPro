@@ -101,13 +101,7 @@ export function TeamComparisonIndicator({ homeTeam, awayTeam }: TeamComparisonIn
   const awayStrength = awayIndicators.reduce((sum, ind) => sum + ind.priority, 0);
   
   if (Math.abs(homeStrength - awayStrength) < 3) {
-    return (
-      <div className="text-center text-xs text-muted-foreground">
-        <span className="inline-flex items-center gap-1">
-          ⚖️ Even Matchup
-        </span>
-      </div>
-    );
+    return null; // Remove "Even Matchup" display
   }
   
   const favorite = homeStrength > awayStrength ? homeTeam : awayTeam;
