@@ -76,9 +76,15 @@ export default function AdminPanel() {
     if (token) {
       setAuthToken(token);
       setIsAuthenticated(true);
-      loadGamesForPicks();
     }
   }, []);
+
+  // Auto-load games when authenticated with valid token
+  useEffect(() => {
+    if (isAuthenticated && authToken) {
+      loadGamesForPicks();
+    }
+  }, [isAuthenticated, authToken, selectedWeek, selectedSeason]);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -138,29 +144,62 @@ export default function AdminPanel() {
   };
 
   const loadGamesForPicks = async () => {
-    if (!authToken) return;
+    if (!authToken) {
+      toast({
+        title: "Authentication Required",
+        description: "Please log in first",
+        variant: "destructive",
+      });
+      return;
+    }
     
     setIsLoading(true);
     try {
       const gamesResponse = await fetch(`/api/admin/games-for-picks?season=${selectedSeason}&week=${selectedWeek}`, {
         headers: { 'Authorization': `Bearer ${authToken}` }
       });
+      
+      if (!gamesResponse.ok) {
+        if (gamesResponse.status === 401) {
+          // Token expired, need to re-login
+          setIsAuthenticated(false);
+          setAuthToken(null);
+          localStorage.removeItem('adminToken');
+          toast({
+            title: "Session Expired",
+            description: "Please log in again",
+            variant: "destructive",
+          });
+          return;
+        }
+        throw new Error('Failed to fetch games');
+      }
+      
       const gamesData = await gamesResponse.json();
+      console.log('Loaded games:', gamesData.games?.length || 0);
       setGames(gamesData.games || []);
       
       // Load existing picks for this week
-      const picksResponse = await fetch(`/api/admin/ricks-picks/${selectedWeek}?season=${selectedSeason}`, {
-        headers: { 'Authorization': `Bearer ${authToken}` }
-      });
-      const picksData = await picksResponse.json();
-      
-      const picksMap: Record<number, RicksPick> = {};
-      (picksData.picks || []).forEach((pick: RicksPick) => {
-        picksMap[pick.gameId] = pick;
-      });
-      setCurrentPicks(picksMap);
+      try {
+        const picksResponse = await fetch(`/api/admin/ricks-picks/${selectedWeek}?season=${selectedSeason}`, {
+          headers: { 'Authorization': `Bearer ${authToken}` }
+        });
+        
+        if (picksResponse.ok) {
+          const picksData = await picksResponse.json();
+          const picksMap: Record<number, RicksPick> = {};
+          (picksData.picks || []).forEach((pick: RicksPick) => {
+            picksMap[pick.gameId] = pick;
+          });
+          setCurrentPicks(picksMap);
+        }
+      } catch (pickError) {
+        console.log('No existing picks found, starting fresh');
+        setCurrentPicks({});
+      }
       
     } catch (error) {
+      console.error('Load games error:', error);
       toast({
         title: "Failed to Load Games",
         description: "Could not load games for picks",

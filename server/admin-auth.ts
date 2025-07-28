@@ -16,6 +16,11 @@ export interface AdminSession {
 
 export class AdminAuth {
   private static sessions = new Map<string, AdminSession>();
+  
+  // Initialize admin user on startup
+  static async initialize() {
+    await this.initializeDefaultAdmin();
+  }
 
   /**
    * Create initial admin user if none exists
