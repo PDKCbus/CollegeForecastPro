@@ -468,8 +468,8 @@ export function GameCard({ game }: GameCardProps) {
                     </>
                   ) : (
                     <>
-                      <Share2 className="mr-2 h-4 w-4" />
-                      Share Game Analysis
+                      <Copy className="mr-2 h-4 w-4" />
+                      Copy Link
                     </>
                   )}
                 </DropdownMenuItem>
