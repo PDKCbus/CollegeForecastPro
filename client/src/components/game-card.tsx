@@ -368,21 +368,21 @@ export function GameCard({ game }: GameCardProps) {
                 
                 return (
                   <>
-                    <div className={`text-center px-5 py-4 ${spreadBgColor} rounded min-w-[120px]`}>
-                      <div className="text-white/60 text-xs mb-1">SPREAD</div>
-                      <div className="font-bold text-white text-lg">{getSpreadDisplay()}</div>
+                    <div className={`text-center px-4 py-3 ${spreadBgColor} rounded min-w-[110px]`}>
+                      <div className="text-white/60 text-xs">SPREAD</div>
+                      <div className="font-bold text-white text-base">{getSpreadDisplay()}</div>
                       {ricksPickData.hasSpreadPick && (
-                        <div className="text-xs mt-2">
+                        <div className="text-xs mt-1">
                           <span className="text-blue-200">Rick:</span>
                           <span className="text-white/90"> {ricksPickData.spreadPick}</span>
                         </div>
                       )}
                     </div>
-                    <div className={`text-center px-5 py-4 ${totalBgColor} rounded min-w-[120px]`}>
-                      <div className="text-white/60 text-xs mb-1">O/U</div>
-                      <div className="font-bold text-white text-lg">{game.overUnder?.toFixed(1) || "N/A"}</div>
+                    <div className={`text-center px-4 py-3 ${totalBgColor} rounded min-w-[110px]`}>
+                      <div className="text-white/60 text-xs">O/U</div>
+                      <div className="font-bold text-white text-base">{game.overUnder?.toFixed(1) || "N/A"}</div>
                       {ricksPickData.hasTotalPick && (
-                        <div className="text-xs mt-2">
+                        <div className="text-xs mt-1">
                           <span className="text-blue-200">Rick:</span>
                           <span className="text-white/90"> {ricksPickData.totalPick}</span>
                         </div>
