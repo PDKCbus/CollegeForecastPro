@@ -122,6 +122,14 @@ The application follows a modern full-stack architecture with clear separation o
 
 ## Changelog
 
+- July 28, 2025: **HEAD-TO-HEAD HISTORY FEATURE: Complete Historical Matchup Analysis from 15-Year Dataset**
+  - **3-DOT MENU EXPANSION**: Added "View Head-to-Head History" option with BarChart3 icon alongside Twitter sentiment analysis
+  - **COMPREHENSIVE DIALOG**: Shows series summary with all-time wins since 2009, recent matchups with scores/venues/spread results
+  - **AUTHENTIC DATA INTEGRATION**: Backend API queries completed games between teams from 28,458-game historical dataset
+  - **SPREAD COVERAGE ANALYSIS**: Color-coded results showing covered (green), missed (red), push (yellow) outcomes
+  - **INTELLIGENT FALLBACK**: "No Historical Data" message for teams without matchup history in dataset timeframe
+  - **REAL RESULTS VALIDATION**: Stanford vs Hawaii correctly shows no historical data (teams haven't met 2009-2024)
+  - **API ENDPOINT**: `/api/games/head-to-head/:homeTeamId/:awayTeamId` provides complete matchup analysis
 - July 28, 2025: **UI CLEANUP: Removed "Even Matchup" Scale Emoji from Game Cards**
   - **ELIMINATED UNNECESSARY ELEMENT**: Removed "⚖️ Even Matchup" display from home page game cards per user feedback
   - **CLEANER GAME CARDS**: TeamComparisonIndicator now returns null for balanced matchups instead of showing scale emoji
