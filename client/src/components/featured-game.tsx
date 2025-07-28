@@ -44,23 +44,23 @@ export function FeaturedGame({ game }: FeaturedGameProps) {
           <div className="flex items-center space-x-4 mb-4 md:mb-0">
             <div className="flex flex-col items-center">
               <img 
-                src={game.homeTeam.logoUrl || ""}
-                alt={game.homeTeam.name} 
+                src={game.awayTeam.logoUrl || ""}
+                alt={game.awayTeam.name} 
                 className="team-logo mb-2 w-[45px] h-[45px] object-contain" 
               />
               <div className="flex items-center gap-2">
-                <span className="font-bold text-lg">{game.homeTeam.name}</span>
-                <TeamPerformanceIndicators team={game.homeTeam} variant="compact" />
+                <span className="font-bold text-lg">{game.awayTeam.name}</span>
+                <TeamPerformanceIndicators team={game.awayTeam} variant="compact" />
               </div>
-              {game.homeTeam.rank ? (
-                <div className="text-accent font-bold">#{game.homeTeam.rank}</div>
+              {game.awayTeam.rank ? (
+                <div className="text-accent font-bold">#{game.awayTeam.rank}</div>
               ) : (
                 <div className="text-white/50 text-xs">Unranked</div>
               )}
             </div>
             
             <div className="flex flex-col items-center px-4">
-              <div className="text-lg font-medium mb-1">VS</div>
+              <div className="text-lg font-medium mb-1">@</div>
               <div className="text-xs text-white/60 mb-2">
                 {formatDate(game.startDate)}, {formatTime(game.startDate)}
               </div>
@@ -82,16 +82,16 @@ export function FeaturedGame({ game }: FeaturedGameProps) {
             
             <div className="flex flex-col items-center">
               <img 
-                src={game.awayTeam.logoUrl || ""}
-                alt={game.awayTeam.name} 
+                src={game.homeTeam.logoUrl || ""}
+                alt={game.homeTeam.name} 
                 className="team-logo mb-2 w-[45px] h-[45px] object-contain" 
               />
               <div className="flex items-center gap-2">
-                <span className="font-bold text-lg">{game.awayTeam.name}</span>
-                <TeamPerformanceIndicators team={game.awayTeam} variant="compact" />
+                <span className="font-bold text-lg">{game.homeTeam.name}</span>
+                <TeamPerformanceIndicators team={game.homeTeam} variant="compact" />
               </div>
-              {game.awayTeam.rank ? (
-                <div className="text-accent font-bold">#{game.awayTeam.rank}</div>
+              {game.homeTeam.rank ? (
+                <div className="text-accent font-bold">#{game.homeTeam.rank}</div>
               ) : (
                 <div className="text-white/50 text-xs">Unranked</div>
               )}
