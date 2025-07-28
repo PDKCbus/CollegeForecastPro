@@ -365,6 +365,111 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Games API
+  // Head-to-head history API
+  app.get("/api/games/head-to-head/:homeTeamId/:awayTeamId", async (req, res) => {
+    try {
+      const homeTeamId = parseInt(req.params.homeTeamId);
+      const awayTeamId = parseInt(req.params.awayTeamId);
+      
+      if (isNaN(homeTeamId) || isNaN(awayTeamId)) {
+        return res.status(400).json({ message: "Invalid team IDs" });
+      }
+
+      // Get historical matchups between these teams from our 15-year dataset
+      const historicalGames = await db.execute(sql.raw(`
+        SELECT 
+          g.id,
+          g.season,
+          g.week,
+          g.start_date,
+          g.venue,
+          g.completed,
+          g.home_team_score,
+          g.away_team_score,
+          g.spread,
+          g.over_under,
+          ht.name as home_team_name,
+          ht.abbreviation as home_team_abbr,
+          at.name as away_team_name,
+          at.abbreviation as away_team_abbr
+        FROM games g
+        JOIN teams ht ON g.home_team_id = ht.id
+        JOIN teams at ON g.away_team_id = at.id
+        WHERE g.completed = true
+          AND ((g.home_team_id = ${homeTeamId} AND g.away_team_id = ${awayTeamId})
+            OR (g.home_team_id = ${awayTeamId} AND g.away_team_id = ${homeTeamId}))
+        ORDER BY g.season DESC, g.week DESC
+        LIMIT 20
+      `));
+
+      // Calculate win-loss record for each team in this matchup
+      let homeTeamWins = 0;
+      let awayTeamWins = 0;
+
+      const processedGames = historicalGames.map((game: any) => {
+        const isHomeTeamActuallyHome = game.home_team_id === homeTeamId;
+        const homeScore = game.home_team_score || 0;
+        const awayScore = game.away_team_score || 0;
+        
+        // Determine winner and update counters
+        if (homeScore > awayScore) {
+          if (isHomeTeamActuallyHome) {
+            homeTeamWins++;
+          } else {
+            awayTeamWins++;
+          }
+        } else if (awayScore > homeScore) {
+          if (isHomeTeamActuallyHome) {
+            awayTeamWins++;
+          } else {
+            homeTeamWins++;
+          }
+        }
+
+        // Calculate spread result if available
+        let spreadResult = null;
+        if (game.spread && homeScore !== null && awayScore !== null) {
+          const actualMargin = homeScore - awayScore;
+          const spreadMargin = -game.spread; // Convert to home team perspective
+          
+          if (Math.abs(actualMargin - spreadMargin) < 0.5) {
+            spreadResult = 'push';
+          } else if (actualMargin > spreadMargin) {
+            spreadResult = 'covered';
+          } else {
+            spreadResult = 'missed';
+          }
+        }
+
+        return {
+          id: game.id,
+          season: game.season,
+          week: game.week,
+          startDate: game.start_date,
+          venue: game.venue,
+          homeTeamName: game.home_team_name,
+          awayTeamName: game.away_team_name,
+          homeTeamScore: game.home_team_score,
+          awayTeamScore: game.away_team_score,
+          spread: game.spread,
+          overUnder: game.over_under,
+          spreadResult
+        };
+      });
+
+      res.json({
+        totalGames: historicalGames.length,
+        homeTeamWins, // These refer to the team passed as homeTeamId parameter
+        awayTeamWins, // These refer to the team passed as awayTeamId parameter
+        games: processedGames
+      });
+
+    } catch (error) {
+      console.error('Error fetching head-to-head history:', error);
+      res.status(500).json({ message: "Failed to fetch head-to-head history" });
+    }
+  });
+
   app.get("/api/games/upcoming", async (req, res) => {
     try {
       const limit = req.query.limit ? parseInt(req.query.limit as string) : 20;

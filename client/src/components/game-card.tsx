@@ -18,6 +18,7 @@ interface GameCardProps {
 
 export function GameCard({ game }: GameCardProps) {
   const [sentimentDialogOpen, setSentimentDialogOpen] = useState(false);
+  const [headToHeadDialogOpen, setHeadToHeadDialogOpen] = useState(false);
 
   const formatDate = (dateString: Date) => {
     const date = new Date(dateString);
@@ -46,6 +47,12 @@ export function GameCard({ game }: GameCardProps) {
       if (!response.ok) throw new Error('Failed to analyze sentiment');
       return response.json();
     },
+  });
+
+  // Head-to-head historical data query
+  const { data: headToHeadData, isLoading: isHeadToHeadLoading } = useQuery({
+    queryKey: [`/api/games/head-to-head/${game.homeTeamId}/${game.awayTeamId}`],
+    enabled: headToHeadDialogOpen,
   });
 
   const formatTeamRecord = (wins: number, losses: number) => {
@@ -411,6 +418,13 @@ export function GameCard({ game }: GameCardProps) {
                   <Twitter className="mr-2 h-4 w-4" />
                   See what Twitter/X thinks
                 </DropdownMenuItem>
+                <DropdownMenuItem 
+                  onClick={() => setHeadToHeadDialogOpen(true)}
+                  className="text-white hover:bg-surface-light cursor-pointer"
+                >
+                  <BarChart3 className="mr-2 h-4 w-4" />
+                  View Head-to-Head History
+                </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
           </div>
@@ -569,6 +583,122 @@ export function GameCard({ game }: GameCardProps) {
                 )}
               </div>
             ) : null}
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Head-to-Head History Dialog */}
+      <Dialog open={headToHeadDialogOpen} onOpenChange={setHeadToHeadDialogOpen}>
+        <DialogContent className="bg-surface border-surface-light text-white max-w-2xl max-h-[80vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <BarChart3 className="h-5 w-5 text-blue-400" />
+              Head-to-Head History
+            </DialogTitle>
+          </DialogHeader>
+          
+          <div className="space-y-4">
+            {isHeadToHeadLoading ? (
+              <div className="text-center py-6">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-accent mx-auto mb-2"></div>
+                <div className="text-white/70">Loading historical matchups...</div>
+              </div>
+            ) : headToHeadData && headToHeadData.games?.length > 0 ? (
+              <>
+                {/* Series Summary */}
+                <div className="bg-surface-light rounded-lg p-4">
+                  <div className="text-center mb-4">
+                    <div className="text-lg font-semibold mb-2">
+                      {game.awayTeam.name} vs {game.homeTeam.name}
+                    </div>
+                    <div className="text-sm text-white/70">
+                      All-Time Series • {headToHeadData.totalGames} games since 2009
+                    </div>
+                  </div>
+                  
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="text-center">
+                      <div className="flex items-center justify-center mb-2">
+                        <img 
+                          src={game.awayTeam.logoUrl || ""} 
+                          alt={game.awayTeam.name}
+                          className="w-12 h-12 object-contain"
+                        />
+                      </div>
+                      <div className="font-bold text-xl">{headToHeadData.awayTeamWins}</div>
+                      <div className="text-xs text-white/60">Wins</div>
+                    </div>
+                    <div className="text-center">
+                      <div className="flex items-center justify-center mb-2">
+                        <img 
+                          src={game.homeTeam.logoUrl || ""} 
+                          alt={game.homeTeam.name}
+                          className="w-12 h-12 object-contain"
+                        />
+                      </div>
+                      <div className="font-bold text-xl">{headToHeadData.homeTeamWins}</div>
+                      <div className="text-xs text-white/60">Wins</div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Recent Games */}
+                <div>
+                  <div className="text-sm font-medium mb-3">Recent Matchups ({Math.min(headToHeadData.games.length, 10)} games)</div>
+                  <div className="space-y-2 max-h-64 overflow-y-auto">
+                    {headToHeadData.games.slice(0, 10).map((historicalGame: any, index: number) => (
+                      <div key={index} className="bg-surface-light rounded-lg p-3">
+                        <div className="flex justify-between items-center">
+                          <div className="text-sm text-white/70">
+                            {new Date(historicalGame.startDate).getFullYear()} • Week {historicalGame.week}
+                          </div>
+                          <div className="text-xs text-white/50">
+                            {historicalGame.venue || 'N/A'}
+                          </div>
+                        </div>
+                        
+                        <div className="flex justify-between items-center mt-2">
+                          <div className="flex items-center gap-2">
+                            <span className="text-sm">{historicalGame.awayTeamName}</span>
+                            <span className="font-bold text-white">
+                              {historicalGame.awayTeamScore || 0}
+                            </span>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <span className="font-bold text-white">
+                              {historicalGame.homeTeamScore || 0}
+                            </span>
+                            <span className="text-sm">{historicalGame.homeTeamName}</span>
+                          </div>
+                        </div>
+                        
+                        {historicalGame.spread && (
+                          <div className="text-xs text-white/60 mt-1 text-center">
+                            Spread: {Math.abs(historicalGame.spread)} 
+                            {historicalGame.spreadResult && (
+                              <span className={`ml-2 px-1 rounded ${
+                                historicalGame.spreadResult === 'covered' ? 'bg-green-600' : 
+                                historicalGame.spreadResult === 'push' ? 'bg-yellow-600' : 'bg-red-600'
+                              }`}>
+                                {historicalGame.spreadResult}
+                              </span>
+                            )}
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </>
+            ) : (
+              <div className="text-center py-6">
+                <BarChart3 className="h-12 w-12 text-white/40 mx-auto mb-3" />
+                <div className="text-white/70 mb-2">No Historical Data</div>
+                <div className="text-sm text-white/50">
+                  These teams haven't played each other in our 15-year dataset (2009-2024)
+                </div>
+              </div>
+            )}
           </div>
         </DialogContent>
       </Dialog>
