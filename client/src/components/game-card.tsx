@@ -367,7 +367,7 @@ export function GameCard({ game }: GameCardProps) {
         <div className="text-center mb-3">
           <div className="text-white/60 text-xs mb-1 flex items-center justify-center gap-1">
             <span>🏟️</span>
-            <span>{game.venueName || 'Stadium TBD'}</span>
+            <span>{game.stadium || 'Stadium TBD'}</span>
           </div>
           {game.isDome && (
             <div className="text-white/50 text-xs">Indoor • Climate Controlled</div>
