@@ -87,7 +87,7 @@ export class PostgresStorage implements IStorage {
       .from(games)
       .where(and(
         gte(games.startDate, now),
-        or(isNotNull(games.spread), isNotNull(games.overUnder))
+        eq(games.completed, false)
       ))
       .orderBy(asc(games.startDate))
       .limit(limit * 2) // Get extra to handle deduplication
@@ -151,9 +151,9 @@ export class PostgresStorage implements IStorage {
       .where(and(
         eq(games.season, season), 
         eq(games.week, week),
-        or(isNotNull(games.spread), isNotNull(games.overUnder))
+        eq(games.completed, false)
       ))
-      .orderBy(desc(games.startDate));
+      .orderBy(asc(games.startDate));
 
     const gamesWithTeams: GameWithTeams[] = [];
     for (const game of gameResults) {
