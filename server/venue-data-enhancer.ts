@@ -28,6 +28,7 @@ const KNOWN_DOMES = new Set([
 ]);
 
 const VENUE_LOCATIONS = new Map([
+  // NFL/Major Stadiums
   ['Mercedes-Benz Stadium', 'Atlanta, GA'],
   ['Ford Field', 'Detroit, MI'],
   ['Carrier Dome', 'Syracuse, NY'],
@@ -39,6 +40,9 @@ const VENUE_LOCATIONS = new Map([
   ['U.S. Bank Stadium', 'Minneapolis, MN'],
   ['State Farm Stadium', 'Glendale, AZ'],
   ['Caesars Superdome', 'New Orleans, LA'],
+  ['Raymond James Stadium', 'Tampa, FL'],
+  
+  // Major College Football Stadiums
   ['Michigan Stadium', 'Ann Arbor, MI'],
   ['Ohio Stadium', 'Columbus, OH'],
   ['Beaver Stadium', 'University Park, PA'],
@@ -49,6 +53,56 @@ const VENUE_LOCATIONS = new Map([
   ['Memorial Stadium', 'Lincoln, NE'],
   ['Kroger Field', 'Lexington, KY'],
   ['Vaught-Hemingway Stadium', 'Oxford, MS'],
+  ['Kyle Field', 'College Station, TX'],
+  ['Sanford Stadium', 'Athens, GA'],
+  ['Williams-Brice Stadium', 'Columbia, SC'],
+  ['Camp Randall Stadium', 'Madison, WI'],
+  ['Rose Bowl', 'Pasadena, CA'],
+  ['Los Angeles Memorial Coliseum', 'Los Angeles, CA'],
+  ['Cotton Bowl', 'Dallas, TX'],
+  ['Orange Bowl', 'Miami, FL'],
+  ['Sugar Bowl', 'New Orleans, LA'],
+  ['Fiesta Bowl', 'Glendale, AZ'],
+  ['Peach Bowl', 'Atlanta, GA'],
+  ['Citrus Bowl', 'Orlando, FL'],
+  ['Gator Bowl', 'Jacksonville, FL'],
+  ['Liberty Bowl', 'Memphis, TN'],
+  ['Sun Bowl', 'El Paso, TX'],
+  ['Holiday Bowl', 'San Diego, CA'],
+  ['Alamo Bowl', 'San Antonio, TX'],
+  ['Music City Bowl', 'Nashville, TN'],
+  ['Independence Bowl', 'Shreveport, LA'],
+  ['Armed Forces Bowl', 'Fort Worth, TX'],
+  ['Texas Bowl', 'Houston, TX'],
+  ['Pinstripe Bowl', 'Bronx, NY'],
+  ['Gasparilla Bowl', 'Tampa, FL'],
+  ['Birmingham Bowl', 'Birmingham, AL'],
+  ['New Orleans Bowl', 'New Orleans, LA'],
+  ['Boca Raton Bowl', 'Boca Raton, FL'],
+  ['Camellia Bowl', 'Montgomery, AL'],
+  ['New Mexico Bowl', 'Albuquerque, NM'],
+  ['Hawaii Bowl', 'Honolulu, HI'],
+  ['Idaho Potato Bowl', 'Boise, ID'],
+  ['Famous Idaho Potato Bowl', 'Boise, ID'],
+  ['LA Bowl', 'Los Angeles, CA'],
+  ['Jimmy Kimmel LA Bowl', 'Los Angeles, CA'],
+  ['Fenway Bowl', 'Boston, MA'],
+  ['Military Bowl', 'Annapolis, MD'],
+  ['First Responder Bowl', 'Dallas, TX'],
+  ['LendingTree Bowl', 'Mobile, AL'],
+  ['Cure Bowl', 'Orlando, FL'],
+  ['Myrtle Beach Bowl', 'Conway, SC'],
+  ['Bahamas Bowl', 'Nassau, Bahamas'],
+  ['Frisco Bowl', 'Frisco, TX'],
+  ['Celebration Bowl', 'Atlanta, GA'],
+  
+  // Conference Championship Game Venues
+  ['Mercedes-Benz Stadium', 'Atlanta, GA'], // SEC Championship
+  ['AT&T Stadium', 'Arlington, TX'], // Big 12 Championship
+  ['Lucas Oil Stadium', 'Indianapolis, IN'], // Big Ten Championship
+  ['Levi\'s Stadium', 'Santa Clara, CA'], // Pac-12 Championship
+  ['Bank of America Stadium', 'Charlotte, NC'], // ACC Championship
+  
   // International venues
   ['Aviva Stadium', 'Dublin, Ireland'],
   ['Wembley Stadium', 'London, England'],
