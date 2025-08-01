@@ -11,6 +11,7 @@ import { Calendar, Clock, MapPin, MoreHorizontal, Twitter, TrendingUp, TrendingD
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { useState } from "react";
 import { Link } from "wouter";
+import { useToast } from "@/hooks/use-toast";
 import type { SentimentAnalysis } from "@shared/schema";
 
 interface GameCardProps {
@@ -21,6 +22,7 @@ export function GameCard({ game }: GameCardProps) {
   const [sentimentDialogOpen, setSentimentDialogOpen] = useState(false);
   const [headToHeadDialogOpen, setHeadToHeadDialogOpen] = useState(false);
   const [linkCopied, setLinkCopied] = useState(false);
+  const { toast } = useToast();
 
   const formatDate = (dateString: Date) => {
     const date = new Date(dateString);
@@ -77,6 +79,13 @@ export function GameCard({ game }: GameCardProps) {
       await navigator.clipboard.writeText(gameUrl);
       setLinkCopied(true);
       setTimeout(() => setLinkCopied(false), 2000);
+      
+      // Show success toast
+      toast({
+        title: "Link copied!",
+        description: "Game analysis link has been copied to your clipboard.",
+        duration: 3000,
+      });
     } catch (error) {
       // Fallback for browsers without clipboard API
       const textArea = document.createElement('textarea');
@@ -87,6 +96,13 @@ export function GameCard({ game }: GameCardProps) {
       document.body.removeChild(textArea);
       setLinkCopied(true);
       setTimeout(() => setLinkCopied(false), 2000);
+      
+      // Show success toast
+      toast({
+        title: "Link copied!",
+        description: "Game analysis link has been copied to your clipboard.",
+        duration: 3000,
+      });
     }
   };
 
