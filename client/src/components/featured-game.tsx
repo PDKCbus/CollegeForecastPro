@@ -147,15 +147,15 @@ export function FeaturedGame({ game }: FeaturedGameProps) {
           </div>
         </div>
         
-        {/* Fan Sentiment Section */}
-        <div className="border-t border-surface-light pt-4 mb-4">
+        {/* Fan Sentiment Section - Currently hidden but code preserved for future use */}
+        {/* <div className="border-t border-surface-light pt-4 mb-4">
           <FanSentiment 
             gameId={game.id} 
             homeTeam={game.homeTeam.abbreviation} 
             awayTeam={game.awayTeam.abbreviation} 
             compact={true} 
           />
-        </div>
+        </div> */}
 
         <div className="border-t border-surface-light pt-4 flex justify-between items-center">
           <div className="text-white/80">
