@@ -110,11 +110,6 @@ export default function Home() {
     <>
       <Hero />
       
-      {/* Rick's Season Performance Section - positioned directly under Beat The Books header */}
-      <section className="container mx-auto px-4 py-8 md:py-12">
-        <SeasonStatsSection />
-      </section>
-      
       <main className="container mx-auto px-4 py-8 md:py-12">
         <FilterBar 
           weeks={weeks} 
@@ -182,6 +177,11 @@ export default function Home() {
           </div>
         )}
       </main>
+      
+      {/* Rick's Season Performance Section - positioned after game cards */}
+      <section className="container mx-auto px-4 py-8 md:py-12">
+        <SeasonStatsSection />
+      </section>
       
       <FeatureHighlights />
       <CTASection />
