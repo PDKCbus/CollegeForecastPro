@@ -48,7 +48,21 @@ const VENUE_LOCATIONS = new Map([
   ['Kinnick Stadium', 'Iowa City, IA'],
   ['Memorial Stadium', 'Lincoln, NE'],
   ['Kroger Field', 'Lexington, KY'],
-  ['Vaught-Hemingway Stadium', 'Oxford, MS']
+  ['Vaught-Hemingway Stadium', 'Oxford, MS'],
+  // International venues
+  ['Aviva Stadium', 'Dublin, Ireland'],
+  ['Wembley Stadium', 'London, England'],
+  ['Tottenham Hotspur Stadium', 'London, England'],
+  ['Allianz Arena', 'Munich, Germany'],
+  ['Estadio Azteca', 'Mexico City, Mexico']
+]);
+
+const INTERNATIONAL_VENUES = new Map([
+  ['Aviva Stadium', { country: 'Ireland', flag: '🇮🇪', city: 'Dublin' }],
+  ['Wembley Stadium', { country: 'England', flag: '🏴󠁧󠁢󠁥󠁮󠁧󠁿', city: 'London' }],
+  ['Tottenham Hotspur Stadium', { country: 'England', flag: '🏴󠁧󠁢󠁥󠁮󠁧󠁿', city: 'London' }],
+  ['Allianz Arena', { country: 'Germany', flag: '🇩🇪', city: 'Munich' }],
+  ['Estadio Azteca', { country: 'Mexico', flag: '🇲🇽', city: 'Mexico City' }]
 ]);
 
 export class VenueDataEnhancer {
@@ -93,6 +107,16 @@ export class VenueDataEnhancer {
     
     const cleanedVenue = this.cleanVenueName(venue);
     return VENUE_LOCATIONS.get(cleanedVenue) || null;
+  }
+  
+  /**
+   * Get international venue information
+   */
+  getInternationalVenueInfo(venue: string): { country: string; flag: string; city: string } | null {
+    if (!venue) return null;
+    
+    const cleanedVenue = this.cleanVenueName(venue);
+    return INTERNATIONAL_VENUES.get(cleanedVenue) || null;
   }
   
   /**

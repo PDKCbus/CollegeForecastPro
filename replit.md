@@ -44,6 +44,7 @@ Key tables include:
 - **Real-Time Handicapping Engine**: TypeScript implementation applies Python-derived coefficients to live player data, calculating QB vs Defense matchups, injury impacts, and position-specific value ratings.
 - **Betting Line System**: Automated three-tier betting line refresh schedule (Tuesday, Thursday, Saturday) to ensure predictions use the freshest data. Includes spread formatting to industry standards.
 - **Head-to-Head History**: Provides detailed historical matchup analysis between teams from the 15-year dataset.
+- **International Game Support**: Automatic detection and flag display for games played outside the USA, including proper venue information for international locations like Ireland, England, Germany, and Mexico.
 
 ## External Dependencies
 
