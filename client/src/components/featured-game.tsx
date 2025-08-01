@@ -1,12 +1,18 @@
 import { GameWithTeams } from "@/lib/types";
 import { TeamPerformanceIndicators } from "./team-performance-indicators";
 import { Link } from "wouter";
+import { useQuery } from "@tanstack/react-query";
 
 interface FeaturedGameProps {
   game: GameWithTeams;
 }
 
 export function FeaturedGame({ game }: FeaturedGameProps) {
+  // Fetch algorithmic predictions for fallback
+  const { data: algorithmicPredictions } = useQuery({
+    queryKey: [`/api/predictions/game/${game.id}`],
+  });
+
   const formatDate = (dateString: Date) => {
     const date = new Date(dateString);
     return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
@@ -106,12 +112,23 @@ export function FeaturedGame({ game }: FeaturedGameProps) {
             </div>
           </div>
           
-          <div className="flex space-x-3">
+          <div className="flex flex-wrap gap-3">
             {game.prediction && (
               <div className="text-center p-3 bg-surface-light rounded-lg">
                 <div className="text-xs text-white/60 mb-1">RICK'S PICK</div>
                 <div className="font-bold">
                   {game.prediction.predictedWinnerId === game.homeTeam.id 
+                    ? game.homeTeam.name
+                    : game.awayTeam.name
+                  }
+                </div>
+              </div>
+            )}
+            {algorithmicPredictions?.algorithmicPredictions?.[0] && (
+              <div className="text-center p-3 bg-surface-light rounded-lg">
+                <div className="text-xs text-white/60 mb-1">🤓 ANALYSIS PICK</div>
+                <div className="font-bold">
+                  {algorithmicPredictions.algorithmicPredictions[0].predictedWinnerId === game.homeTeam.id 
                     ? game.homeTeam.name
                     : game.awayTeam.name
                   }
