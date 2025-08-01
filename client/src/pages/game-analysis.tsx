@@ -376,6 +376,7 @@ export default function GameAnalysis() {
               title="Spread Prediction"
               value={analysis.predictiveMetrics.spreadPrediction > 0 ? `+${formatSpread(analysis.predictiveMetrics.spreadPrediction)}` : formatSpread(analysis.predictiveMetrics.spreadPrediction)}
               icon={BarChart3}
+              teamLogo={analysis.predictiveMetrics.spreadPrediction > 0 ? selectedGame.homeTeam?.logoUrl || undefined : selectedGame.awayTeam?.logoUrl || undefined}
             />
             <MetricCard
               title="O/U Prediction"
