@@ -6,7 +6,7 @@ import { FeatureHighlights } from "@/components/feature-highlights";
 import { CTASection } from "@/components/cta-section";
 import { SeasonStatsSection } from "@/components/season-stats-section";
 import { useQuery } from "@tanstack/react-query";
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { FilterOption, GameWithTeams } from "@/lib/types";
 
 export default function Home() {
@@ -14,6 +14,11 @@ export default function Home() {
   const [activeFilter, setActiveFilter] = useState("all");
   const [teamFilter, setTeamFilter] = useState("");
   const [selectedConference, setSelectedConference] = useState("");
+  const [allGames, setAllGames] = useState<GameWithTeams[]>([]);
+  const [hasMore, setHasMore] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const [offset, setOffset] = useState(0);
+  const observer = useRef<IntersectionObserver>();
   
   // Show all weeks that have authentic 2025 data
   const weeks = ["Week 1", "Week 2", "Week 3", "Week 4", "Week 5", "Week 6", "Week 7", "Week 8", "Week 9", "Week 10", "Week 11", "Week 12", "Week 13", "Week 14", "Week 15"];
@@ -26,24 +31,75 @@ export default function Home() {
   // Extract week number from selectedWeek (e.g., "Week 2" -> "2")
   const weekNumber = selectedWeek.replace("Week ", "");
   
-  // Initial load with larger page size and sorting
+  // Load initial games
   const { data: gamesResponse, isLoading } = useQuery({
-    queryKey: ["/api/games/upcoming", weekNumber],
+    queryKey: ["/api/games/upcoming", weekNumber, 0], // Include offset in query key
     queryFn: async () => {
       const url = weekNumber && weekNumber !== "all" 
-        ? `/api/games/upcoming?limit=100&week=${weekNumber}`
-        : `/api/games/upcoming?limit=100`;
+        ? `/api/games/upcoming?limit=50&offset=0&week=${weekNumber}`
+        : `/api/games/upcoming?limit=50&offset=0`;
       const response = await fetch(url);
       if (!response.ok) throw new Error('Failed to fetch games');
       return response.json();
     }
   });
 
-  // Extract games array from response
-  const allUpcomingGames = gamesResponse?.games || gamesResponse || [];
+  // Set games when data changes
+  useEffect(() => {
+    if (gamesResponse) {
+      setAllGames(gamesResponse.games || []);
+      setHasMore(gamesResponse.hasMore || false);
+      setOffset(50);
+    }
+  }, [gamesResponse]);
+
+  // Load more games function
+  const loadMoreGames = useCallback(async () => {
+    if (loadingMore || !hasMore) return;
+    
+    setLoadingMore(true);
+    try {
+      const url = weekNumber && weekNumber !== "all" 
+        ? `/api/games/upcoming?limit=50&offset=${offset}&week=${weekNumber}`
+        : `/api/games/upcoming?limit=50&offset=${offset}`;
+      
+      const response = await fetch(url);
+      if (!response.ok) throw new Error('Failed to fetch more games');
+      
+      const data = await response.json();
+      const newGames = data.games || [];
+      
+      setAllGames(prev => [...prev, ...newGames]);
+      setHasMore(data.hasMore || false);
+      setOffset(prev => prev + 50);
+    } catch (error) {
+      console.error('Error loading more games:', error);
+    } finally {
+      setLoadingMore(false);
+    }
+  }, [weekNumber, offset, loadingMore, hasMore]);
+
+  // Reset games when week changes
+  useEffect(() => {
+    setAllGames([]);
+    setHasMore(true);
+    setOffset(0);
+  }, [weekNumber]);
+
+  // Intersection observer for infinite scroll
+  const lastGameElementRef = useCallback((node: HTMLDivElement) => {
+    if (loadingMore) return;
+    if (observer.current) observer.current.disconnect();
+    observer.current = new IntersectionObserver(entries => {
+      if (entries[0].isIntersecting && hasMore) {
+        loadMoreGames();
+      }
+    });
+    if (node) observer.current.observe(node);
+  }, [loadingMore, hasMore, loadMoreGames]);
 
   // Filter games based on active filter, conference, and team search (week filtering now done in API)
-  const upcomingGames = Array.isArray(allUpcomingGames) ? allUpcomingGames.filter((game: GameWithTeams) => {
+  const upcomingGames = Array.isArray(allGames) ? allGames.filter((game: GameWithTeams) => {
     // Week filtering is now handled by the API, so we skip it here
     
     // Apply category filter
@@ -165,11 +221,36 @@ export default function Home() {
         ) : upcomingGames && upcomingGames.length > 0 ? (
           <>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {upcomingGames.map((game: GameWithTeams) => (
-                <GameCard key={game.id} game={game as any} />
-              ))}
+              {upcomingGames.map((game: GameWithTeams, index) => {
+                // Add ref to last element for infinite scroll
+                if (upcomingGames.length === index + 1) {
+                  return (
+                    <div key={game.id} ref={lastGameElementRef}>
+                      <GameCard game={game as any} />
+                    </div>
+                  );
+                } else {
+                  return <GameCard key={game.id} game={game as any} />;
+                }
+              })}
             </div>
 
+            {/* Loading indicator for infinite scroll */}
+            {loadingMore && (
+              <div className="flex justify-center items-center py-8">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-accent"></div>
+                <span className="ml-2 text-white/60">Loading more games...</span>
+              </div>
+            )}
+
+            {/* Show total count */}
+            {!hasMore && allGames.length > 0 && (
+              <div className="text-center py-6">
+                <p className="text-white/60">
+                  Showing all {upcomingGames.length} games for {selectedWeek}
+                </p>
+              </div>
+            )}
           </>
         ) : (
           <div className="bg-surface rounded-xl p-6 text-center">
