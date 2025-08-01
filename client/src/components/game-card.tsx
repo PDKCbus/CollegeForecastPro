@@ -1,12 +1,13 @@
 import { GameWithTeams } from "@/lib/types";
 import { SentimentDisplay } from "./sentiment-display";
 import { TeamPerformanceIndicators, TeamComparisonIndicator } from "./team-performance-indicators";
+import { FanSentiment } from "./fan-sentiment";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
-import { Calendar, Clock, MapPin, MoreHorizontal, Twitter, TrendingUp, TrendingDown, BarChart3, Cloud, CloudRain, CloudSnow, Sun, Wind, Thermometer, Share2, Copy, Check } from "lucide-react";
+import { Calendar, Clock, MapPin, MoreHorizontal, Twitter, TrendingUp, TrendingDown, BarChart3, Cloud, CloudRain, CloudSnow, Sun, Wind, Thermometer, Share2, Copy, Check, Heart } from "lucide-react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { useState } from "react";
 import { Link } from "wouter";
@@ -447,8 +448,8 @@ export function GameCard({ game }: GameCardProps) {
                   }}
                   className="text-white hover:bg-surface-light cursor-pointer"
                 >
-                  <Twitter className="mr-2 h-4 w-4" />
-                  See what Twitter/X thinks
+                  <Heart className="mr-2 h-4 w-4" />
+                  Fan Sentiment & Reactions
                 </DropdownMenuItem>
                 <DropdownMenuItem 
                   onClick={() => setHeadToHeadDialogOpen(true)}
@@ -477,6 +478,16 @@ export function GameCard({ game }: GameCardProps) {
             </DropdownMenu>
           </div>
           
+          {/* Fan Sentiment Section */}
+          <div className="mb-3">
+            <FanSentiment 
+              gameId={game.id} 
+              homeTeam={game.homeTeam.abbreviation} 
+              awayTeam={game.awayTeam.abbreviation} 
+              compact={true} 
+            />
+          </div>
+
           {/* Rick's Pick Section */}
           {(() => {
             const ricksPick = getRicksPick();
@@ -651,7 +662,7 @@ export function GameCard({ game }: GameCardProps) {
                 <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-accent mx-auto mb-2"></div>
                 <div className="text-white/70">Loading historical matchups...</div>
               </div>
-            ) : headToHeadData && headToHeadData.games?.length > 0 ? (
+            ) : headToHeadData && Array.isArray(headToHeadData.games) && headToHeadData.games.length > 0 ? (
               <>
                 {/* Series Summary */}
                 <div className="bg-surface-light rounded-lg p-4">
@@ -660,7 +671,7 @@ export function GameCard({ game }: GameCardProps) {
                       {game.awayTeam.name} vs {game.homeTeam.name}
                     </div>
                     <div className="text-sm text-white/70">
-                      All-Time Series • {headToHeadData.totalGames} games since 2009
+                      All-Time Series • {headToHeadData.totalGames || 0} games since 2009
                     </div>
                   </div>
                   
@@ -673,7 +684,7 @@ export function GameCard({ game }: GameCardProps) {
                           className="w-12 h-12 object-contain"
                         />
                       </div>
-                      <div className="font-bold text-xl">{headToHeadData.awayTeamWins}</div>
+                      <div className="font-bold text-xl">{headToHeadData.awayTeamWins || 0}</div>
                       <div className="text-xs text-white/60">Wins</div>
                     </div>
                     <div className="text-center">
@@ -684,7 +695,7 @@ export function GameCard({ game }: GameCardProps) {
                           className="w-12 h-12 object-contain"
                         />
                       </div>
-                      <div className="font-bold text-xl">{headToHeadData.homeTeamWins}</div>
+                      <div className="font-bold text-xl">{headToHeadData.homeTeamWins || 0}</div>
                       <div className="text-xs text-white/60">Wins</div>
                     </div>
                   </div>
@@ -692,9 +703,9 @@ export function GameCard({ game }: GameCardProps) {
 
                 {/* Recent Games */}
                 <div>
-                  <div className="text-sm font-medium mb-3">Recent Matchups ({Math.min(headToHeadData.games.length, 10)} games)</div>
+                  <div className="text-sm font-medium mb-3">Recent Matchups ({Math.min(headToHeadData.games?.length || 0, 10)} games)</div>
                   <div className="space-y-2 max-h-64 overflow-y-auto">
-                    {headToHeadData.games.slice(0, 10).map((historicalGame: any, index: number) => (
+                    {(headToHeadData.games || []).slice(0, 10).map((historicalGame: any, index: number) => (
                       <div key={index} className="bg-surface-light rounded-lg p-3">
                         <div className="flex justify-between items-center">
                           <div className="text-sm text-white/70">
