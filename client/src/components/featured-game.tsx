@@ -142,8 +142,9 @@ export function FeaturedGame({ game }: FeaturedGameProps) {
 
         {/* Venue and Weather */}
         <div className="text-center mb-4">
-          <div className="text-white/60 text-sm mb-2">
-            📍 {game.venueName || 'Stadium TBD'}
+          <div className="text-white/60 text-sm mb-2 flex items-center justify-center gap-1">
+            <span>🏟️</span>
+            <span>{game.venueName || 'Stadium TBD'}</span>
           </div>
           <div className="flex items-center justify-center gap-4 text-sm">
             {game.isDome ? (
