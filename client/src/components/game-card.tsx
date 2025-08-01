@@ -494,15 +494,15 @@ export function GameCard({ game }: GameCardProps) {
             </DropdownMenu>
           </div>
           
-          {/* Fan Sentiment Section */}
-          <div className="mb-3">
+          {/* Fan Sentiment Section - Currently hidden but code preserved for future use */}
+          {/* <div className="mb-3">
             <FanSentiment 
               gameId={game.id} 
               homeTeam={game.homeTeam.abbreviation} 
               awayTeam={game.awayTeam.abbreviation} 
               compact={true} 
             />
-          </div>
+          </div> */}
 
           {/* Rick's Pick Section */}
           {(() => {
