@@ -135,13 +135,13 @@ export function FeaturedGame({ game }: FeaturedGameProps) {
                 </div>
               </div>
             )}
-            <div className="text-center p-3 bg-surface-light rounded-lg">
+            <div className="text-center p-3 bg-surface-light rounded-lg min-w-[80px] flex flex-col items-center">
               <div className="text-xs text-white/60 mb-1">SPREAD</div>
-              <div className="font-bold">{getSpreadDisplay()}</div>
+              <div className="font-bold text-center">{getSpreadDisplay()}</div>
             </div>
-            <div className="text-center p-3 bg-surface-light rounded-lg">
+            <div className="text-center p-3 bg-surface-light rounded-lg min-w-[80px] flex flex-col items-center">
               <div className="text-xs text-white/60 mb-1">O/U</div>
-              <div className="font-bold">{game.overUnder ? formatSpread(game.overUnder) : "N/A"}</div>
+              <div className="font-bold text-center">{game.overUnder ? formatSpread(game.overUnder) : "N/A"}</div>
             </div>
           </div>
         </div>
