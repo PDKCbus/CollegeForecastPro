@@ -1,6 +1,4 @@
 import { GameWithTeams } from "@/lib/types";
-import { TeamPerformanceIndicators } from "./team-performance-indicators";
-import { FanSentiment } from "./fan-sentiment";
 import { Link } from "wouter";
 import { useQuery } from "@tanstack/react-query";
 
@@ -42,78 +40,65 @@ export function FeaturedGame({ game }: FeaturedGameProps) {
 
   return (
     <div className="mb-8 bg-surface rounded-xl overflow-hidden shadow-lg animate-fade-in">
-      <div 
-        className="h-48 md:h-64 bg-cover bg-center relative" 
-        style={{ 
-          backgroundImage: "url('https://images.unsplash.com/photo-1566577739112-5180d4bf9390?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1526&q=80')" 
-        }}
-      >
-        <div className="absolute inset-0 bg-gradient-to-t from-surface to-transparent"></div>
-        <div className="absolute top-4 left-4 bg-primary text-white px-3 py-1 rounded-md font-medium text-sm">
-          GAME OF THE WEEK
+      {/* Game of the Week Header */}
+      <div className="bg-surface-light p-4 border-b border-surface-light">
+        <div className="flex items-center justify-center">
+          <div className="bg-primary text-white px-3 py-1 rounded-md font-medium text-sm">
+            GAME OF THE WEEK
+          </div>
         </div>
       </div>
       
       <div className="p-6">
-        <div className="flex flex-col md:flex-row justify-between items-center mb-4">
-          <div className="flex items-center space-x-4 mb-4 md:mb-0">
-            <div className="flex flex-col items-center">
-              <img 
-                src={game.awayTeam.logoUrl || ""}
-                alt={game.awayTeam.name} 
-                className="team-logo mb-2 w-[45px] h-[45px] object-contain" 
-              />
-              <div className="flex items-center gap-2">
-                <span className="font-bold text-lg">{game.awayTeam.name}</span>
-                <TeamPerformanceIndicators team={game.awayTeam} variant="compact" />
-              </div>
+        {/* Game Date/Time */}
+        <div className="text-center mb-4">
+          <div className="text-white/60 text-sm">
+            {formatDate(game.startDate)} • {formatTime(game.startDate)}
+          </div>
+        </div>
+
+        {/* Teams */}
+        <div className="flex items-center justify-between mb-6">
+          <div className="flex flex-col items-center flex-1">
+            <img 
+              src={game.awayTeam.logoUrl || ""}
+              alt={game.awayTeam.name} 
+              className="team-logo mb-2 w-[45px] h-[45px] object-contain" 
+            />
+            <div className="text-center">
+              <div className="font-bold text-lg">{game.awayTeam.name}</div>
               {game.awayTeam.rank ? (
-                <div className="text-accent font-bold">#{game.awayTeam.rank}</div>
-              ) : (
-                <div className="text-white/50 text-xs">Unranked</div>
-              )}
-            </div>
-            
-            <div className="flex flex-col items-center px-4">
-              <div className="text-lg font-medium mb-1">@</div>
-              <div className="text-xs text-white/60 mb-2">
-                {formatDate(game.startDate)}, {formatTime(game.startDate)}
-              </div>
-              {/* Weather Icon for Game of the Week */}
-              <div className="flex items-center text-xs">
-                {game.isDome ? (
-                  <>
-                    <span className="text-sm">🏟️</span>
-                    <span className="ml-1 text-white/60">Dome</span>
-                  </>
-                ) : game.temperature !== null ? (
-                  <>
-                    <span className="text-sm">☀️</span>
-                    <span className="ml-1 text-yellow-400">{Math.round(game.temperature)}°F</span>
-                  </>
-                ) : null}
-              </div>
-            </div>
-            
-            <div className="flex flex-col items-center">
-              <img 
-                src={game.homeTeam.logoUrl || ""}
-                alt={game.homeTeam.name} 
-                className="team-logo mb-2 w-[45px] h-[45px] object-contain" 
-              />
-              <div className="flex items-center gap-2">
-                <span className="font-bold text-lg">{game.homeTeam.name}</span>
-                <TeamPerformanceIndicators team={game.homeTeam} variant="compact" />
-              </div>
-              {game.homeTeam.rank ? (
-                <div className="text-accent font-bold">#{game.homeTeam.rank}</div>
+                <div className="text-accent font-bold text-sm">#{game.awayTeam.rank}</div>
               ) : (
                 <div className="text-white/50 text-xs">Unranked</div>
               )}
             </div>
           </div>
-          
-          <div className="flex flex-wrap gap-3">
+
+          <div className="flex-shrink-0 mx-4 text-center">
+            <div className="text-white/60 text-lg font-bold">@</div>
+          </div>
+
+          <div className="flex flex-col items-center flex-1">
+            <img 
+              src={game.homeTeam.logoUrl || ""}
+              alt={game.homeTeam.name} 
+              className="team-logo mb-2 w-[45px] h-[45px] object-contain" 
+            />
+            <div className="text-center">
+              <div className="font-bold text-lg">{game.homeTeam.name}</div>
+              {game.homeTeam.rank ? (
+                <div className="text-accent font-bold text-sm">#{game.homeTeam.rank}</div>
+              ) : (
+                <div className="text-white/50 text-xs">Unranked</div>
+              )}
+            </div>
+          </div>
+        </div>
+
+        {/* Predictions Row */}
+        <div className="flex items-center justify-center mb-6">
+          <div className="flex flex-wrap gap-3 justify-center">
             {game.prediction && (
               <div className="text-center p-3 bg-surface-light rounded-lg">
                 <div className="text-xs text-white/60 mb-1">RICK'S PICK</div>
@@ -136,43 +121,32 @@ export function FeaturedGame({ game }: FeaturedGameProps) {
                 </div>
               </div>
             )}
-            <div className="text-center p-3 bg-surface-light rounded-lg">
-              <div className="text-xs text-white/60 mb-1">SPREAD</div>
-              <div className="font-bold">{getSpreadDisplay()}</div>
-            </div>
-            <div className="text-center p-3 bg-surface-light rounded-lg">
-              <div className="text-xs text-white/60 mb-1">O/U</div>
-              <div className="font-bold">{game.overUnder ? formatSpread(game.overUnder) : "N/A"}</div>
-            </div>
           </div>
         </div>
-        
-        {/* Fan Sentiment Section - Currently hidden but code preserved for future use */}
-        {/* <div className="border-t border-surface-light pt-4 mb-4">
-          <FanSentiment 
-            gameId={game.id} 
-            homeTeam={game.homeTeam.abbreviation} 
-            awayTeam={game.awayTeam.abbreviation} 
-            compact={true} 
-          />
-        </div> */}
 
-        <div className="border-t border-surface-light pt-4 flex justify-between items-center">
-          <div className="text-white/80">
-            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-map-pin inline-block mr-1">
-              <path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z" />
-              <circle cx="12" cy="10" r="3" />
-            </svg>
-            {game.stadium}, {game.location}
+        {/* Betting Lines */}
+        <div className="flex items-center justify-center gap-4 mb-6">
+          <div className="text-center p-3 bg-surface-light rounded-lg flex-1">
+            <div className="text-xs text-white/60 mb-1">SPREAD</div>
+            <div className="font-bold">{getSpreadDisplay()}</div>
           </div>
+          <div className="text-center p-3 bg-surface-light rounded-lg flex-1">
+            <div className="text-xs text-white/60 mb-1">O/U</div>
+            <div className="font-bold">{game.overUnder ? formatSpread(game.overUnder) : "N/A"}</div>
+          </div>
+        </div>
+
+        {/* Venue */}
+        <div className="text-center text-white/60 text-sm mb-4">
+          📍 {game.venue}, {game.venueCity}
+        </div>
+
+        {/* Full Analysis Link */}
+        <div className="text-center">
           <Link href={`/game-analysis?game=${game.id}`}>
-            <button className="text-accent hover:text-accent/80 font-medium flex items-center space-x-1">
-              <span>Full Analysis</span>
-              <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-arrow-right">
-                <path d="M5 12h14" />
-                <path d="m12 5 7 7-7 7" />
-              </svg>
-            </button>
+            <span className="text-primary hover:text-primary/80 text-sm font-medium">
+              Full Analysis →
+            </span>
           </Link>
         </div>
       </div>
