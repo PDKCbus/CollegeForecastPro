@@ -37,9 +37,11 @@ Key tables include:
 ### Technical Implementations & Features
 - **Data Management**: Automated real-time and historical data synchronization from College Football Data API (2009-2024 seasons). Includes data cleaning and validation, with robust sync components (`comprehensive-data-sync.ts`, `raw-pg-storage.ts`).
 - **Analytics Engine**: Features an advanced prediction algorithm incorporating ELO ratings, weather analysis, travel distance penalties, and conference performance patterns. Includes natural language processing for Twitter sentiment.
+- **Statistical Player Analysis**: Python-based historical analysis of 18,645 games generates statistically-proven player impact coefficients. Elite QBs worth +5.7 points vs betting line (P < 0.000001), injury impact -8.8 points ATS penalty.
 - **User Interface**: Responsive design optimized for mobile and desktop, interactive charts, detailed game cards, and advanced filtering capabilities. Includes a "Game of the Week" feature and a comprehensive game analysis dashboard with predictive metrics.
 - **Prediction System**: Dual prediction system displays Rick's personal picks with a fallback to algorithmic predictions, clearly differentiated. Includes an admin panel for managing personal picks.
-- **Player & Injury Tracking**: Comprehensive system for collecting player data, tracking injuries, and analyzing player impact on game outcomes, integrated into the handicapping engine.
+- **Player & Injury Tracking**: Comprehensive system for collecting player data, tracking injuries, and analyzing player impact on game outcomes, integrated into the handicapping engine with historical statistical backing.
+- **Real-Time Handicapping Engine**: TypeScript implementation applies Python-derived coefficients to live player data, calculating QB vs Defense matchups, injury impacts, and position-specific value ratings.
 - **Betting Line System**: Automated three-tier betting line refresh schedule (Tuesday, Thursday, Saturday) to ensure predictions use the freshest data. Includes spread formatting to industry standards.
 - **Head-to-Head History**: Provides detailed historical matchup analysis between teams from the 15-year dataset.
 
