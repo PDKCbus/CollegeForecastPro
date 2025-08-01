@@ -143,7 +143,21 @@ export function FeaturedGame({ game }: FeaturedGameProps) {
         {/* Venue and Weather */}
         <div className="text-center mb-4">
           <div className="text-white/60 text-sm mb-2 flex items-center justify-center gap-1">
-            <span>🏟️</span>
+            {(() => {
+              // Check for international venues
+              const stadium = game.stadium || '';
+              if (stadium === 'Aviva Stadium') {
+                return <span>🇮🇪</span>; // Ireland flag
+              } else if (stadium === 'Wembley Stadium' || stadium === 'Tottenham Hotspur Stadium') {
+                return <span>🏴󠁧󠁢󠁥󠁮󠁧󠁿</span>; // England flag
+              } else if (stadium === 'Allianz Arena') {
+                return <span>🇩🇪</span>; // Germany flag
+              } else if (stadium === 'Estadio Azteca') {
+                return <span>🇲🇽</span>; // Mexico flag
+              } else {
+                return <span>🏟️</span>; // Default stadium emoji
+              }
+            })()}
             <span>{game.stadium || 'Stadium TBD'}</span>
           </div>
           <div className="flex items-center justify-center gap-4 text-sm">

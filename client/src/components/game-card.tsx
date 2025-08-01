@@ -366,7 +366,21 @@ export function GameCard({ game }: GameCardProps) {
         {/* Venue and Weather Info */}
         <div className="text-center mb-3">
           <div className="text-white/60 text-xs mb-1 flex items-center justify-center gap-1">
-            <span>🏟️</span>
+            {(() => {
+              // Check for international venues
+              const stadium = game.stadium || '';
+              if (stadium === 'Aviva Stadium') {
+                return <span>🇮🇪</span>; // Ireland flag
+              } else if (stadium === 'Wembley Stadium' || stadium === 'Tottenham Hotspur Stadium') {
+                return <span>🏴󠁧󠁢󠁥󠁮󠁧󠁿</span>; // England flag
+              } else if (stadium === 'Allianz Arena') {
+                return <span>🇩🇪</span>; // Germany flag
+              } else if (stadium === 'Estadio Azteca') {
+                return <span>🇲🇽</span>; // Mexico flag
+              } else {
+                return <span>🏟️</span>; // Default stadium emoji
+              }
+            })()}
             <span>{game.stadium || 'Stadium TBD'}</span>
           </div>
           {game.isDome && (
