@@ -336,7 +336,7 @@ export function GameCard({ game }: GameCardProps) {
 
   return (
     <div className="game-card bg-gray-800/30 border border-gray-700/50 rounded-xl p-4 transition-all hover:bg-gray-800/40">
-      <div className="bg-surface rounded-xl overflow-hidden shadow-lg">
+      <div className="bg-surface rounded-xl overflow-hidden shadow-lg relative">
         <div className="p-5">
           <div className="text-sm text-white/70 mb-2 flex justify-between items-center">
           <div>{formatDate(game.startDate)}</div>
@@ -396,7 +396,7 @@ export function GameCard({ game }: GameCardProps) {
             <TeamComparisonIndicator homeTeam={game.homeTeam} awayTeam={game.awayTeam} />
           </div>
           
-          <div className="flex justify-between mb-3">
+          <div className="flex justify-center mb-3">
             <div className="flex space-x-2">
               {(() => {
                 const ricksPickData = getRicksPickData();
@@ -429,6 +429,10 @@ export function GameCard({ game }: GameCardProps) {
                 );
               })()}
             </div>
+          </div>
+          
+          {/* Move dropdown to absolute position */}
+          <div className="absolute top-4 right-4">
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button variant="ghost" size="sm" className="text-white/70 hover:text-white h-8 w-8 p-0">
