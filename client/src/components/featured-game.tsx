@@ -109,7 +109,7 @@ export function FeaturedGame({ game }: FeaturedGameProps) {
           <div className="flex space-x-3">
             {game.prediction && (
               <div className="text-center p-3 bg-surface-light rounded-lg">
-                <div className="text-xs text-white/60 mb-1">RICKIE'S PICK</div>
+                <div className="text-xs text-white/60 mb-1">RICK'S PICK</div>
                 <div className="font-bold">
                   {game.prediction.predictedWinnerId === game.homeTeam.id 
                     ? game.homeTeam.name
