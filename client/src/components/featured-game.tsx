@@ -40,12 +40,16 @@ export function FeaturedGame({ game }: FeaturedGameProps) {
 
   return (
     <div className="mb-8 bg-surface rounded-xl overflow-hidden shadow-lg animate-fade-in">
-      {/* Game of the Week Header */}
-      <div className="bg-surface-light p-4 border-b border-surface-light">
-        <div className="flex items-center justify-center">
-          <div className="bg-primary text-white px-3 py-1 rounded-md font-medium text-sm">
-            GAME OF THE WEEK
-          </div>
+      {/* Football Background Header */}
+      <div 
+        className="h-48 md:h-64 bg-cover bg-center relative" 
+        style={{ 
+          backgroundImage: "url('https://images.unsplash.com/photo-1566577739112-5180d4bf9390?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1526&q=80')" 
+        }}
+      >
+        <div className="absolute inset-0 bg-gradient-to-t from-surface to-transparent"></div>
+        <div className="absolute top-4 left-4 bg-primary text-white px-3 py-1 rounded-md font-medium text-sm">
+          GAME OF THE WEEK
         </div>
       </div>
       
@@ -136,9 +140,35 @@ export function FeaturedGame({ game }: FeaturedGameProps) {
           </div>
         </div>
 
-        {/* Venue */}
-        <div className="text-center text-white/60 text-sm mb-4">
-          📍 {game.venue}, {game.venueCity}
+        {/* Venue and Weather */}
+        <div className="text-center mb-4">
+          <div className="text-white/60 text-sm mb-2">
+            📍 {game.venueName || 'Stadium TBD'}
+          </div>
+          <div className="flex items-center justify-center gap-4 text-sm">
+            {game.isDome ? (
+              <div className="flex items-center gap-1 text-white/60">
+                <span>🏟️</span>
+                <span>Dome</span>
+              </div>
+            ) : game.temperature !== null ? (
+              <div className="flex items-center gap-1 text-yellow-400">
+                <span>☀️</span>
+                <span>{Math.round(game.temperature)}°F</span>
+              </div>
+            ) : (
+              <div className="flex items-center gap-1 text-white/60">
+                <span>🌤️</span>
+                <span>Weather TBD</span>
+              </div>
+            )}
+            {game.windSpeed && (
+              <div className="flex items-center gap-1 text-white/60">
+                <span>💨</span>
+                <span>{game.windSpeed} mph</span>
+              </div>
+            )}
+          </div>
         </div>
 
         {/* Full Analysis Link */}
