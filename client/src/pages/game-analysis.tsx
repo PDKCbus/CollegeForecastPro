@@ -338,17 +338,17 @@ export default function GameAnalysis() {
           {/* Game Header */}
           <Card>
             <CardHeader>
-              <div className="flex items-center justify-between">
-                <div>
-                  <CardTitle className="text-2xl">
+              <div className="flex items-start justify-between gap-4">
+                <div className="flex-1 min-w-0">
+                  <CardTitle className="text-xl sm:text-2xl">
                     {selectedGame.awayTeam?.name} @ {selectedGame.homeTeam?.name}
                   </CardTitle>
                   <CardDescription>
                     Week {selectedGame.week} • {selectedGame.season} Season
                   </CardDescription>
                 </div>
-                <div className="text-right">
-                  <Badge className={getRiskColor(analysis.predictiveMetrics.riskLevel)}>
+                <div className="flex-shrink-0">
+                  <Badge className={`${getRiskColor(analysis.predictiveMetrics.riskLevel)} whitespace-nowrap px-3 py-1 text-sm`}>
                     {analysis.predictiveMetrics.riskLevel} Risk
                   </Badge>
                 </div>
