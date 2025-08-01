@@ -1,5 +1,6 @@
 import { GameWithTeams } from "@/lib/types";
 import { TeamPerformanceIndicators } from "./team-performance-indicators";
+import { FanSentiment } from "./fan-sentiment";
 import { Link } from "wouter";
 import { useQuery } from "@tanstack/react-query";
 
@@ -146,6 +147,16 @@ export function FeaturedGame({ game }: FeaturedGameProps) {
           </div>
         </div>
         
+        {/* Fan Sentiment Section */}
+        <div className="border-t border-surface-light pt-4 mb-4">
+          <FanSentiment 
+            gameId={game.id} 
+            homeTeam={game.homeTeam.abbreviation} 
+            awayTeam={game.awayTeam.abbreviation} 
+            compact={true} 
+          />
+        </div>
+
         <div className="border-t border-surface-light pt-4 flex justify-between items-center">
           <div className="text-white/80">
             <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-map-pin inline-block mr-1">
