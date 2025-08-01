@@ -396,43 +396,41 @@ export function GameCard({ game }: GameCardProps) {
             <TeamComparisonIndicator homeTeam={game.homeTeam} awayTeam={game.awayTeam} />
           </div>
           
-          <div className="flex justify-center mb-3">
-            <div className="flex space-x-2">
-              {(() => {
-                const ricksPickData = getRicksPickData();
-                const spreadBgColor = ricksPickData.hasSpreadPick ? 'bg-blue-600' : 'bg-surface-light';
-                const totalBgColor = ricksPickData.hasTotalPick ? 'bg-blue-600' : 'bg-surface-light';
-                
-                return (
-                  <>
-                    <div className={`text-center px-4 py-3 ${spreadBgColor} rounded min-w-[110px]`}>
-                      <div className="text-white/60 text-xs">SPREAD</div>
-                      <div className="font-bold text-white text-base">{getSpreadDisplay()}</div>
-                      {ricksPickData.hasSpreadPick && (
-                        <div className="text-xs mt-1">
-                          <span className="text-blue-200">Rick:</span>
-                          <span className="text-white/90"> {ricksPickData.spreadPick}</span>
-                        </div>
-                      )}
-                    </div>
-                    <div className={`text-center px-4 py-3 ${totalBgColor} rounded min-w-[110px]`}>
-                      <div className="text-white/60 text-xs">O/U</div>
-                      <div className="font-bold text-white text-base">{game.overUnder?.toFixed(1) || "N/A"}</div>
-                      {ricksPickData.hasTotalPick && (
-                        <div className="text-xs mt-1">
-                          <span className="text-blue-200">Rick:</span>
-                          <span className="text-white/90"> {ricksPickData.totalPick}</span>
-                        </div>
-                      )}
-                    </div>
-                  </>
-                );
-              })()}
+          <div className="flex justify-between mb-3">
+            <div className="flex justify-center flex-1">
+              <div className="flex space-x-2">
+                {(() => {
+                  const ricksPickData = getRicksPickData();
+                  const spreadBgColor = ricksPickData.hasSpreadPick ? 'bg-blue-600' : 'bg-surface-light';
+                  const totalBgColor = ricksPickData.hasTotalPick ? 'bg-blue-600' : 'bg-surface-light';
+                  
+                  return (
+                    <>
+                      <div className={`text-center px-4 py-3 ${spreadBgColor} rounded min-w-[110px]`}>
+                        <div className="text-white/60 text-xs">SPREAD</div>
+                        <div className="font-bold text-white text-base">{getSpreadDisplay()}</div>
+                        {ricksPickData.hasSpreadPick && (
+                          <div className="text-xs mt-1">
+                            <span className="text-blue-200">Rick:</span>
+                            <span className="text-white/90"> {ricksPickData.spreadPick}</span>
+                          </div>
+                        )}
+                      </div>
+                      <div className={`text-center px-4 py-3 ${totalBgColor} rounded min-w-[110px]`}>
+                        <div className="text-white/60 text-xs">O/U</div>
+                        <div className="font-bold text-white text-base">{game.overUnder?.toFixed(1) || "N/A"}</div>
+                        {ricksPickData.hasTotalPick && (
+                          <div className="text-xs mt-1">
+                            <span className="text-blue-200">Rick:</span>
+                            <span className="text-white/90"> {ricksPickData.totalPick}</span>
+                          </div>
+                        )}
+                      </div>
+                    </>
+                  );
+                })()}
+              </div>
             </div>
-          </div>
-          
-          {/* Move dropdown to absolute position */}
-          <div className="absolute top-4 right-4">
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button variant="ghost" size="sm" className="text-white/70 hover:text-white h-8 w-8 p-0">
