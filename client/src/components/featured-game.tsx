@@ -160,6 +160,26 @@ export function FeaturedGame({ game }: FeaturedGameProps) {
             })()}
             <span>{game.stadium || 'Stadium TBD'}</span>
           </div>
+          {(() => {
+            // Show location information
+            const stadium = game.stadium || '';
+            const location = game.location || '';
+            
+            // For international venues, show city and country
+            if (stadium === 'Aviva Stadium') {
+              return <div className="text-white/50 text-sm mb-2">Dublin, Ireland</div>;
+            } else if (stadium === 'Wembley Stadium' || stadium === 'Tottenham Hotspur Stadium') {
+              return <div className="text-white/50 text-sm mb-2">London, England</div>;
+            } else if (stadium === 'Allianz Arena') {
+              return <div className="text-white/50 text-sm mb-2">Munich, Germany</div>;
+            } else if (stadium === 'Estadio Azteca') {
+              return <div className="text-white/50 text-sm mb-2">Mexico City, Mexico</div>;
+            } else if (location && location !== stadium && location !== 'TBD') {
+              // Show location if it's different from stadium name and not TBD
+              return <div className="text-white/50 text-sm mb-2">{location}</div>;
+            }
+            return null;
+          })()}
           <div className="flex items-center justify-center gap-4 text-sm">
             {game.isDome ? (
               <div className="flex items-center gap-1 text-white/60">

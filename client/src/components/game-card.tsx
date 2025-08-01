@@ -383,9 +383,28 @@ export function GameCard({ game }: GameCardProps) {
             })()}
             <span>{game.stadium || 'Stadium TBD'}</span>
           </div>
-          {game.isDome && (
-            <div className="text-white/50 text-xs">Indoor • Climate Controlled</div>
-          )}
+          {(() => {
+            // Show location information
+            const stadium = game.stadium || '';
+            const location = game.location || '';
+            
+            // For international venues, show city and country
+            if (stadium === 'Aviva Stadium') {
+              return <div className="text-white/50 text-xs">Dublin, Ireland</div>;
+            } else if (stadium === 'Wembley Stadium' || stadium === 'Tottenham Hotspur Stadium') {
+              return <div className="text-white/50 text-xs">London, England</div>;
+            } else if (stadium === 'Allianz Arena') {
+              return <div className="text-white/50 text-xs">Munich, Germany</div>;
+            } else if (stadium === 'Estadio Azteca') {
+              return <div className="text-white/50 text-xs">Mexico City, Mexico</div>;
+            } else if (location && location !== stadium && location !== 'TBD') {
+              // Show location if it's different from stadium name and not TBD
+              return <div className="text-white/50 text-xs">{location}</div>;
+            } else if (game.isDome) {
+              return <div className="text-white/50 text-xs">Indoor • Climate Controlled</div>;
+            }
+            return null;
+          })()}
         </div>
         
         <div className="flex justify-between items-center">
