@@ -2,6 +2,7 @@ import { GameWithTeams } from "@/lib/types";
 import { SentimentDisplay } from "./sentiment-display";
 import { TeamPerformanceIndicators, TeamComparisonIndicator } from "./team-performance-indicators";
 import { FanSentiment } from "./fan-sentiment";
+import { SpreadExplainerTooltip } from "./spread-explainer-tooltip";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -468,7 +469,18 @@ export function GameCard({ game }: GameCardProps) {
                   return (
                     <>
                       <div className={`text-center px-4 py-3 ${spreadBgColor} rounded min-w-[110px]`}>
-                        <div className="text-white/60 text-xs">SPREAD</div>
+                        <div className="text-white/60 text-xs flex items-center justify-center gap-1">
+                          SPREAD
+                          <SpreadExplainerTooltip 
+                            spread={game.spread}
+                            homeTeam={game.homeTeam.name}
+                            awayTeam={game.awayTeam.name}
+                            homeScore={game.homeTeamScore}
+                            awayScore={game.awayTeamScore}
+                            isCompleted={game.completed}
+                            className="ml-1"
+                          />
+                        </div>
                         <div className="font-bold text-white text-base">{getSpreadDisplay()}</div>
                         {ricksPickData.hasSpreadPick && (
                           <div className="text-xs mt-1">
@@ -793,20 +805,33 @@ export function GameCard({ game }: GameCardProps) {
                         
                         {historicalGame.spread && (
                           <div className="text-xs text-white/60 mt-1 text-center">
-                            Spread: {Math.abs(historicalGame.spread)} 
+                            <div className="flex items-center justify-center gap-1">
+                              Spread: {Math.abs(historicalGame.spread)}
+                              <SpreadExplainerTooltip 
+                                spread={historicalGame.spread}
+                                homeTeam={historicalGame.homeTeamName}
+                                awayTeam={historicalGame.awayTeamName}
+                                homeScore={historicalGame.homeTeamScore}
+                                awayScore={historicalGame.awayTeamScore}
+                                isCompleted={true}
+                                className="ml-1"
+                              />
+                            </div>
                             {historicalGame.spreadResult && (
-                              <span className={`ml-2 px-1 rounded ${
-                                historicalGame.spreadResult === 'covered' ? 'bg-green-600' : 
-                                historicalGame.spreadResult === 'push' ? 'bg-yellow-600' : 'bg-red-600'
-                              }`}>
-                                {historicalGame.spreadResult === 'push' ? 'PUSH' : 
-                                 historicalGame.spreadResult === 'covered' ? 'COVERED' : 'NOT COVERED'}
-                                {historicalGame.favoriteTeam && historicalGame.spreadResult !== 'push' && (
-                                  <span className="ml-1 text-xs opacity-75">
-                                    ({historicalGame.favoriteTeam === 'home' ? historicalGame.homeTeamName : historicalGame.awayTeamName} favored)
-                                  </span>
-                                )}
-                              </span>
+                              <div className="mt-1">
+                                <span className={`px-1 rounded ${
+                                  historicalGame.spreadResult === 'covered' ? 'bg-green-600' : 
+                                  historicalGame.spreadResult === 'push' ? 'bg-yellow-600' : 'bg-red-600'
+                                }`}>
+                                  {historicalGame.spreadResult === 'push' ? 'PUSH' : 
+                                   historicalGame.spreadResult === 'covered' ? 'COVERED' : 'NOT COVERED'}
+                                  {historicalGame.favoriteTeam && historicalGame.spreadResult !== 'push' && (
+                                    <span className="ml-1 text-xs opacity-75">
+                                      ({historicalGame.favoriteTeam === 'home' ? historicalGame.homeTeamName : historicalGame.awayTeamName} favored)
+                                    </span>
+                                  )}
+                                </span>
+                              </div>
                             )}
                           </div>
                         )}
