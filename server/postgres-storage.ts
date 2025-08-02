@@ -90,50 +90,31 @@ export class PostgresStorage implements IStorage {
         eq(games.completed, false)
       ))
       .orderBy(asc(games.startDate))
-      .limit(limit * 2) // Get extra to handle deduplication
+      .limit(limit)
       .offset(offset);
 
+    // Optimized: get all teams in one query
+    const teamIds = gameResults.flatMap(game => [game.homeTeamId, game.awayTeamId]);
+    const uniqueTeamIds = [...new Set(teamIds)];
+    const allTeams = await db.select()
+      .from(teams)
+      .where(sql`${teams.id} = ANY(${uniqueTeamIds})`);
+    
+    const teamMap = new Map(allTeams.map(team => [team.id, team]));
+
     const gamesWithTeams: GameWithTeams[] = [];
-    const seenMatchups = new Set<string>();
     
     for (const game of gameResults) {
-      // ANTI-DUPLICATE PROTECTION: Create unique matchup key
-      const matchupKey = `${game.homeTeamId}-${game.awayTeamId}-${game.startDate?.toISOString()}`;
-      
-      if (seenMatchups.has(matchupKey)) {
-        continue; // Skip duplicate games silently
-      }
-      seenMatchups.add(matchupKey);
-      
-      const homeTeam = await this.getTeam(game.homeTeamId);
-      const awayTeam = await this.getTeam(game.awayTeamId);
-      const predictions = await this.getPredictionsByGame(game.id);
-
-      // Get Rick's picks for this game
-      let ricksPicks = [];
-      try {
-        const picks = await db
-          .select()
-          .from(ricksPicks)
-          .where(eq(ricksPicks.gameId, game.id));
-        ricksPicks = picks;
-      } catch (error) {
-        // No picks found, continue
-      }
+      const homeTeam = teamMap.get(game.homeTeamId);
+      const awayTeam = teamMap.get(game.awayTeamId);
 
       if (homeTeam && awayTeam) {
         gamesWithTeams.push({
           ...game,
           homeTeam,
           awayTeam,
-          prediction: predictions[0] || undefined,
-          ricksPicks: ricksPicks
+          prediction: undefined
         });
-        
-        // Stop once we have enough unique games
-        if (gamesWithTeams.length >= limit) {
-          break;
-        }
       }
     }
 
@@ -155,18 +136,26 @@ export class PostgresStorage implements IStorage {
       ))
       .orderBy(asc(games.startDate));
 
+    // Optimized: get all teams in one query
+    const teamIds = gameResults.flatMap(game => [game.homeTeamId, game.awayTeamId]);
+    const uniqueTeamIds = [...new Set(teamIds)];
+    const allTeams = await db.select()
+      .from(teams)
+      .where(sql`${teams.id} = ANY(${uniqueTeamIds})`);
+    
+    const teamMap = new Map(allTeams.map(team => [team.id, team]));
+
     const gamesWithTeams: GameWithTeams[] = [];
     for (const game of gameResults) {
-      const homeTeam = await this.getTeam(game.homeTeamId);
-      const awayTeam = await this.getTeam(game.awayTeamId);
-      const predictions = await this.getPredictionsByGame(game.id);
+      const homeTeam = teamMap.get(game.homeTeamId);
+      const awayTeam = teamMap.get(game.awayTeamId);
 
       if (homeTeam && awayTeam) {
         gamesWithTeams.push({
           ...game,
           homeTeam,
           awayTeam,
-          prediction: predictions[0] || undefined
+          prediction: undefined
         });
       }
     }
@@ -174,7 +163,6 @@ export class PostgresStorage implements IStorage {
     // Sort by highest ranking (lowest ranking number = higher rank)
     return gamesWithTeams.sort((a, b) => {
       const aHighestRank = Math.min(a.homeTeam.rank || 999, a.awayTeam.rank || 999);
-      const bHighestRank = Math.min(b.homeTeam.rank || 999, b.awayTeam.rank || 999);
       return aHighestRank - bHighestRank;
     });
   }
