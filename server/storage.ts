@@ -2,7 +2,10 @@ import {
   users, 
   teams, 
   games, 
-  predictions, 
+  predictions,
+  sentimentAnalysis,
+  ricksPicks,
+  adminUsers,
   type User, 
   type InsertUser, 
   type Team, 
@@ -10,7 +13,13 @@ import {
   type Game, 
   type InsertGame, 
   type Prediction, 
-  type InsertPrediction, 
+  type InsertPrediction,
+  type SentimentAnalysis,
+  type InsertSentimentAnalysis,
+  type RicksPick,
+  type InsertRicksPick,
+  type AdminUser,
+  type InsertAdminUser,
   type GameWithTeams
 } from "@shared/schema";
 
@@ -35,9 +44,11 @@ export interface IStorage {
   getHistoricalGames(
     season?: number, 
     week?: number, 
-    teamId?: number, 
-    conference?: string
+    limit?: number,
+    offset?: number
   ): Promise<GameWithTeams[]>;
+  getHistoricalGamesCount(season?: number, week?: number): Promise<number>;
+  getGamesByWeek(season: number, week: number): Promise<GameWithTeams[]>;
   createGame(game: InsertGame): Promise<Game>;
   updateGame(id: number, game: Partial<Game>): Promise<Game | undefined>;
   
@@ -46,6 +57,44 @@ export interface IStorage {
   getPredictionsByGame(gameId: number): Promise<Prediction[]>;
   createPrediction(prediction: InsertPrediction): Promise<Prediction>;
   updatePrediction(id: number, prediction: Partial<Prediction>): Promise<Prediction | undefined>;
+  
+  // Sentiment Analysis operations
+  getSentimentAnalysis(id: number): Promise<SentimentAnalysis | undefined>;
+  getSentimentByGame(gameId: number): Promise<SentimentAnalysis[]>;
+  getSentimentByTeam(teamId: number): Promise<SentimentAnalysis[]>;
+  createSentimentAnalysis(sentiment: InsertSentimentAnalysis): Promise<SentimentAnalysis>;
+  updateSentimentAnalysis(id: number, sentiment: Partial<SentimentAnalysis>): Promise<SentimentAnalysis | undefined>;
+  
+  // Rick's Picks operations
+  getRicksPick(gameId: number): Promise<RicksPick | undefined>;
+  getRicksPicksByWeek(season: number, week: number): Promise<RicksPick[]>;
+  createRicksPick(pick: InsertRicksPick): Promise<RicksPick>;
+  updateRicksPick(gameId: number, pick: Partial<RicksPick>): Promise<RicksPick | undefined>;
+  deleteRicksPick(gameId: number): Promise<boolean>;
+  lockRicksPick(gameId: number): Promise<boolean>;
+  
+  // Admin User operations
+  getAdminUser(username: string): Promise<AdminUser | undefined>;
+  createAdminUser(adminUser: InsertAdminUser): Promise<AdminUser>;
+  updateAdminUserLastLogin(username: string): Promise<boolean>;
+
+  // Player operations
+  getTeamPlayers(teamId: number): Promise<any[]>;
+  getPlayerById(playerId: number): Promise<any>;
+  getPlayerStats(playerId: number, season?: number): Promise<any[]>;
+  collectTeamRoster(teamName: string, season?: number): Promise<void>;
+  getPlayerImpactAnalysis(playerId: number): Promise<any>;
+
+  // Injury operations  
+  getTeamInjuryReport(teamId: number): Promise<any[]>;
+  addInjuryReport(injuryData: any): Promise<void>;
+  updateInjuryStatus(injuryId: number, status: string, severity?: string): Promise<void>;
+  calculateTeamInjuryImpact(teamId: number): Promise<any>;
+
+  // Handicapping operations
+  getHandicappingAnalysis(gameId: number): Promise<any>;
+  getKeyPlayerMatchups(gameId: number): Promise<any[]>;
+  calculateGameInjuryImpact(gameId: number): Promise<any>;
 }
 
 export class MemStorage implements IStorage {
@@ -53,20 +102,24 @@ export class MemStorage implements IStorage {
   private teams: Map<number, Team>;
   private games: Map<number, Game>;
   private predictions: Map<number, Prediction>;
+  private sentiments: Map<number, SentimentAnalysis>;
   private userCurrentId: number;
   private teamCurrentId: number;
   private gameCurrentId: number;
   private predictionCurrentId: number;
+  private sentimentCurrentId: number;
 
   constructor() {
     this.users = new Map();
     this.teams = new Map();
     this.games = new Map();
     this.predictions = new Map();
+    this.sentiments = new Map();
     this.userCurrentId = 1;
     this.teamCurrentId = 1;
     this.gameCurrentId = 1;
     this.predictionCurrentId = 1;
+    this.sentimentCurrentId = 1;
     
     // Initialize with some sample teams
     this.initializeTeams();
@@ -151,7 +204,11 @@ export class MemStorage implements IStorage {
   async getUpcomingGames(limit = 10, offset = 0): Promise<GameWithTeams[]> {
     const now = new Date();
     const upcomingGames = Array.from(this.games.values())
-      .filter(game => new Date(game.startDate) > now && !game.completed)
+      .filter(game => 
+        new Date(game.startDate) > now && 
+        !game.completed &&
+        (game.spread !== null || game.overUnder !== null)
+      )
       .sort((a, b) => new Date(a.startDate).getTime() - new Date(b.startDate).getTime());
     
     const paginatedGames = upcomingGames.slice(offset, offset + limit);
@@ -183,7 +240,10 @@ export class MemStorage implements IStorage {
     conference?: string
   ): Promise<GameWithTeams[]> {
     let historicalGames = Array.from(this.games.values())
-      .filter(game => game.completed);
+      .filter(game => 
+        game.completed &&
+        (game.spread !== null || game.overUnder !== null)
+      );
     
     if (season) {
       historicalGames = historicalGames.filter(game => game.season === season);
@@ -270,6 +330,74 @@ export class MemStorage implements IStorage {
     const updatedPrediction = { ...existingPrediction, ...predictionUpdate };
     this.predictions.set(id, updatedPrediction);
     return updatedPrediction;
+  }
+
+  // Sentiment Analysis operations
+  async getSentimentAnalysis(id: number): Promise<SentimentAnalysis | undefined> {
+    return this.sentiments.get(id);
+  }
+
+  async getSentimentByGame(gameId: number): Promise<SentimentAnalysis[]> {
+    return Array.from(this.sentiments.values()).filter(sentiment => sentiment.gameId === gameId);
+  }
+
+  async getSentimentByTeam(teamId: number): Promise<SentimentAnalysis[]> {
+    return Array.from(this.sentiments.values()).filter(sentiment => sentiment.teamId === teamId);
+  }
+
+  async createSentimentAnalysis(insertSentiment: InsertSentimentAnalysis): Promise<SentimentAnalysis> {
+    const id = this.sentimentCurrentId++;
+    const sentiment: SentimentAnalysis = { 
+      ...insertSentiment, 
+      id,
+      lastUpdated: new Date()
+    };
+    this.sentiments.set(id, sentiment);
+    return sentiment;
+  }
+
+  async updateSentimentAnalysis(id: number, sentimentUpdate: Partial<SentimentAnalysis>): Promise<SentimentAnalysis | undefined> {
+    const existingSentiment = this.sentiments.get(id);
+    if (!existingSentiment) return undefined;
+    
+    const updatedSentiment = { 
+      ...existingSentiment, 
+      ...sentimentUpdate,
+      lastUpdated: new Date()
+    };
+    this.sentiments.set(id, updatedSentiment);
+    return updatedSentiment;
+  }
+
+  // Missing method needed for week filtering
+  async getGamesByWeek(season: number, week: number): Promise<GameWithTeams[]> {
+    const gamesInWeek = Array.from(this.games.values())
+      .filter(game => game.season === season && game.week === week && !game.completed)
+      .sort((a, b) => {
+        // Sort by game date
+        const dateA = new Date(a.startDate);
+        const dateB = new Date(b.startDate);
+        return dateA.getTime() - dateB.getTime();
+      });
+    
+    return Promise.all(gamesInWeek.map(async game => {
+      const homeTeam = await this.getTeam(game.homeTeamId);
+      const awayTeam = await this.getTeam(game.awayTeamId);
+      
+      if (!homeTeam || !awayTeam) {
+        throw new Error(`Missing team data for game ${game.id}`);
+      }
+      
+      const predictions = Array.from(this.predictions.values())
+        .filter(p => p.gameId === game.id);
+      
+      return {
+        ...game,
+        homeTeam,
+        awayTeam,
+        prediction: predictions.length > 0 ? predictions[0] : undefined
+      };
+    }));
   }
 
   // Helper methods to initialize sample data
@@ -747,6 +875,33 @@ export class MemStorage implements IStorage {
       notes: "Michigan's defense gives them the edge in this classic rivalry matchup."
     });
   }
+
+  async getGamesByWeek(season: number, week: number): Promise<GameWithTeams[]> {
+    const gamesForWeek = Array.from(this.games.values())
+      .filter(game => game.season === season && game.week === week);
+    
+    return Promise.all(gamesForWeek.map(async game => {
+      const homeTeam = await this.getTeam(game.homeTeamId);
+      const awayTeam = await this.getTeam(game.awayTeamId);
+      
+      if (!homeTeam || !awayTeam) {
+        throw new Error(`Missing team data for game ${game.id}`);
+      }
+      
+      const predictions = Array.from(this.predictions.values())
+        .filter(p => p.gameId === game.id);
+      
+      return {
+        ...game,
+        homeTeam,
+        awayTeam,
+        prediction: predictions.length > 0 ? predictions[0] : undefined
+      };
+    }));
+  }
 }
 
-export const storage = new MemStorage();
+import { PostgresStorage } from './postgres-storage';
+
+// Use PostgreSQL storage for persistent data
+export const storage = new PostgresStorage();

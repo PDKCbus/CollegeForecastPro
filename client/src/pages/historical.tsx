@@ -1,40 +1,65 @@
 import { useQuery, useMutation } from "@tanstack/react-query";
-import { GameCard } from "@/components/game-card";
+import { ImprovedHistoricalGameCard } from "@/components/improved-historical-game-card";
 import { FilterBar } from "@/components/filter-bar";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import React from "react";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 
-interface RickRecord {
-  spread: {
-    wins: number;
-    losses: number;
-    total: number;
-    percentage: number;
-  };
-  overUnder: {
-    wins: number;
-    losses: number;
-    total: number;
-    percentage: number;
-  };
-  totalGames: number;
-}
+
 
 export default function Historical() {
-  const [selectedWeek, setSelectedWeek] = useState("all");
+  const [selectedWeek, setSelectedWeek] = useState("all"); // Show all weeks by default
   const [selectedFilter, setSelectedFilter] = useState("all");
-  const [selectedSeason, setSelectedSeason] = useState("all");
+  const [selectedSeason, setSelectedSeason] = useState("all"); // Show all seasons by default
   const [selectedConference, setSelectedConference] = useState("all");
+  const [currentPage, setCurrentPage] = useState(0);
 
-  const { data: games = [], isLoading } = useQuery({
-    queryKey: ["/api/games/historical"],
+  // Reset pagination when filters change
+  const resetPage = () => setCurrentPage(0);
+
+  const { data: historicalData, isLoading, error } = useQuery({
+    queryKey: ["/api/games/historical", selectedSeason, selectedWeek, currentPage],
+    queryFn: async () => {
+      const params = new URLSearchParams({
+        page: currentPage.toString(),
+        limit: "20"
+      });
+      
+      params.append("season", selectedSeason);
+      params.append("week", selectedWeek);
+      
+      console.log(`Fetching historical games: ${params.toString()}`);
+      const response = await fetch(`/api/games/historical?${params}`);
+      if (!response.ok) throw new Error('Failed to fetch historical games');
+      const data = await response.json();
+      console.log(`Historical API returned ${data.games?.length || 0} games, total: ${data.pagination?.total || 0}`);
+      return data;
+    }
   });
 
-  const { data: rickRecord, isLoading: recordLoading } = useQuery<RickRecord>({
-    queryKey: ["/api/ricks-record"],
-  });
+  // Reset page when filters change
+  React.useEffect(() => {
+    setCurrentPage(0);
+  }, [selectedSeason, selectedWeek, selectedFilter, selectedConference]);
+
+  const games = historicalData?.games || [];
+  const pagination = historicalData?.pagination;
+
+  // Debug logging
+  React.useEffect(() => {
+    console.log(`Historical page state:`, {
+      selectedSeason,
+      selectedWeek,
+      gamesCount: games.length,
+      paginationTotal: pagination?.total,
+      isLoading,
+      error: error?.message
+    });
+  }, [games.length, pagination?.total, isLoading, error, selectedSeason, selectedWeek]);
+
+
 
   const syncHistoricalMutation = useMutation({
     mutationFn: () => 
@@ -46,9 +71,11 @@ export default function Historical() {
     },
   });
 
-  // Generate options for filters
+
+
+  // Generate options for filters - ALL 15 years of data
   const weeks = ["all", ...Array.from({ length: 15 }, (_, i) => `${i + 1}`)];
-  const seasons = ["all", "2024", "2023", "2022", "2021", "2020", "2019", "2018", "2017", "2016", "2015"];
+  const seasons = ["all", ...Array.from({ length: 16 }, (_, i) => `${2024 - i}`)]; // 2024 down to 2009
   const conferences = ["all", "SEC", "Big Ten", "Big 12", "ACC", "PAC-12", "Independent"];
 
   const filterOptions = [
@@ -58,13 +85,12 @@ export default function Historical() {
     { label: "Top 25", value: "ranked", isActive: selectedFilter === "ranked" },
   ];
 
+  // Apply only basic filters since API already handles season/week filtering
   const filteredGames = Array.isArray(games) ? games.filter((game: any) => {
-    if (selectedWeek !== "all" && game.week?.toString() !== selectedWeek) return false;
-    if (selectedSeason !== "all" && game.season?.toString() !== selectedSeason) return false;
-    if (selectedConference !== "all" && game.homeTeam?.conference !== selectedConference && game.awayTeam?.conference !== selectedConference) return false;
-    if (selectedFilter === "conference" && !game.isConferenceGame) return false;
-    if (selectedFilter === "rivalry" && !game.isRivalryGame) return false;
-    if (selectedFilter === "ranked" && !game.homeTeam?.rank && !game.awayTeam?.rank) return false;
+    // Season and week filtering is now handled by the API, but we keep this for client-side consistency
+    if (selectedFilter === "ranked" && (!game.homeTeam?.rank && !game.awayTeam?.rank)) return false;
+    // Note: Conference games and rivalry games require additional data that we don't currently have
+    // For now, we'll show all games and can enhance filtering later
     return true;
   }) : [];
 
@@ -82,62 +108,23 @@ export default function Historical() {
     <div className="max-w-6xl mx-auto p-6">
       <div className="mb-8">
         <h1 className="text-3xl font-bold text-white mb-2">Historical Games</h1>
-        <p className="text-white/70">Review past games and Rick's prediction performance</p>
-      </div>
-
-      {/* Rick's Overall Record */}
-      <div className="mb-8 bg-surface-light rounded-lg p-6">
-        <div className="flex items-center justify-between mb-4">
-          <h2 className="text-xl font-bold text-white">Rick's Overall Record</h2>
-          <Button
-            onClick={() => syncHistoricalMutation.mutate()}
-            disabled={syncHistoricalMutation.isPending}
-            variant="outline"
-            size="sm"
-          >
-            {syncHistoricalMutation.isPending ? "Loading..." : "Load Historical Data"}
-          </Button>
-        </div>
-        
-        {recordLoading ? (
-          <div className="text-white/60">Loading record...</div>
-        ) : rickRecord ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div className="bg-surface rounded-lg p-4">
-              <h3 className="text-lg font-semibold text-white mb-2">Against the Spread</h3>
-              <div className="flex items-center justify-between">
-                <div className="text-2xl font-bold text-accent">
-                  {rickRecord.spread.percentage}%
-                </div>
-                <div className="text-white/70">
-                  {rickRecord.spread.wins}-{rickRecord.spread.losses} ({rickRecord.spread.total} total)
-                </div>
-              </div>
-            </div>
-            
-            <div className="bg-surface rounded-lg p-4">
-              <h3 className="text-lg font-semibold text-white mb-2">Over/Under</h3>
-              <div className="flex items-center justify-between">
-                <div className="text-2xl font-bold text-accent">
-                  {rickRecord.overUnder.percentage}%
-                </div>
-                <div className="text-white/70">
-                  {rickRecord.overUnder.wins}-{rickRecord.overUnder.losses} ({rickRecord.overUnder.total} total)
-                </div>
-              </div>
-            </div>
+        <p className="text-white/70">Review past games with actual results vs Vegas spreads</p>
+        {historicalData?.filters && (
+          <div className="mt-2 text-sm text-white/60">
+            Showing {historicalData.filters.season} Season, Week {historicalData.filters.week}
+            {pagination && ` • ${pagination.total} games found`}
           </div>
-        ) : (
-          <div className="text-white/60">No historical data available. Click "Load Historical Data" to get started.</div>
         )}
       </div>
+
+
 
       {/* Filter Controls */}
       <div className="mb-6 bg-surface-light rounded-lg p-6">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
           <div>
             <label className="block text-white/70 text-sm mb-2">Season</label>
-            <Select value={selectedSeason} onValueChange={setSelectedSeason}>
+            <Select value={selectedSeason} onValueChange={(value) => { setSelectedSeason(value); setCurrentPage(0); }}>
               <SelectTrigger className="w-full bg-surface text-white">
                 <SelectValue placeholder="All Seasons" />
               </SelectTrigger>
@@ -169,7 +156,7 @@ export default function Historical() {
           
           <div>
             <label className="block text-white/70 text-sm mb-2">Week</label>
-            <Select value={selectedWeek} onValueChange={setSelectedWeek}>
+            <Select value={selectedWeek} onValueChange={(value) => { setSelectedWeek(value); setCurrentPage(0); }}>
               <SelectTrigger className="w-full bg-surface text-white">
                 <SelectValue placeholder="All Weeks" />
               </SelectTrigger>
@@ -205,14 +192,39 @@ export default function Historical() {
         {filteredGames.length === 0 ? (
           <div className="text-center py-12">
             <div className="text-white/60 text-lg mb-2">No historical games found</div>
-            <div className="text-white/40">Try adjusting your filters or loading historical data</div>
+            <div className="text-white/40">Try adjusting your filters to see completed games</div>
           </div>
         ) : (
           filteredGames.map((game: any) => (
-            <GameCard key={game.id} game={game} />
+            <ImprovedHistoricalGameCard key={game.id} game={game} />
           ))
         )}
       </div>
+
+      {/* Pagination Controls */}
+      {pagination && pagination.total > pagination.limit && (
+        <div className="flex justify-center mt-8 space-x-4">
+          <Button
+            onClick={() => setCurrentPage(Math.max(0, currentPage - 1))}
+            disabled={currentPage === 0}
+            variant="outline"
+            className="bg-surface text-white border-surface-light"
+          >
+            Previous
+          </Button>
+          <span className="flex items-center text-white/70">
+            Page {currentPage + 1} of {Math.ceil(pagination.total / pagination.limit)}
+          </span>
+          <Button
+            onClick={() => setCurrentPage(currentPage + 1)}
+            disabled={!pagination.hasMore}
+            variant="outline"
+            className="bg-surface text-white border-surface-light"
+          >
+            Next
+          </Button>
+        </div>
+      )}
     </div>
   );
 }
