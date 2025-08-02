@@ -46,6 +46,12 @@ Key tables include:
 - **Head-to-Head History**: Provides detailed historical matchup analysis between teams from the 15-year dataset.
 - **International Game Support**: Automatic detection and flag display for games played outside the USA, including proper venue information for international locations like Ireland, England, Germany, and Mexico.
 
+### Database Performance Optimization (January 2025)
+- **Critical Performance Fix**: Resolved N+1 database query issue that caused 109+ second API response times
+- **Query Optimization**: Implemented efficient batch team lookups using OR clauses instead of individual queries  
+- **Database Cleanup**: Eliminated massive duplication issue (317 duplicate games reduced to 17 unique matchups)
+- **Result**: API response times improved from 109+ seconds to under 0.3 seconds
+
 ## External Dependencies
 
 ### APIs
