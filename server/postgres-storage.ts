@@ -93,12 +93,17 @@ export class PostgresStorage implements IStorage {
       .limit(limit)
       .offset(offset);
 
-    // Optimized: get all teams in one query
+    // Optimized: get all teams in one query using IN clause
     const teamIds = gameResults.flatMap(game => [game.homeTeamId, game.awayTeamId]);
     const uniqueTeamIds = [...new Set(teamIds)];
+    
+    if (uniqueTeamIds.length === 0) {
+      return [];
+    }
+    
     const allTeams = await db.select()
       .from(teams)
-      .where(sql`${teams.id} = ANY(${uniqueTeamIds})`);
+      .where(or(...uniqueTeamIds.map(id => eq(teams.id, id))));
     
     const teamMap = new Map(allTeams.map(team => [team.id, team]));
 
@@ -136,12 +141,17 @@ export class PostgresStorage implements IStorage {
       ))
       .orderBy(asc(games.startDate));
 
-    // Optimized: get all teams in one query
+    // Optimized: get all teams in one query using IN clause
     const teamIds = gameResults.flatMap(game => [game.homeTeamId, game.awayTeamId]);
     const uniqueTeamIds = [...new Set(teamIds)];
+    
+    if (uniqueTeamIds.length === 0) {
+      return [];
+    }
+    
     const allTeams = await db.select()
       .from(teams)
-      .where(sql`${teams.id} = ANY(${uniqueTeamIds})`);
+      .where(or(...uniqueTeamIds.map(id => eq(teams.id, id))));
     
     const teamMap = new Map(allTeams.map(team => [team.id, team]));
 
@@ -163,6 +173,7 @@ export class PostgresStorage implements IStorage {
     // Sort by highest ranking (lowest ranking number = higher rank)
     return gamesWithTeams.sort((a, b) => {
       const aHighestRank = Math.min(a.homeTeam.rank || 999, a.awayTeam.rank || 999);
+      const bHighestRank = Math.min(b.homeTeam.rank || 999, b.awayTeam.rank || 999);
       return aHighestRank - bHighestRank;
     });
   }
