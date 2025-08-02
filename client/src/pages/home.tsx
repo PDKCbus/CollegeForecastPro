@@ -77,7 +77,8 @@ export default function Home() {
       console.log('📈 More games loaded:', {
         newGamesCount: newGames.length,
         hasMoreAfter: data.hasMore,
-        currentOffset: offset
+        currentOffset: offset,
+        totalLoadedGames: allGames.length + newGames.length
       });
       
       setAllGames(prev => [...prev, ...newGames]);
@@ -235,19 +236,21 @@ export default function Home() {
         ) : upcomingGames && upcomingGames.length > 0 ? (
           <>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {upcomingGames.map((game: GameWithTeams, index) => {
-                // Add ref to last element for infinite scroll
-                if (upcomingGames.length === index + 1) {
-                  return (
-                    <div key={game.id} ref={lastGameElementRef}>
-                      <GameCard game={game as any} />
-                    </div>
-                  );
-                } else {
-                  return <GameCard key={game.id} game={game as any} />;
-                }
-              })}
+              {upcomingGames.map((game: GameWithTeams, index) => (
+                <GameCard key={game.id} game={game as any} />
+              ))}
             </div>
+            
+            {/* Scroll trigger element for infinite scroll - always at the bottom */}
+            {hasMore && (
+              <div 
+                ref={lastGameElementRef} 
+                className="h-8 w-full flex items-center justify-center my-4"
+                style={{ background: 'rgba(255,255,255,0.1)', border: '1px dashed rgba(255,255,255,0.3)' }}
+              >
+                <span className="text-xs text-white/50">Scroll Trigger ({allGames.length}/{gamesResponse?.total || 0} loaded)</span>
+              </div>
+            )}
 
             {/* Loading indicator for infinite scroll */}
             {loadingMore && (
