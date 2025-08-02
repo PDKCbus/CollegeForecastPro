@@ -1,0 +1,90 @@
+# Dependencies
+node_modules
+npm-debug.log*
+
+# Development files
+.env.local
+.env.development
+.env.test
+
+# Build outputs
+dist
+.next
+out
+
+# IDE and editor files
+.vscode
+.idea
+*.swp
+*.swo
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Git
+.git
+.gitignore
+
+# Documentation
+*.md
+docs/
+
+# Test files
+test/
+tests/
+__tests__/
+*.test.js
+*.test.ts
+*.spec.js
+*.spec.ts
+
+# Coverage reports
+coverage/
+.nyc_output
+
+# Logs
+logs
+*.log
+
+# Runtime data
+pids
+*.pid
+*.seed
+*.pid.lock
+
+# Optional npm cache directory
+.npm
+
+# Optional eslint cache
+.eslintcache
+
+# Replit specific
+.replit
+replit.nix
+
+# Temporary files
+tmp/
+temp/
+
+# Python files (if any data analysis scripts)
+*.pyc
+__pycache__/
+
+# Database files (development only)
+*.sqlite
+*.db
+
+# Jupyter notebooks (data analysis)
+*.ipynb
+.ipynb_checkpoints/
+
+# Data analysis outputs
+data_analysis/
+*.csv
+*.xlsx
