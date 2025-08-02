@@ -100,17 +100,30 @@ export default function Home() {
 
   // Intersection observer for infinite scroll
   const lastGameElementRef = useCallback((node: HTMLDivElement) => {
+    console.log('🎯 Setting up observer for node:', !!node, 'loadingMore:', loadingMore, 'hasMore:', hasMore);
     if (loadingMore) return;
     if (observer.current) observer.current.disconnect();
-    observer.current = new IntersectionObserver(entries => {
-      if (entries[0].isIntersecting && hasMore && !loadingMore) {
+    observer.current = new IntersectionObserver((entries) => {
+      const entry = entries[0];
+      console.log('👀 Intersection entry:', {
+        isIntersecting: entry.isIntersecting,
+        intersectionRatio: entry.intersectionRatio,
+        hasMore,
+        loadingMore
+      });
+      if (entry.isIntersecting && hasMore && !loadingMore) {
         console.log('🔄 Intersection detected - loading more games');
         loadMoreGames();
       }
     }, {
-      rootMargin: '100px' // Start loading when element is 100px from viewport
+      root: null,
+      rootMargin: '50px',
+      threshold: 0.1
     });
-    if (node) observer.current.observe(node);
+    if (node) {
+      console.log('🔍 Starting to observe node');
+      observer.current.observe(node);
+    }
   }, [loadingMore, hasMore, loadMoreGames]);
 
   // Filter games based on active filter, conference, and team search (week filtering now done in API)
@@ -249,6 +262,18 @@ export default function Home() {
                 style={{ background: 'rgba(255,255,255,0.1)', border: '1px dashed rgba(255,255,255,0.3)' }}
               >
                 <span className="text-xs text-white/50">Scroll Trigger ({allGames.length}/{gamesResponse?.total || 0} loaded)</span>
+              </div>
+            )}
+
+            {/* Manual Load More Button (backup) */}
+            {hasMore && !loadingMore && (
+              <div className="flex justify-center py-6">
+                <button 
+                  onClick={loadMoreGames}
+                  className="bg-accent hover:bg-accent/80 text-white px-6 py-3 rounded-lg font-medium transition-colors"
+                >
+                  Load More Games ({allGames.length}/{gamesResponse?.total || 0})
+                </button>
               </div>
             )}
 
