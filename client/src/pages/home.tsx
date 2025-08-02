@@ -6,7 +6,7 @@ import { FeatureHighlights } from "@/components/feature-highlights";
 import { CTASection } from "@/components/cta-section";
 import { SeasonStatsSection } from "@/components/season-stats-section";
 import { useQuery } from "@tanstack/react-query";
-import { useState, useEffect, useCallback, useRef } from "react";
+import { useState, useEffect } from "react";
 import { FilterOption, GameWithTeams } from "@/lib/types";
 
 export default function Home() {
@@ -14,11 +14,9 @@ export default function Home() {
   const [activeFilter, setActiveFilter] = useState("all");
   const [teamFilter, setTeamFilter] = useState("");
   const [selectedConference, setSelectedConference] = useState("");
-  const [allGames, setAllGames] = useState<GameWithTeams[]>([]);
-  const [hasMore, setHasMore] = useState(true);
-  const [loadingMore, setLoadingMore] = useState(false);
-  const [offset, setOffset] = useState(0);
-  const observer = useRef<IntersectionObserver>();
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const gamesPerPage = 12;
   
   // Show all weeks that have authentic 2025 data
   const weeks = ["Week 1", "Week 2", "Week 3", "Week 4", "Week 5", "Week 6", "Week 7", "Week 8", "Week 9", "Week 10", "Week 11", "Week 12", "Week 13", "Week 14", "Week 15"];
@@ -31,103 +29,47 @@ export default function Home() {
   // Extract week number from selectedWeek (e.g., "Week 2" -> "2")
   const weekNumber = selectedWeek.replace("Week ", "");
   
-  // Load initial games
+  // Load games for current page
   const { data: gamesResponse, isLoading } = useQuery({
-    queryKey: ["/api/games/upcoming", weekNumber, 0], // Include offset in query key
+    queryKey: ["/api/games/upcoming", weekNumber, currentPage],
     queryFn: async () => {
+      const offset = (currentPage - 1) * gamesPerPage;
       const url = weekNumber && weekNumber !== "all" 
-        ? `/api/games/upcoming?limit=50&offset=0&week=${weekNumber}`
-        : `/api/games/upcoming?limit=50&offset=0`;
+        ? `/api/games/upcoming?limit=${gamesPerPage}&offset=${offset}&week=${weekNumber}`
+        : `/api/games/upcoming?limit=${gamesPerPage}&offset=${offset}`;
       const response = await fetch(url);
       if (!response.ok) throw new Error('Failed to fetch games');
       return response.json();
     }
   });
 
-  // Set games when data changes
+  // Calculate total pages when data changes
   useEffect(() => {
-    if (gamesResponse) {
-      console.log('📊 Initial games loaded:', {
+    if (gamesResponse?.total) {
+      const calculatedPages = Math.ceil(gamesResponse.total / gamesPerPage);
+      setTotalPages(calculatedPages);
+      console.log('📊 Games loaded:', {
         count: gamesResponse.games?.length || 0,
-        hasMore: gamesResponse.hasMore,
-        total: gamesResponse.total
+        total: gamesResponse.total,
+        currentPage,
+        totalPages: calculatedPages
       });
-      setAllGames(gamesResponse.games || []);
-      setHasMore(gamesResponse.hasMore || false);
-      setOffset(gamesResponse.games?.length || 0);
     }
-  }, [gamesResponse]);
+  }, [gamesResponse, currentPage]);
 
-  // Load more games function
-  const loadMoreGames = useCallback(async () => {
-    if (loadingMore || !hasMore) return;
-    
-    setLoadingMore(true);
-    try {
-      const url = weekNumber && weekNumber !== "all" 
-        ? `/api/games/upcoming?limit=50&offset=${offset}&week=${weekNumber}`
-        : `/api/games/upcoming?limit=50&offset=${offset}`;
-      
-      const response = await fetch(url);
-      if (!response.ok) throw new Error('Failed to fetch more games');
-      
-      const data = await response.json();
-      const newGames = data.games || [];
-      
-      console.log('📈 More games loaded:', {
-        newGamesCount: newGames.length,
-        hasMoreAfter: data.hasMore,
-        currentOffset: offset,
-        totalLoadedGames: allGames.length + newGames.length
-      });
-      
-      setAllGames(prev => [...prev, ...newGames]);
-      setHasMore(data.hasMore || false);
-      setOffset(prev => prev + newGames.length);
-    } catch (error) {
-      console.error('Error loading more games:', error);
-    } finally {
-      setLoadingMore(false);
-    }
-  }, [weekNumber, offset, loadingMore, hasMore]);
+  // Handle page changes
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
 
-  // Reset games when week changes
+  // Reset page when week changes
   useEffect(() => {
-    setAllGames([]);
-    setHasMore(true);
-    setOffset(0);
+    setCurrentPage(1);
   }, [weekNumber]);
 
-  // Intersection observer for infinite scroll
-  const lastGameElementRef = useCallback((node: HTMLDivElement) => {
-    console.log('🎯 Setting up observer for node:', !!node, 'loadingMore:', loadingMore, 'hasMore:', hasMore);
-    if (loadingMore) return;
-    if (observer.current) observer.current.disconnect();
-    observer.current = new IntersectionObserver((entries) => {
-      const entry = entries[0];
-      console.log('👀 Intersection entry:', {
-        isIntersecting: entry.isIntersecting,
-        intersectionRatio: entry.intersectionRatio,
-        hasMore,
-        loadingMore
-      });
-      if (entry.isIntersecting && hasMore && !loadingMore) {
-        console.log('🔄 Intersection detected - loading more games');
-        loadMoreGames();
-      }
-    }, {
-      root: null,
-      rootMargin: '50px',
-      threshold: 0.1
-    });
-    if (node) {
-      console.log('🔍 Starting to observe node');
-      observer.current.observe(node);
-    }
-  }, [loadingMore, hasMore, loadMoreGames]);
-
   // Filter games based on active filter, conference, and team search (week filtering now done in API)
-  const upcomingGames = Array.isArray(allGames) ? allGames.filter((game: GameWithTeams) => {
+  const upcomingGames = Array.isArray(gamesResponse?.games) ? gamesResponse.games.filter((game: GameWithTeams) => {
     // Week filtering is now handled by the API, so we skip it here
     
     // Apply category filter
@@ -249,50 +191,78 @@ export default function Home() {
         ) : upcomingGames && upcomingGames.length > 0 ? (
           <>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {upcomingGames.map((game: GameWithTeams, index) => (
+              {upcomingGames.map((game: GameWithTeams) => (
                 <GameCard key={game.id} game={game as any} />
               ))}
             </div>
-            
-            {/* Scroll trigger element for infinite scroll - always at the bottom */}
-            {hasMore && (
-              <div 
-                ref={lastGameElementRef} 
-                className="h-8 w-full flex items-center justify-center my-4"
-                style={{ background: 'rgba(255,255,255,0.1)', border: '1px dashed rgba(255,255,255,0.3)' }}
-              >
-                <span className="text-xs text-white/50">Scroll Trigger ({allGames.length}/{gamesResponse?.total || 0} loaded)</span>
-              </div>
-            )}
 
-            {/* Manual Load More Button (backup) */}
-            {hasMore && !loadingMore && (
-              <div className="flex justify-center py-6">
-                <button 
-                  onClick={loadMoreGames}
-                  className="bg-accent hover:bg-accent/80 text-white px-6 py-3 rounded-lg font-medium transition-colors"
+            {/* Pagination Controls */}
+            {totalPages > 1 && (
+              <div className="flex justify-center items-center space-x-4 mt-12 mb-8">
+                {/* Previous Button */}
+                <button
+                  onClick={() => handlePageChange(currentPage - 1)}
+                  disabled={currentPage === 1}
+                  className={`px-4 py-2 rounded-lg font-medium transition-colors ${
+                    currentPage === 1
+                      ? 'bg-gray-600 text-gray-400 cursor-not-allowed'
+                      : 'bg-surface hover:bg-surface/80 text-white'
+                  }`}
                 >
-                  Load More Games ({allGames.length}/{gamesResponse?.total || 0})
+                  Previous
+                </button>
+
+                {/* Page Numbers */}
+                <div className="flex space-x-2">
+                  {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+                    let pageNum;
+                    if (totalPages <= 5) {
+                      pageNum = i + 1;
+                    } else if (currentPage <= 3) {
+                      pageNum = i + 1;
+                    } else if (currentPage >= totalPages - 2) {
+                      pageNum = totalPages - 4 + i;
+                    } else {
+                      pageNum = currentPage - 2 + i;
+                    }
+
+                    return (
+                      <button
+                        key={pageNum}
+                        onClick={() => handlePageChange(pageNum)}
+                        className={`w-10 h-10 rounded-lg font-medium transition-colors ${
+                          currentPage === pageNum
+                            ? 'bg-accent text-white'
+                            : 'bg-surface hover:bg-surface/80 text-white'
+                        }`}
+                      >
+                        {pageNum}
+                      </button>
+                    );
+                  })}
+                </div>
+
+                {/* Next Button */}
+                <button
+                  onClick={() => handlePageChange(currentPage + 1)}
+                  disabled={currentPage === totalPages}
+                  className={`px-4 py-2 rounded-lg font-medium transition-colors ${
+                    currentPage === totalPages
+                      ? 'bg-gray-600 text-gray-400 cursor-not-allowed'
+                      : 'bg-surface hover:bg-surface/80 text-white'
+                  }`}
+                >
+                  Next
                 </button>
               </div>
             )}
 
-            {/* Loading indicator for infinite scroll */}
-            {loadingMore && (
-              <div className="flex justify-center items-center py-8">
-                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-accent"></div>
-                <span className="ml-2 text-white/60">Loading more games...</span>
-              </div>
-            )}
-
-            {/* Show total count */}
-            {!hasMore && allGames.length > 0 && (
-              <div className="text-center py-6">
-                <p className="text-white/60">
-                  Showing all {upcomingGames.length} games for {selectedWeek}
-                </p>
-              </div>
-            )}
+            {/* Page Info */}
+            <div className="text-center py-4">
+              <p className="text-white/60">
+                Page {currentPage} of {totalPages} • Showing {upcomingGames.length} of {gamesResponse?.total || 0} games for {selectedWeek}
+              </p>
+            </div>
           </>
         ) : (
           <div className="bg-surface rounded-xl p-6 text-center">
