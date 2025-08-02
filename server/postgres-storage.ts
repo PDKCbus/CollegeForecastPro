@@ -123,8 +123,16 @@ export class PostgresStorage implements IStorage {
       }
     }
 
-    // Sort by highest ranking (lowest ranking number = higher rank)
+    // Sort by betting lines first, then by highest ranking
     return gamesWithTeams.sort((a, b) => {
+      // First priority: games with betting lines (spread or over/under)
+      const aHasBettingLines = a.spread !== null || a.overUnder !== null;
+      const bHasBettingLines = b.spread !== null || b.overUnder !== null;
+      
+      if (aHasBettingLines && !bHasBettingLines) return -1;
+      if (!aHasBettingLines && bHasBettingLines) return 1;
+      
+      // Second priority: highest ranking (lowest ranking number = higher rank)
       const aHighestRank = Math.min(a.homeTeam.rank || 999, a.awayTeam.rank || 999);
       const bHighestRank = Math.min(b.homeTeam.rank || 999, b.awayTeam.rank || 999);
       return aHighestRank - bHighestRank;
@@ -170,8 +178,16 @@ export class PostgresStorage implements IStorage {
       }
     }
 
-    // Sort by highest ranking (lowest ranking number = higher rank)
+    // Sort by betting lines first, then by highest ranking
     return gamesWithTeams.sort((a, b) => {
+      // First priority: games with betting lines (spread or over/under)
+      const aHasBettingLines = a.spread !== null || a.overUnder !== null;
+      const bHasBettingLines = b.spread !== null || b.overUnder !== null;
+      
+      if (aHasBettingLines && !bHasBettingLines) return -1;
+      if (!aHasBettingLines && bHasBettingLines) return 1;
+      
+      // Second priority: highest ranking (lowest ranking number = higher rank)
       const aHighestRank = Math.min(a.homeTeam.rank || 999, a.awayTeam.rank || 999);
       const bHighestRank = Math.min(b.homeTeam.rank || 999, b.awayTeam.rank || 999);
       return aHighestRank - bHighestRank;
