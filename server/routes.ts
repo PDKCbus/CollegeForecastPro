@@ -430,16 +430,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
         // Calculate spread result if available
         let spreadResult = null;
+        let favoriteTeam = null;
+        let spreadCovered = null;
         if (game.spread && homeScore !== null && awayScore !== null) {
           const actualMargin = homeScore - awayScore;
           const spreadMargin = -game.spread; // Convert to home team perspective
           
+          // Determine favorite (negative spread means home favored)
+          favoriteTeam = game.spread < 0 ? 'home' : 'away';
+          
           if (Math.abs(actualMargin - spreadMargin) < 0.5) {
             spreadResult = 'push';
+            spreadCovered = null;
           } else if (actualMargin > spreadMargin) {
             spreadResult = 'covered';
+            spreadCovered = true;
           } else {
-            spreadResult = 'missed';
+            spreadResult = 'not_covered';
+            spreadCovered = false;
           }
         }
 
@@ -455,7 +463,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
           awayTeamScore: game.away_team_score,
           spread: game.spread,
           overUnder: game.over_under,
-          spreadResult
+          spreadResult,
+          favoriteTeam,
+          spreadCovered
         };
       });
 

@@ -799,7 +799,13 @@ export function GameCard({ game }: GameCardProps) {
                                 historicalGame.spreadResult === 'covered' ? 'bg-green-600' : 
                                 historicalGame.spreadResult === 'push' ? 'bg-yellow-600' : 'bg-red-600'
                               }`}>
-                                {historicalGame.spreadResult}
+                                {historicalGame.spreadResult === 'push' ? 'PUSH' : 
+                                 historicalGame.spreadResult === 'covered' ? 'COVERED' : 'NOT COVERED'}
+                                {historicalGame.favoriteTeam && historicalGame.spreadResult !== 'push' && (
+                                  <span className="ml-1 text-xs opacity-75">
+                                    ({historicalGame.favoriteTeam === 'home' ? historicalGame.homeTeamName : historicalGame.awayTeamName} favored)
+                                  </span>
+                                )}
                               </span>
                             )}
                           </div>
