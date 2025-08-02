@@ -2,7 +2,6 @@ import { HelpCircle, TrendingUp, TrendingDown } from "lucide-react";
 import {
   Tooltip,
   TooltipContent,
-  TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 
@@ -51,12 +50,17 @@ export function SpreadExplainerTooltip({
   }
 
   return (
-    <TooltipProvider>
-      <Tooltip>
-        <TooltipTrigger asChild>
-          <HelpCircle className={`h-4 w-4 text-gray-400 hover:text-blue-400 cursor-pointer ${className}`} />
-        </TooltipTrigger>
-        <TooltipContent className="max-w-sm p-4 bg-gray-900 border-gray-700 text-white">
+    <Tooltip>
+      <TooltipTrigger asChild>
+        <button className="inline-flex items-center justify-center p-1">
+          <HelpCircle className={`h-4 w-4 text-gray-400 hover:text-blue-400 cursor-pointer transition-colors ${className}`} />
+        </button>
+      </TooltipTrigger>
+      <TooltipContent 
+        className="max-w-sm p-4 bg-gray-900 border-gray-700 text-white z-50"
+        side="top"
+        align="center"
+      >
           <div className="space-y-3">
             <div className="font-semibold text-blue-400 text-sm">
               Spread Betting Explained
@@ -109,6 +113,5 @@ export function SpreadExplainerTooltip({
           </div>
         </TooltipContent>
       </Tooltip>
-    </TooltipProvider>
   );
 }
