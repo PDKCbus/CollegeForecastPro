@@ -47,9 +47,14 @@ export default function Home() {
   // Set games when data changes
   useEffect(() => {
     if (gamesResponse) {
+      console.log('📊 Initial games loaded:', {
+        count: gamesResponse.games?.length || 0,
+        hasMore: gamesResponse.hasMore,
+        total: gamesResponse.total
+      });
       setAllGames(gamesResponse.games || []);
       setHasMore(gamesResponse.hasMore || false);
-      setOffset(50);
+      setOffset(gamesResponse.games?.length || 0);
     }
   }, [gamesResponse]);
 
@@ -69,9 +74,15 @@ export default function Home() {
       const data = await response.json();
       const newGames = data.games || [];
       
+      console.log('📈 More games loaded:', {
+        newGamesCount: newGames.length,
+        hasMoreAfter: data.hasMore,
+        currentOffset: offset
+      });
+      
       setAllGames(prev => [...prev, ...newGames]);
       setHasMore(data.hasMore || false);
-      setOffset(prev => prev + 50);
+      setOffset(prev => prev + newGames.length);
     } catch (error) {
       console.error('Error loading more games:', error);
     } finally {
@@ -91,9 +102,12 @@ export default function Home() {
     if (loadingMore) return;
     if (observer.current) observer.current.disconnect();
     observer.current = new IntersectionObserver(entries => {
-      if (entries[0].isIntersecting && hasMore) {
+      if (entries[0].isIntersecting && hasMore && !loadingMore) {
+        console.log('🔄 Intersection detected - loading more games');
         loadMoreGames();
       }
+    }, {
+      rootMargin: '100px' // Start loading when element is 100px from viewport
     });
     if (node) observer.current.observe(node);
   }, [loadingMore, hasMore, loadMoreGames]);
