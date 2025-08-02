@@ -1,6 +1,9 @@
 import { GameWithTeams } from "@/lib/types";
 import { Link } from "wouter";
 import { useQuery } from "@tanstack/react-query";
+import { SocialShare } from "./social-share";
+import { Button } from "@/components/ui/button";
+import { BarChart3 } from "lucide-react";
 
 interface FeaturedGameProps {
   game: GameWithTeams;
@@ -206,13 +209,26 @@ export function FeaturedGame({ game }: FeaturedGameProps) {
           </div>
         </div>
 
-        {/* Full Analysis Link */}
-        <div className="text-center">
-          <Link href={`/game-analysis?game=${game.id}`}>
-            <span className="text-primary hover:text-primary/80 text-sm font-medium">
-              Full Analysis →
-            </span>
+        {/* Action Buttons */}
+        <div className="flex gap-2 justify-center">
+          <Link href={`/game-analysis?game=${game.id}`} className="flex-1">
+            <Button className="w-full bg-accent hover:bg-accent/90 text-black font-medium">
+              <BarChart3 className="mr-2 h-4 w-4" />
+              Full Analysis
+            </Button>
           </Link>
+          <SocialShare 
+            game={game}
+            prediction={algorithmicPredictions?.algorithmicPredictions?.[0] ? {
+              spreadPick: algorithmicPredictions.algorithmicPredictions[0].spreadPick,
+              overUnderPick: algorithmicPredictions.algorithmicPredictions[0].overUnderPick,
+              confidence: algorithmicPredictions.algorithmicPredictions[0].confidence
+            } : undefined}
+            ricksPick={game.prediction ? {
+              spreadPick: game.prediction.spreadPick,
+              overUnderPick: game.prediction.overUnderPick
+            } : undefined}
+          />
         </div>
       </div>
     </div>
