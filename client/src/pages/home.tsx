@@ -30,16 +30,26 @@ export default function Home() {
   const weekNumber = selectedWeek.replace("Week ", "");
   
   // Load games for current page
-  const { data: gamesResponse, isLoading } = useQuery({
+  const { data: gamesResponse, isLoading, error } = useQuery({
     queryKey: ["/api/games/upcoming", weekNumber, currentPage],
     queryFn: async () => {
       const offset = (currentPage - 1) * gamesPerPage;
       const url = weekNumber && weekNumber !== "all" 
         ? `/api/games/upcoming?limit=${gamesPerPage}&offset=${offset}&week=${weekNumber}`
         : `/api/games/upcoming?limit=${gamesPerPage}&offset=${offset}`;
+      console.log('🔍 Fetching games:', url);
       const response = await fetch(url);
-      if (!response.ok) throw new Error('Failed to fetch games');
-      return response.json();
+      if (!response.ok) {
+        console.error('❌ Failed to fetch games:', response.status, response.statusText);
+        throw new Error(`Failed to fetch games: ${response.status}`);
+      }
+      const data = await response.json();
+      console.log('✅ Games response received:', {
+        gamesCount: data.games?.length || 0,
+        total: data.total,
+        hasMore: data.hasMore
+      });
+      return data;
     }
   });
 
@@ -187,6 +197,16 @@ export default function Home() {
             {[...Array(6)].map((_, index) => (
               <div key={index} className="h-64 bg-surface rounded-xl animate-pulse"></div>
             ))}
+          </div>
+        ) : error ? (
+          <div className="text-center py-12">
+            <p className="text-red-400 mb-4">Error loading games: {error.message}</p>
+            <button 
+              onClick={() => window.location.reload()}
+              className="bg-accent hover:bg-accent/80 text-white px-6 py-3 rounded-lg font-medium transition-colors"
+            >
+              Retry
+            </button>
           </div>
         ) : upcomingGames && upcomingGames.length > 0 ? (
           <>
