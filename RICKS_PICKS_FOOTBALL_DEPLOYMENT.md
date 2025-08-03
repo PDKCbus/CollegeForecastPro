@@ -123,7 +123,14 @@ sudo ufw allow ssh
 sudo ufw allow 80/tcp
 sudo ufw allow 443/tcp
 sudo ufw --force enable
+```
 
+**Visual Reference - Firewall Configuration:**
+![UFW Firewall Setup](attached_assets/Screenshot%202025-08-03%20at%206.29.36%20PM_1754260185184.png)
+
+✅ **Firewall configured successfully!** Your server is now secured.
+
+```bash
 # Logout and login for Docker group changes
 exit
 ```
