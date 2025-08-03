@@ -1,8 +1,13 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { AlertTriangle, BookOpen, Calculator, TrendingUp, Database, Shield } from "lucide-react";
+import { useEffect } from "react";
 
 export default function FAQ() {
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
+
   return (
     <div className="container mx-auto px-4 py-8 max-w-4xl">
       <div className="text-center mb-8">
