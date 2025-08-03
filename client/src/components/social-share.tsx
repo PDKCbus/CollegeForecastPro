@@ -255,7 +255,7 @@ export function SocialShare({ game, prediction, ricksPick }: SocialShareProps) {
                     🤓 ANALYSIS PICK:
                   </div>
                   {prediction.spreadPick ? (
-                    <div className="flex items-center gap-2 mb-1">
+                    <div className="flex items-center justify-center gap-2 mb-1">
                       {(() => {
                         // Parse spread prediction to extract team and spread
                         console.log('Prediction spreadPick:', prediction.spreadPick);
@@ -308,7 +308,7 @@ export function SocialShare({ game, prediction, ricksPick }: SocialShareProps) {
                     </div>
                   ) : (
                     // Generate spread pick from game data if not available
-                    <div className="flex items-center gap-2 mb-1">
+                    <div className="flex items-center justify-center gap-2 mb-1">
                       {(() => {
                         // Use Vegas spread to generate a pick
                         const vegasSpread = game.spread || 0;
@@ -356,7 +356,7 @@ export function SocialShare({ game, prediction, ricksPick }: SocialShareProps) {
                     <div className="text-sm mb-1">Total: {prediction.overUnderPick}</div>
                   )}
                   {prediction.confidence && (
-                    <div className="text-sm text-blue-600 dark:text-blue-400">
+                    <div className="text-sm text-blue-600 dark:text-blue-400 text-center">
                       Confidence: {Math.round(prediction.confidence * 100)}%
                     </div>
                   )}
