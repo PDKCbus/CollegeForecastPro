@@ -2,6 +2,7 @@ import { db } from './db';
 import { games, predictions } from '../shared/schema';
 import { eq, and, desc } from 'drizzle-orm';
 import { SPPlusIntegration, type EnhancedPrediction } from './sp-plus-integration';
+import { RosterAnalyticsEngine } from './roster-analytics-engine';
 
 interface EnhancedAlgorithmicPrediction {
   gameId: number;
