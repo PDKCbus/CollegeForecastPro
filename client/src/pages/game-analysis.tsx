@@ -143,10 +143,30 @@ export default function GameAnalysis() {
     const ourTotal = 47 + offensiveFactor + (homeRankBonus + awayRankBonus) * 0.5;
     const finalTotal = Math.round(ourTotal);
 
-    // Win probability based on spread differential
-    const spreadDiff = finalSpread - (vegasSpread || 0);
-    const baseProbability = 0.53; // Home team baseline
-    const probability = Math.min(0.85, Math.max(0.15, baseProbability + (spreadDiff * 0.02)));
+    // Win probability calculation using Vegas spread (more reliable)
+    // Negative spread = home team favored, positive = away team favored
+    const vegasLine = vegasSpread || 0;
+    let homeWinProbability: number;
+    
+    if (vegasLine === 0) {
+      // Pick 'em game
+      homeWinProbability = 0.53; // Slight home field advantage
+    } else {
+      // Convert spread to probability using standard formula
+      // Rule: negative spread = home favored, positive = away favored
+      const spreadPoints = Math.abs(vegasLine);
+      const baseProbability = 0.5 + (spreadPoints * 0.025); // ~2.5% per point
+      
+      if (vegasLine < 0) {
+        // Home team favored (negative spread)
+        homeWinProbability = Math.min(0.85, baseProbability);
+      } else {
+        // Away team favored (positive spread) 
+        homeWinProbability = Math.max(0.15, 1 - baseProbability);
+      }
+    }
+    
+    const probability = homeWinProbability;
 
     // Confidence based on how much we differ from Vegas
     const spreadConfidence = Math.abs(finalSpread - (vegasSpread || 0)) * 10;
@@ -376,7 +396,7 @@ export default function GameAnalysis() {
               title="Spread Prediction"
               value={analysis.predictiveMetrics.spreadPrediction > 0 ? `+${formatSpread(analysis.predictiveMetrics.spreadPrediction)}` : formatSpread(analysis.predictiveMetrics.spreadPrediction)}
               icon={BarChart3}
-              teamLogo={analysis.predictiveMetrics.spreadPrediction > 0 ? selectedGame.homeTeam?.logoUrl || undefined : selectedGame.awayTeam?.logoUrl || undefined}
+              teamLogo={analysis.predictiveMetrics.spreadPrediction < 0 ? selectedGame.homeTeam?.logoUrl || undefined : selectedGame.awayTeam?.logoUrl || undefined}
             />
             <MetricCard
               title="O/U Prediction"
@@ -405,13 +425,20 @@ export default function GameAnalysis() {
                     <div>
                       <div className="text-sm text-muted-foreground">Vegas Line</div>
                       <div className="font-medium">
-                        {selectedGame.homeTeam?.name} {selectedGame.spread ? (selectedGame.spread > 0 ? `+${formatSpread(selectedGame.spread)}` : formatSpread(selectedGame.spread)) : 'No line'}
+                        {selectedGame.spread ? (
+                          selectedGame.spread < 0 
+                            ? `${selectedGame.homeTeam?.name} ${formatSpread(selectedGame.spread)}`
+                            : `${selectedGame.awayTeam?.name} -${formatSpread(selectedGame.spread)}`
+                        ) : 'No line'}
                       </div>
                     </div>
                     <div>
                       <div className="text-sm text-muted-foreground">Our Prediction</div>
                       <div className="font-medium">
-                        {selectedGame.homeTeam?.name} {analysis.predictiveMetrics.spreadPrediction > 0 ? `+${formatSpread(analysis.predictiveMetrics.spreadPrediction)}` : formatSpread(analysis.predictiveMetrics.spreadPrediction)}
+                        {analysis.predictiveMetrics.spreadPrediction < 0 
+                          ? `${selectedGame.homeTeam?.name} ${formatSpread(analysis.predictiveMetrics.spreadPrediction)}`
+                          : `${selectedGame.awayTeam?.name} -${formatSpread(analysis.predictiveMetrics.spreadPrediction)}`
+                        }
                       </div>
                     </div>
                   </div>
