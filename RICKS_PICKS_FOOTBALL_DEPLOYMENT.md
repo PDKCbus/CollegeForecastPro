@@ -287,20 +287,18 @@ sudo systemctl enable nginx
 ✅ Production environment file configured with working API keys  
 ✅ Nginx installed and configuration copied  
 
-**CURRENT STEP: Building Docker Containers (Fixing npm ci Issue)**
+**CURRENT STEP: Pull Updated Dockerfile and Build Docker Containers**
 ```bash
 # From /home/ubuntu/ricks-picks directory:
 
-# Clean Docker cache and rebuild (CURRENT)
+# Pull the fixed Dockerfile from main branch
+git pull origin main
+
+# Clean Docker cache and rebuild with fixed Dockerfile
 docker-compose down
-docker system prune -f
+docker system prune -af
 docker-compose --env-file .env.production build --no-cache
 docker-compose --env-file .env.production up -d
-
-# Alternative if issues persist:
-# Run npm install on host first, then copy to Docker
-npm install
-docker-compose --env-file .env.production up -d --build --no-cache
 
 # Configure SSL for nginx (NEXT)
 sudo mkdir -p /etc/ssl/certs
