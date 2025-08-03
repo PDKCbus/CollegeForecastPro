@@ -3142,15 +3142,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Data Pipeline Endpoints for Advanced Analytics
   app.post("/api/analytics/pipeline/run", async (req, res) => {
     try {
-      const { advancedAnalyticsDataPipeline } = await import('./advanced-analytics-data-pipeline');
+      const { simpleDataPipeline } = await import('./simple-data-pipeline');
       
-      console.log('🚀 Starting advanced analytics data pipeline...');
+      console.log('🚀 Starting simple analytics data pipeline...');
       
       // Run in background to avoid request timeout
-      advancedAnalyticsDataPipeline.runCompletePipeline(2024).then(() => {
-        console.log('✅ Advanced analytics pipeline completed successfully!');
+      simpleDataPipeline.generateAnalyticsFromGames().then(() => {
+        console.log('✅ Simple analytics pipeline completed successfully!');
       }).catch((error) => {
-        console.error('❌ Advanced analytics pipeline failed:', error);
+        console.error('❌ Simple analytics pipeline failed:', error);
       });
       
       res.json({ 
