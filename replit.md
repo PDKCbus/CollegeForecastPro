@@ -68,6 +68,7 @@ Key tables include:
 ### Production Deployment System (January 2025)
 - **Docker Containerization**: Multi-stage Docker build with optimized production image
 - **AWS Lightsail Ready**: Complete deployment pipeline with Nginx reverse proxy and SSL
+- **Domain Configuration**: Deployed on ricks-picks.football with automated SSL certificates
 - **Automated Monitoring**: Health checks, database backups, and system monitoring scripts
 - **CI/CD Scripts**: One-command deployment, backup, and monitoring automation
 - **Production Infrastructure**: PostgreSQL database, SSL certificates, and performance optimization
