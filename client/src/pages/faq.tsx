@@ -62,7 +62,7 @@ export default function FAQ() {
               What is Rick's Picks?
             </div>
           </AccordionTrigger>
-          <AccordionContent className="text-gray-600 pt-4">
+          <AccordionContent className="text-white pt-4">
             <p className="mb-4">
               Rick's Picks is a comprehensive college football analytics platform that combines 15 years 
               of historical data (2009-2024) with advanced statistical analysis to provide insights into 
@@ -91,7 +91,7 @@ export default function FAQ() {
               What's the difference between Rick's Picks and algorithmic predictions?
             </div>
           </AccordionTrigger>
-          <AccordionContent className="text-gray-600 pt-4">
+          <AccordionContent className="text-white pt-4">
             <p className="mb-4">
               We offer two types of predictions:
             </p>
@@ -113,7 +113,7 @@ export default function FAQ() {
                 </p>
               </div>
             </div>
-            <p className="mt-4 text-sm text-gray-500">
+            <p className="mt-4 text-sm text-white/70">
               Both types of predictions are clearly labeled throughout the platform.
             </p>
           </AccordionContent>
@@ -127,7 +127,7 @@ export default function FAQ() {
               Where does your data come from?
             </div>
           </AccordionTrigger>
-          <AccordionContent className="text-gray-600 pt-4">
+          <AccordionContent className="text-white pt-4">
             <p className="mb-4">
               Our platform integrates data from several reliable sources:
             </p>
@@ -143,7 +143,7 @@ export default function FAQ() {
                 <strong>Social Media APIs:</strong> Public sentiment analysis from Twitter and other platforms
               </li>
             </ul>
-            <p className="mt-4 text-sm bg-gray-50 p-3 rounded">
+            <p className="mt-4 text-sm bg-white/10 p-3 rounded text-white">
               All data is automatically synced and updated regularly to ensure accuracy and timeliness.
             </p>
           </AccordionContent>
@@ -192,7 +192,7 @@ export default function FAQ() {
               Privacy and Legal Information
             </div>
           </AccordionTrigger>
-          <AccordionContent className="text-gray-600 pt-4">
+          <AccordionContent className="text-white pt-4">
             <div className="space-y-4">
               <div>
                 <h4 className="font-semibold mb-2">Data Privacy</h4>
@@ -227,7 +227,7 @@ export default function FAQ() {
               Technical Questions
             </div>
           </AccordionTrigger>
-          <AccordionContent className="text-gray-600 pt-4">
+          <AccordionContent className="text-white pt-4">
             <div className="space-y-4">
               <div>
                 <h4 className="font-semibold mb-2">How often is data updated?</h4>
