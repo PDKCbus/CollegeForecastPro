@@ -3103,6 +3103,42 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Contact form endpoint
+  app.post("/api/contact", async (req, res) => {
+    try {
+      const { name, email, subject, message } = req.body;
+      
+      // Basic validation
+      if (!name || !email || !message) {
+        return res.status(400).json({ message: "Name, email, and message are required" });
+      }
+      
+      // In a real implementation, you would:
+      // 1. Send email to rickspickscfb@gmail.com using a service like SendGrid, Mailgun, etc.
+      // 2. Store the contact form submission in database for tracking
+      // 3. Send auto-reply confirmation to the user
+      
+      // For now, we'll log the contact form and return success
+      console.log('📧 Contact form submission received:');
+      console.log(`From: ${name} <${email}>`);
+      console.log(`Subject: ${subject || 'No subject'}`);
+      console.log(`Message: ${message}`);
+      console.log('---');
+      
+      // TODO: Implement actual email sending
+      // Example with nodemailer or SendGrid would go here
+      
+      res.json({ 
+        success: true, 
+        message: "Your message has been received. We'll get back to you soon!" 
+      });
+      
+    } catch (error) {
+      console.error('Contact form error:', error);
+      res.status(500).json({ message: "Failed to send message. Please try again." });
+    }
+  });
+
   // Data Pipeline Endpoints for Advanced Analytics
   app.post("/api/analytics/pipeline/run", async (req, res) => {
     try {

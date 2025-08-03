@@ -15,6 +15,7 @@ import GameAnalysis from "@/pages/game-analysis";
 import SeasonStats from "@/pages/season-stats";
 import AdminPanel from "@/pages/admin-panel";
 import FAQ from "@/pages/faq";
+import { Contact } from "@/pages/Contact";
 import NotFound from "@/pages/not-found";
 
 function Router() {
@@ -28,6 +29,7 @@ function Router() {
       <Route path="/season-stats" component={SeasonStats} />
       <Route path="/admin" component={AdminPanel} />
       <Route path="/faq" component={FAQ} />
+      <Route path="/contact" component={Contact} />
       <Route component={NotFound} />
     </Switch>
   );
