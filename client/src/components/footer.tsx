@@ -55,7 +55,7 @@ export function Footer() {
               <h4 className="text-white font-bold mb-4">Contact</h4>
               <ul className="space-y-2">
                 <li><Link href="/contact" className="text-white/70 hover:text-white transition-colors">Contact Us</Link></li>
-                <li><a href="mailto:rickspickscfb@gmail.com" className="text-white/70 hover:text-white transition-colors">Support</a></li>
+                <li><Link href="/contact" className="text-white/70 hover:text-white transition-colors">Partnerships</Link></li>
               </ul>
             </div>
           </div>

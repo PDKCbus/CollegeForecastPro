@@ -9,7 +9,7 @@ Rick's Picks is a comprehensive college football analytics platform designed to 
 Preferred communication style: Simple, everyday language.
 Admin UI preferences: Simple button interface for spread/over-under picks instead of complex form fields.
 Branding preference: "🤓 ANALYSIS PICK" over "🤖 ALGORITHM PICK" for algorithmic predictions.
-Footer navigation: Remove unnecessary links (How It Works, Betting Guide), link College Football Stats to collegefootballdata.com, Contact Us page with form to rickspickscfb@gmail.com.
+Footer navigation: Cleaned up links - removed Support, How It Works, Betting Guide; College Football Stats links to collegefootballdata.com; Contact Us page with form; Partnerships links to Contact page.
 
 ## System Architecture
 The application employs a full-stack architecture with distinct frontend and backend components.
