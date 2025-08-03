@@ -319,10 +319,11 @@ export default function GameAnalysis() {
                         const ourSpread = analysis.predictiveMetrics.spreadPrediction;
                         
                         // Check if teams are favored by different teams (major disagreement)
-                        // Note: Database stores spreads as negative = away team favored, positive = home team favored
-                        const vegasFavorsHome = vegasSpread > 0; // Positive spread means home team favored
-                        const weFavorHome = ourSpread > 0; // Positive spread means home team favored
-                        const differentTeamsFavored = vegasFavorsHome !== weFavorHome;
+                        // Database: spread=3.5 means away team (KSU) favored by 3.5
+                        // Algorithm: spread=1.75 means home team (ISU) favored by 1.75
+                        const vegasFavorsAway = vegasSpread > 0; // Positive spread = away team favored (KSU -3.5)
+                        const weFavorHome = ourSpread > 0; // Positive spread = home team favored (ISU -1.75)
+                        const differentTeamsFavored = vegasFavorsAway && weFavorHome; // One favors away, one favors home
                         
                         // Calculate total disagreement correctly
                         const totalDisagreement = differentTeamsFavored 
@@ -341,9 +342,9 @@ export default function GameAnalysis() {
                             const ourSpread = analysis.predictiveMetrics.spreadPrediction;
                             
                             // Check if we disagree on the favorite
-                            const vegasFavorsHome = vegasSpread > 0; // Positive spread = home team favored
-                            const weFavorHome = ourSpread > 0; // Positive spread = home team favored
-                            const differentTeamsFavored = vegasFavorsHome !== weFavorHome;
+                            const vegasFavorsAway = vegasSpread > 0; // Positive spread = away team favored (KSU -3.5)
+                            const weFavorHome = ourSpread > 0; // Positive spread = home team favored (ISU -1.75)
+                            const differentTeamsFavored = vegasFavorsAway && weFavorHome; // One favors away, one favors home
                             
                             // Calculate edge correctly
                             const edge = differentTeamsFavored 
@@ -353,8 +354,8 @@ export default function GameAnalysis() {
                             // Only recommend bets with significant edge (2+ points) or different teams favored
                             if (edge >= 2.0 || differentTeamsFavored) {
                               if (differentTeamsFavored) {
-                                // Complete disagreement on who wins - major value
-                                const ourFavorite = weFavorHome ? selectedGame.homeTeam?.name : selectedGame.awayTeam?.name;
+                                // Complete disagreement: Vegas favors away team, we favor home team - major value
+                                const ourFavorite = selectedGame.homeTeam?.name; // We favor home team (ISU)
                                 const points = Math.abs(vegasSpread);
                                 return `Take ${ourFavorite} +${formatSpread(points)} - Major Value`;
                               } else {
