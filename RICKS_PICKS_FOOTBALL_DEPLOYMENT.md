@@ -7,7 +7,7 @@ Deploy your complete Rick's Picks platform with enhanced algorithm (52.9% ATS) t
 **Domain**: `ricks-picks.football`  
 **Branch**: `main` (complete app with algorithm enhancements)  
 **Infrastructure**: AWS Lightsail + Docker + PostgreSQL + SSL  
-**Estimated Cost**: $25-45/month  
+**Estimated Cost**: $17-29/month (First 90 days FREE!)  
 
 ## Step 1: AWS Lightsail Instance Setup
 
@@ -16,7 +16,7 @@ Deploy your complete Rick's Picks platform with enhanced algorithm (52.9% ATS) t
 2. Create Instance:
    - **Platform**: Linux/Unix  
    - **Blueprint**: Ubuntu 22.04 LTS
-   - **Instance Plan**: $20/month (2 GB RAM, 1 vCPU) minimum
+   - **Instance Plan**: $12/month (2 GB RAM, 2 vCPU) or $24/month (4 GB RAM, 2 vCPU)
    - **Instance Name**: `ricks-picks-football-prod`
 
 3. Configure Networking:
@@ -332,20 +332,20 @@ docker-compose logs -f app
 ## Cost Breakdown
 
 **Monthly AWS Costs:**
-- Lightsail Instance (2GB): $20
+- Lightsail Instance (2GB): $12 or (4GB): $24
 - Static IP: $5  
 - SSL Certificate: Free (Let's Encrypt)
-- Data Transfer: Included up to 3TB
-- **Total: ~$25/month**
+- Data Transfer: Included (3TB or 4TB)
+- **Total: $17-29/month** (FREE for first 90 days!)
 
 ## Scaling Path
 
 As traffic grows:
-1. **$40/month**: 4GB RAM, 2 vCPU instance
-2. **$80/month**: 8GB RAM, 2 vCPU instance  
-3. **Load Balancer**: Multiple instances + Lightsail LB
-4. **Managed Database**: PostgreSQL managed service
-5. **CDN**: CloudFront for static assets
+1. **Start**: $12/month (2GB RAM, 2 vCPU) - Perfect for launch
+2. **Scale Up**: $24/month (4GB RAM, 2 vCPU) - Handle more traffic  
+3. **Growth**: $44/month (8GB RAM, 2 vCPU) - High traffic
+4. **Enterprise**: Load Balancer + Multiple instances
+5. **Advanced**: Managed Database + CDN
 
 ---
 
