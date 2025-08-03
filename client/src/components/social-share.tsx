@@ -249,18 +249,18 @@ export function SocialShare({ game, prediction, ricksPick }: SocialShareProps) {
                 </div>
               )}
               
-              {prediction && !ricksPick?.spreadPick && !ricksPick?.overUnderPick && (
+              {prediction && (
                 <div className="bg-blue-50 dark:bg-blue-950 p-3 rounded-lg">
                   <div className="font-semibold text-blue-700 dark:text-blue-300 mb-2">
                     🤓 ANALYSIS PICK:
                   </div>
-                  {prediction.spreadPick && (
+                  {prediction.spreadPick ? (
                     <div className="flex items-center gap-2 mb-1">
                       {(() => {
                         // Parse spread prediction to extract team and spread
                         console.log('Prediction spreadPick:', prediction.spreadPick);
-                        console.log('Home team:', game.homeTeam?.name);
-                        console.log('Away team:', game.awayTeam?.name);
+                        console.log('Home team:', game.homeTeam?.name, game.homeTeam?.logoUrl);
+                        console.log('Away team:', game.awayTeam?.name, game.awayTeam?.logoUrl);
                         
                         // Check if the spread contains home or away team name
                         const homeTeamName = game.homeTeam?.name || '';
@@ -284,6 +284,49 @@ export function SocialShare({ game, prediction, ricksPick }: SocialShareProps) {
                             const spreadValue = parseFloat(spreadMatch[1]);
                             pickedTeam = spreadValue < 0 ? game.homeTeam : game.awayTeam;
                           }
+                        }
+                        
+                        return (
+                          <>
+                            {pickedTeam?.logoUrl && (
+                              <img 
+                                src={pickedTeam.logoUrl} 
+                                alt={pickedTeam.name}
+                                className="w-5 h-5 object-contain"
+                                onError={(e) => {
+                                  console.log('Logo failed to load:', pickedTeam.logoUrl);
+                                  e.currentTarget.style.display = 'none';
+                                }}
+                              />
+                            )}
+                            <span className="text-sm font-medium">
+                              {displayText}
+                            </span>
+                          </>
+                        );
+                      })()}
+                    </div>
+                  ) : (
+                    // Generate spread pick from game data if not available
+                    <div className="flex items-center gap-2 mb-1">
+                      {(() => {
+                        // Use Vegas spread to generate a pick
+                        const vegasSpread = game.spread || 0;
+                        let pickedTeam = null;
+                        let displayText = '';
+                        
+                        if (vegasSpread < 0) {
+                          // Home team favored
+                          pickedTeam = game.homeTeam;
+                          displayText = `${game.homeTeam?.name || 'Home'} ${vegasSpread}`;
+                        } else if (vegasSpread > 0) {
+                          // Away team favored
+                          pickedTeam = game.awayTeam;
+                          displayText = `${game.awayTeam?.name || 'Away'} +${vegasSpread}`;
+                        } else {
+                          // Pick 'em - slight home advantage
+                          pickedTeam = game.homeTeam;
+                          displayText = `${game.homeTeam?.name || 'Home'} PK`;
                         }
                         
                         return (
