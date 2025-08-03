@@ -1806,19 +1806,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
         false // assuming not neutral site for now
       );
 
-      // Calculate win probabilities from spread
-      const spread = prediction.spread;
+      // Calculate win probabilities from Vegas spread (more accurate)
+      const vegasSpread = game.spread || 0;
       let homeWinProb: number;
       let awayWinProb: number;
       
-      if (spread > 0) {
-        // Home team favored
-        homeWinProb = Math.min(90, 50 + (spread * 3.5)); // Roughly 3.5% per point
+      if (vegasSpread < 0) {
+        // Home team favored (negative spread)
+        homeWinProb = Math.min(90, 50 + (Math.abs(vegasSpread) * 3.5)); // Roughly 3.5% per point
         awayWinProb = 100 - homeWinProb;
-      } else {
-        // Away team favored
-        awayWinProb = Math.min(90, 50 + (Math.abs(spread) * 3.5));
+      } else if (vegasSpread > 0) {
+        // Away team favored (positive spread)
+        awayWinProb = Math.min(90, 50 + (vegasSpread * 3.5));
         homeWinProb = 100 - awayWinProb;
+      } else {
+        // Pick 'em game
+        homeWinProb = 52; // Slight home field advantage
+        awayWinProb = 48;
       }
 
       // Helper function for conference ratings
@@ -1838,7 +1842,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const analysis = {
         predictiveMetrics: {
           winProbability: Math.round(homeWinProb),
-          confidence: prediction.confidence,
+          confidence: prediction.confidence === "High" ? 85 : prediction.confidence === "Medium" ? 70 : 55,
           spreadPrediction: prediction.spread,
           overUnderPrediction: game.overUnder || 48.5,
           keyFactors: prediction.keyFactors,
