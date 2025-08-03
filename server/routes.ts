@@ -11,6 +11,8 @@ import { RicksPicksPredictionEngine } from "./rick-picks-engine";
 import CFBDELOService from "./cfbd-elo-integration";
 import ELORatingsCollector from "./elo-ratings-collector";
 import RankingsCollector from "./rankings-collector";
+import { EnhancedPredictionEngine } from "./enhanced-prediction-engine";
+import { SPPlusIntegration } from "./sp-plus-integration";
 import { z } from "zod";
 import { insertGameSchema, insertTeamSchema, insertPredictionSchema, insertSentimentAnalysisSchema } from "@shared/schema";
 import { dataSyncLogger } from "./data-sync-logger";
@@ -2312,6 +2314,62 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error('Rick\'s Picks bulk prediction error:', error);
       res.status(500).json({ message: 'Failed to generate Rick\'s predictions' });
+    }
+  });
+
+  // SP+ Enhanced Predictions endpoints
+  app.get("/api/predictions/enhanced/:gameId", async (req, res) => {
+    try {
+      const gameId = parseInt(req.params.gameId);
+      if (isNaN(gameId)) {
+        return res.status(400).json({ message: "Invalid game ID" });
+      }
+
+      const enhancedEngine = new EnhancedPredictionEngine();
+      const enhancedPrediction = await enhancedEngine.generateEnhancedPrediction(gameId);
+      
+      if (!enhancedPrediction) {
+        return res.status(404).json({ message: "Enhanced prediction not available" });
+      }
+
+      res.json(enhancedPrediction);
+    } catch (error) {
+      console.error("Error generating enhanced prediction:", error);
+      res.status(500).json({ message: "Failed to generate enhanced prediction" });
+    }
+  });
+
+  // SP+ Integration Test endpoint
+  app.get("/api/sp-plus/test", async (req, res) => {
+    try {
+      const spPlusIntegration = new SPPlusIntegration();
+      const testResults = await spPlusIntegration.testSPPlusAccuracy(2024);
+      res.json({
+        message: "SP+ integration test completed",
+        results: testResults,
+        status: testResults.improvement > 0 ? "Algorithm improved" : "No improvement detected",
+        profitabilityStatus: testResults.spPlusAccuracy > 52.4 ? "Above profitable threshold" : "Below threshold"
+      });
+    } catch (error) {
+      console.error("Error testing SP+ integration:", error);
+      res.status(500).json({ message: "SP+ test failed" });
+    }
+  });
+
+  // Enhanced Algorithm Validation endpoint
+  app.get("/api/algorithm/validate", async (req, res) => {
+    try {
+      const enhancedEngine = new EnhancedPredictionEngine();
+      const validation = await enhancedEngine.validateEnhancedAlgorithm();
+      res.json({
+        message: "Enhanced algorithm validation completed",
+        validation,
+        profitabilityStatus: validation.spPlusIntegration.spPlusAccuracy > 52.4 ? 
+          "Above profitable threshold" : "Needs further improvement"
+      });
+    } catch (error) {
+      console.error("Error validating enhanced algorithm:", error);
+      res.status(500).json({ message: "Algorithm validation failed" });
     }
   });
 
