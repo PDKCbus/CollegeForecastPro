@@ -19,19 +19,19 @@ export default function FAQ() {
         <CardHeader>
           <div className="flex items-center gap-2">
             <AlertTriangle className="h-5 w-5 text-orange-600" />
-            <CardTitle className="text-orange-800">Important Disclaimers</CardTitle>
+            <CardTitle className="text-orange-800">🚨 Important Disclaimers</CardTitle>
           </div>
         </CardHeader>
         <CardContent className="space-y-4 text-orange-800">
           <div className="bg-white p-4 rounded-lg border border-orange-200">
-            <h3 className="font-semibold mb-2">Entertainment Purposes Only</h3>
+            <h3 className="font-semibold mb-2">🎉 Entertainment Purposes Only</h3>
             <p className="text-sm">
               Rick's Picks is designed for entertainment and educational purposes only. 
               This platform is NOT intended for gambling or betting activities.
             </p>
           </div>
           <div className="bg-white p-4 rounded-lg border border-orange-200">
-            <h3 className="font-semibold mb-2">No Guarantees on Results</h3>
+            <h3 className="font-semibold mb-2">📊 No Guarantees on Results</h3>
             <p className="text-sm">
               We make no guarantees about the accuracy of our predictions or their performance. 
               Our algorithm has been backtested and currently achieves 51.7% accuracy against the spread, 
@@ -39,7 +39,7 @@ export default function FAQ() {
             </p>
           </div>
           <div className="bg-white p-4 rounded-lg border border-orange-200">
-            <h3 className="font-semibold mb-2">Educational Content</h3>
+            <h3 className="font-semibold mb-2">📚 Educational Content</h3>
             <p className="text-sm">
               Our analysis, predictions, and insights are meant to help you understand college football 
               trends and patterns. Use this information to enhance your knowledge and enjoyment of the sport.
