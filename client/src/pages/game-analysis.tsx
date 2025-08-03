@@ -314,7 +314,22 @@ export default function GameAnalysis() {
                   </div>
                   {selectedGame.spread && (
                     <div className="flex justify-center">
-                      {Math.abs(analysis.predictiveMetrics.spreadPrediction - selectedGame.spread) >= 2.0 ? (
+                      {(() => {
+                        const vegasSpread = selectedGame.spread;
+                        const ourSpread = analysis.predictiveMetrics.spreadPrediction;
+                        
+                        // Check if teams are favored by different teams (major disagreement)
+                        const vegasFavorsHome = vegasSpread > 0; // Positive spread means home team favored
+                        const weFavorHome = ourSpread > 0; // Positive spread means home team favored
+                        const differentTeamsFavored = vegasFavorsHome !== weFavorHome;
+                        
+                        // Calculate total disagreement
+                        const totalDisagreement = differentTeamsFavored 
+                          ? Math.abs(vegasSpread) + Math.abs(ourSpread)
+                          : Math.abs(ourSpread - vegasSpread);
+                          
+                        return totalDisagreement >= 2.0 || differentTeamsFavored;
+                      })() ? (
                         <Badge className={`${
                           analysis.predictiveMetrics.spreadPrediction > selectedGame.spread
                             ? 'bg-green-600 hover:bg-green-700'
@@ -323,15 +338,20 @@ export default function GameAnalysis() {
                           {(() => {
                             const vegasSpread = selectedGame.spread;
                             const ourSpread = analysis.predictiveMetrics.spreadPrediction;
-                            const edge = Math.abs(ourSpread - vegasSpread);
                             
-                            // Only recommend bets with significant edge (2+ points)
-                            if (edge >= 2.0) {
-                              // Check if we disagree on the favorite
-                              const vegasFavorsHome = vegasSpread < 0;
-                              const weFavorHome = ourSpread < 0;
-                              
-                              if (vegasFavorsHome !== weFavorHome) {
+                            // Check if we disagree on the favorite
+                            const vegasFavorsHome = vegasSpread > 0; // Positive spread = home team favored
+                            const weFavorHome = ourSpread > 0; // Positive spread = home team favored
+                            const differentTeamsFavored = vegasFavorsHome !== weFavorHome;
+                            
+                            // Calculate edge
+                            const edge = differentTeamsFavored 
+                              ? Math.abs(vegasSpread) + Math.abs(ourSpread) // Total disagreement
+                              : Math.abs(ourSpread - vegasSpread); // Same direction disagreement
+                            
+                            // Only recommend bets with significant edge (2+ points) or different teams favored
+                            if (edge >= 2.0 || differentTeamsFavored) {
+                              if (differentTeamsFavored) {
                                 // Complete disagreement on who wins - major value
                                 const ourFavorite = weFavorHome ? selectedGame.homeTeam?.name : selectedGame.awayTeam?.name;
                                 const points = Math.abs(vegasSpread);
