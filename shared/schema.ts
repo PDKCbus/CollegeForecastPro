@@ -76,6 +76,11 @@ export const games = pgTable("games", {
   isConferenceGame: boolean("is_conference_game").default(false),
   isRivalryGame: boolean("is_rivalry_game").default(false),
   isFeatured: boolean("is_featured").default(false),
+  isNeutralSite: boolean("is_neutral_site").default(false),
+  venue: text("venue"),
+  city: text("city"),
+  state: text("state"),
+  country: text("country").default("USA"),
   // Weather data
   temperature: real("temperature"), // Fahrenheit
   windSpeed: real("wind_speed"), // MPH

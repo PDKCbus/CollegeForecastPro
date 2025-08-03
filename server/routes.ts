@@ -863,7 +863,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           weatherCondition: game.weatherCondition
         },
         game.spread,
-        false
+        game.isNeutralSite || false
       );
 
       console.log(`🔮 Unified prediction for game ${gameId}:`, {
@@ -1922,7 +1922,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           weatherCondition: game.weatherCondition
         },
         game.spread,
-        false // assuming not neutral site for now
+        game.isNeutralSite || false
       );
 
       // Calculate win probabilities from OUR PREDICTION spread
