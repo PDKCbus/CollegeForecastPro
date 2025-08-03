@@ -81,28 +81,7 @@ export default function FAQ() {
           </AccordionContent>
         </AccordionItem>
 
-        {/* Algorithm Performance */}
-        <AccordionItem value="algorithm-performance" className="border rounded-lg px-4">
-          <AccordionTrigger className="text-left">
-            <div className="flex items-center gap-2">
-              <Calculator className="h-4 w-4" />
-              How accurate are your predictions?
-            </div>
-          </AccordionTrigger>
-          <AccordionContent className="text-gray-600 pt-4">
-            <p className="mb-4">
-              We believe in transparency about our approach to college football analysis:
-            </p>
-            <p className="mb-4">
-              Our algorithm currently underperforms Vegas lines, which is expected since professional 
-              sportsbooks have teams of experts, real-time data, and decades of refinement.
-            </p>
-            <p>
-              We continue to research and improve our models by analyzing additional factors like 
-              player impact, advanced team metrics, and situational trends.
-            </p>
-          </AccordionContent>
-        </AccordionItem>
+
 
         {/* Rick's Picks vs Algorithm */}
         <AccordionItem value="ricks-vs-algorithm" className="border rounded-lg px-4">
