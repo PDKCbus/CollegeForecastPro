@@ -189,7 +189,7 @@ git checkout main
 ```bash
 # Create production environment file
 cp .env.example .env.production
-nano .env.production
+vim .env.production
 ```
 
 **Production .env.production Configuration:**
