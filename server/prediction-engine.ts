@@ -307,7 +307,7 @@ export class RicksPicksPredictionEngine {
       keyFactors: allFactors,
       recommendedBet,
       vegasLine: vegasSpread,
-      edge: vegasSpread !== null ? Math.abs(totalScore - vegasSpread) : undefined,
+      edge: vegasSpread ? Math.abs(totalScore - vegasSpread) : undefined,
       factorBreakdown: {
         weather: weatherFactor.score,
         conference: conferenceFactor.score,
