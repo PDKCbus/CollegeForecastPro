@@ -1,0 +1,19 @@
+# Rick's Picks Data Sync Log
+# Format: [TIMESTAMP] - EVENT_TYPE: Description
+[2025-08-03T15:41:53.886Z] - AUTO_SYNC: Triggered - Regular 4-hour scheduled update
+[2025-08-03T15:41:53.887Z] - SYNC_START: CURRENT_WEEK_SYNC Week 1 2025 season
+[2025-08-03T15:41:53.887Z] - API_REQUEST: /games year=2025&week=1&seasonType=regular
+[2025-08-03T15:41:53.887Z] - API_REQUEST: /lines year=2025&week=1&seasonType=regular
+[2025-08-03T15:41:54.164Z] - API_RESPONSE: /games - 142 records
+[2025-08-03T15:41:54.164Z] - API_RESPONSE: /lines - 96 records
+[2025-08-03T15:41:56.116Z] - INFO: Data sync logging test requested via API
+[2025-08-03T15:42:01.089Z] - SYNC_COMPLETE: CURRENT_WEEK_SYNC 10 games processed
+[2025-08-03T15:42:01.090Z] - SYNC_COMPLETE: AUTO_SYNC_4H Regular scheduled sync completed
+[2025-08-03T15:42:15.458Z] - AUTO_SYNC: Triggered - Regular 4-hour scheduled update
+[2025-08-03T15:42:15.459Z] - SYNC_START: CURRENT_WEEK_SYNC Week 1 2025 season
+[2025-08-03T15:42:15.460Z] - API_REQUEST: /games year=2025&week=1&seasonType=regular
+[2025-08-03T15:42:15.460Z] - API_REQUEST: /lines year=2025&week=1&seasonType=regular
+[2025-08-03T15:42:15.772Z] - API_RESPONSE: /games - 142 records
+[2025-08-03T15:42:15.772Z] - API_RESPONSE: /lines - 96 records
+[2025-08-03T15:42:22.890Z] - SYNC_COMPLETE: CURRENT_WEEK_SYNC 10 games processed
+[2025-08-03T15:42:22.890Z] - SYNC_COMPLETE: AUTO_SYNC_4H Regular scheduled sync completed

@@ -13,11 +13,30 @@ import ELORatingsCollector from "./elo-ratings-collector";
 import RankingsCollector from "./rankings-collector";
 import { z } from "zod";
 import { insertGameSchema, insertTeamSchema, insertPredictionSchema, insertSentimentAnalysisSchema } from "@shared/schema";
+import { dataSyncLogger } from "./data-sync-logger";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Test endpoint
   app.get("/api/test", (req, res) => {
     res.json({ message: "API is working", timestamp: new Date().toISOString() });
+  });
+
+  // Data sync logging test endpoint
+  app.get("/api/test/data-sync-log", (req, res) => {
+    try {
+      dataSyncLogger.logInfo("Data sync logging test requested via API");
+      const recentLogs = dataSyncLogger.getRecentLogs(20);
+      res.json({ 
+        message: "Data sync logging is working", 
+        recentLogs: recentLogs,
+        logCount: recentLogs.length
+      });
+    } catch (error) {
+      res.status(500).json({ 
+        message: "Data sync logging test failed", 
+        error: error instanceof Error ? error.message : String(error)
+      });
+    }
   });
 
   // Teams API
@@ -1360,9 +1379,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       // Regular 4-hour sync with smart caching
       if (now - lastSyncTime > SYNC_INTERVAL) {
+        dataSyncLogger.logAutoSyncTrigger("Regular 4-hour scheduled update");
         console.log("Auto-syncing: Regular 4-hour update");
         await syncCurrentWeekData();
         lastSyncTime = now;
+        dataSyncLogger.logSyncComplete("AUTO_SYNC_4H", "Regular scheduled sync completed");
       }
       
       // Check for games starting within 1 hour
@@ -1376,15 +1397,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
         
         if (gamesWithinHour.length > 0) {
+          dataSyncLogger.logAutoSyncTrigger(`${gamesWithinHour.length} games starting within 1 hour`);
           console.log(`Auto-syncing: ${gamesWithinHour.length} games starting within 1 hour`);
           await syncCurrentWeekData();
           lastSyncTime = now;
+          dataSyncLogger.logSyncComplete("AUTO_SYNC_PREGAME", `Pre-game sync completed for ${gamesWithinHour.length} games`);
         }
         
         lastGameCheckTime = now;
       }
     } catch (error) {
       console.error("Auto-sync error:", error);
+      dataSyncLogger.logSyncError("AUTO_SYNC", error instanceof Error ? error.message : String(error));
     }
   }
 
@@ -1393,7 +1417,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
     if (!apiKey) return;
 
     try {
+      dataSyncLogger.logSyncStart("CURRENT_WEEK_SYNC", "Week 1 2025 season");
+      
       // Fetch current week games and betting lines
+      dataSyncLogger.logApiRequest("/games", "year=2025&week=1&seasonType=regular");
+      dataSyncLogger.logApiRequest("/lines", "year=2025&week=1&seasonType=regular");
+      
       const [gamesResponse, linesResponse] = await Promise.all([
         fetch(`https://api.collegefootballdata.com/games?year=2025&week=1&seasonType=regular`, {
           headers: { "Authorization": `Bearer ${apiKey}` }
@@ -1406,6 +1435,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (gamesResponse.ok && linesResponse.ok) {
         const games = await gamesResponse.json();
         const lines = await linesResponse.json();
+        
+        dataSyncLogger.logApiResponse("/games", games.length);
+        dataSyncLogger.logApiResponse("/lines", lines.length);
         
         console.log(`Auto-sync: Processing ${games.length} games with ${lines.length} betting lines`);
         
@@ -1544,9 +1576,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
         }
         
         console.log(`Auto-sync completed: ${processedCount} games processed`);
+        dataSyncLogger.logSyncComplete("CURRENT_WEEK_SYNC", `${processedCount} games processed`);
       }
     } catch (error) {
       console.error("Sync current week data error:", error);
+      dataSyncLogger.logSyncError("CURRENT_WEEK_SYNC", error instanceof Error ? error.message : String(error));
     }
   }
 
