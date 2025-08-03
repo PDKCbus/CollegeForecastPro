@@ -143,27 +143,31 @@ export default function GameAnalysis() {
     const ourTotal = 47 + offensiveFactor + (homeRankBonus + awayRankBonus) * 0.5;
     const finalTotal = Math.round(ourTotal);
 
-    // Win probability calculation using Vegas spread (more reliable)
-    // Negative spread = home team favored, positive = away team favored
+    // Win probability calculation using Vegas spread
+    // For BSU @ SF with spread = 9, BSU is 9-point favorite (away team favored)
     const vegasLine = vegasSpread || 0;
-    let homeWinProbability: number;
+    let favoredTeamWinProbability: number;
     
     if (vegasLine === 0) {
-      // Pick 'em game
-      homeWinProbability = 0.53; // Slight home field advantage
+      // Pick 'em game - home gets slight edge
+      favoredTeamWinProbability = 0.53; // Home team probability
     } else {
       // Convert spread to probability using standard formula
-      // Rule: negative spread = home favored, positive = away favored
       const spreadPoints = Math.abs(vegasLine);
-      const baseProbability = 0.5 + (spreadPoints * 0.025); // ~2.5% per point
-      
-      if (vegasLine < 0) {
-        // Home team favored (negative spread)
-        homeWinProbability = Math.min(0.85, baseProbability);
-      } else {
-        // Away team favored (positive spread) 
-        homeWinProbability = Math.max(0.15, 1 - baseProbability);
-      }
+      favoredTeamWinProbability = Math.min(0.85, 0.5 + (spreadPoints * 0.025)); // ~2.5% per point
+    }
+    
+    // Determine which team is favored and assign probabilities
+    let homeWinProbability: number;
+    if (vegasLine < 0) {
+      // Negative spread = home team favored
+      homeWinProbability = favoredTeamWinProbability;
+    } else if (vegasLine > 0) {
+      // Positive spread = away team favored (like BSU @ SF)
+      homeWinProbability = 1 - favoredTeamWinProbability;
+    } else {
+      // Pick 'em
+      homeWinProbability = 0.53;
     }
     
     const probability = homeWinProbability;
@@ -451,13 +455,36 @@ export default function GameAnalysis() {
                             : 'bg-blue-600 hover:bg-blue-700'
                         } text-white`}>
                           {/* 
-                            If our prediction is HIGHER than Vegas (less negative), we think the favorite won't cover
-                            If our prediction is LOWER than Vegas (more negative), we think the favorite will cover more
+                            BSU @ SF: Vegas = +9 (SF gets 9), Our prediction = +5.5 (SF gets 5.5)
+                            We think SF should get fewer points, so take BSU
                           */}
-                          {analysis.predictiveMetrics.spreadPrediction > selectedGame.spread
-                            ? `Take ${selectedGame.awayTeam?.name} +${formatSpread(Math.abs(selectedGame.spread))}` // Take the underdog
-                            : `Take ${selectedGame.homeTeam?.name} ${formatSpread(selectedGame.spread)}` // Take the favorite
-                          }
+                          {(() => {
+                            const vegasLine = selectedGame.spread;
+                            const ourLine = analysis.predictiveMetrics.spreadPrediction;
+                            
+                            if (vegasLine > 0 && ourLine > 0) {
+                              // Both positive - away team favored in both
+                              if (ourLine < vegasLine) {
+                                // We think underdog gets too many points - take favorite
+                                return `Take ${selectedGame.awayTeam?.name} -${formatSpread(vegasLine)}`;
+                              } else {
+                                // We think underdog doesn't get enough points - take underdog
+                                return `Take ${selectedGame.homeTeam?.name} +${formatSpread(vegasLine)}`;
+                              }
+                            } else if (vegasLine < 0 && ourLine < 0) {
+                              // Both negative - home team favored in both
+                              if (ourLine > vegasLine) {
+                                // We think underdog gets too many points - take favorite
+                                return `Take ${selectedGame.homeTeam?.name} ${formatSpread(vegasLine)}`;
+                              } else {
+                                // We think underdog doesn't get enough points - take underdog
+                                return `Take ${selectedGame.awayTeam?.name} +${formatSpread(Math.abs(vegasLine))}`;
+                              }
+                            } else {
+                              // Mixed signs - more complex logic needed
+                              return `Value Play Available`;
+                            }
+                          })()}
                         </Badge>
                       ) : (
                         <Badge variant="secondary">No Strong Edge</Badge>
