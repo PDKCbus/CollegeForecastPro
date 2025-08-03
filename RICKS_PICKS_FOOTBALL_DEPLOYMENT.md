@@ -18,12 +18,23 @@ Deploy your complete Rick's Picks platform with enhanced algorithm (52.9% ATS) t
    - **Blueprint**: Ubuntu 22.04 LTS
    - **Instance Plan**: $12/month (2 GB RAM, 2 vCPU) or $24/month (4 GB RAM, 2 vCPU)
    - **Instance Name**: `ricks-picks-football-prod`
+   - Click "Create instance"
 
-3. Configure Networking:
-   - Open ports: 22 (SSH), 80 (HTTP), 443 (HTTPS)
-   - **Assign Static IP** (important!)
+### 1.2 Configure Networking (After Instance Creation)
 
-### 1.2 Domain Configuration
+Once your instance is running:
+
+1. **Go to the Networking tab** of your instance
+2. **Open required ports**:
+   - Port 22 (SSH) - Usually open by default
+   - Port 80 (HTTP) - Click "Add rule" → HTTP
+   - Port 443 (HTTPS) - Click "Add rule" → HTTPS
+3. **Assign Static IP**:
+   - Click "Create static IP"
+   - Attach it to your instance
+   - **Important**: Note this IP address for DNS configuration
+
+### 1.3 Domain Configuration
 Configure your `ricks-picks.football` domain DNS:
 
 ```
