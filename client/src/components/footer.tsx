@@ -1,4 +1,4 @@
-import { Link } from "wouter";
+import { Link, useLocation } from "wouter";
 
 export function Footer() {
   return (
@@ -36,10 +36,42 @@ export function Footer() {
             <div>
               <h4 className="text-white font-bold mb-4">Navigation</h4>
               <ul className="space-y-2">
-                <li><a href="/" className="text-white/70 hover:text-white transition-colors">Home</a></li>
-                <li><a href="/" className="text-white/70 hover:text-white transition-colors">Upcoming Games</a></li>
-                <li><a href="/historical" className="text-white/70 hover:text-white transition-colors">Historical Games</a></li>
-                <li><a href="/analysis" className="text-white/70 hover:text-white transition-colors">Analysis</a></li>
+                <li>
+                  <Link 
+                    href="/" 
+                    className="text-white/70 hover:text-white transition-colors"
+                    onClick={() => window.scrollTo(0, 0)}
+                  >
+                    Home
+                  </Link>
+                </li>
+                <li>
+                  <Link 
+                    href="/" 
+                    className="text-white/70 hover:text-white transition-colors"
+                    onClick={() => window.scrollTo(0, 0)}
+                  >
+                    Upcoming Games
+                  </Link>
+                </li>
+                <li>
+                  <Link 
+                    href="/historical" 
+                    className="text-white/70 hover:text-white transition-colors"
+                    onClick={() => window.scrollTo(0, 0)}
+                  >
+                    Historical Games
+                  </Link>
+                </li>
+                <li>
+                  <Link 
+                    href="/analysis" 
+                    className="text-white/70 hover:text-white transition-colors"
+                    onClick={() => window.scrollTo(0, 0)}
+                  >
+                    Analysis
+                  </Link>
+                </li>
               </ul>
             </div>
             
@@ -47,15 +79,39 @@ export function Footer() {
               <h4 className="text-white font-bold mb-4">Resources</h4>
               <ul className="space-y-2">
                 <li><a href="https://collegefootballdata.com" target="_blank" rel="noopener noreferrer" className="text-white/70 hover:text-white transition-colors">College Football Data</a></li>
-                <li><a href="/faq" className="text-white/70 hover:text-white transition-colors">FAQ</a></li>
+                <li>
+                  <Link 
+                    href="/faq" 
+                    className="text-white/70 hover:text-white transition-colors"
+                    onClick={() => window.scrollTo(0, 0)}
+                  >
+                    FAQ
+                  </Link>
+                </li>
               </ul>
             </div>
             
             <div>
               <h4 className="text-white font-bold mb-4">Contact</h4>
               <ul className="space-y-2">
-                <li><a href="/contact" className="text-white/70 hover:text-white transition-colors">Contact Us</a></li>
-                <li><a href="/contact" className="text-white/70 hover:text-white transition-colors">Partnerships</a></li>
+                <li>
+                  <Link 
+                    href="/contact" 
+                    className="text-white/70 hover:text-white transition-colors"
+                    onClick={() => window.scrollTo(0, 0)}
+                  >
+                    Contact Us
+                  </Link>
+                </li>
+                <li>
+                  <Link 
+                    href="/contact" 
+                    className="text-white/70 hover:text-white transition-colors"
+                    onClick={() => window.scrollTo(0, 0)}
+                  >
+                    Partnerships
+                  </Link>
+                </li>
               </ul>
             </div>
           </div>
