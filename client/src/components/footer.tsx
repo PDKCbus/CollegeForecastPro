@@ -36,10 +36,10 @@ export function Footer() {
             <div>
               <h4 className="text-white font-bold mb-4">Navigation</h4>
               <ul className="space-y-2">
-                <li><Link href="/" className="text-white/70 hover:text-white transition-colors">Home</Link></li>
-                <li><Link href="/" className="text-white/70 hover:text-white transition-colors">Upcoming Games</Link></li>
-                <li><Link href="/historical" className="text-white/70 hover:text-white transition-colors">Historical Games</Link></li>
-                <li><Link href="/analysis" className="text-white/70 hover:text-white transition-colors">Analysis</Link></li>
+                <li><a href="/" className="text-white/70 hover:text-white transition-colors">Home</a></li>
+                <li><a href="/" className="text-white/70 hover:text-white transition-colors">Upcoming Games</a></li>
+                <li><a href="/historical" className="text-white/70 hover:text-white transition-colors">Historical Games</a></li>
+                <li><a href="/analysis" className="text-white/70 hover:text-white transition-colors">Analysis</a></li>
               </ul>
             </div>
             
@@ -47,15 +47,15 @@ export function Footer() {
               <h4 className="text-white font-bold mb-4">Resources</h4>
               <ul className="space-y-2">
                 <li><a href="https://collegefootballdata.com" target="_blank" rel="noopener noreferrer" className="text-white/70 hover:text-white transition-colors">College Football Data</a></li>
-                <li><Link href="/faq" className="text-white/70 hover:text-white transition-colors">FAQ</Link></li>
+                <li><a href="/faq" className="text-white/70 hover:text-white transition-colors">FAQ</a></li>
               </ul>
             </div>
             
             <div>
               <h4 className="text-white font-bold mb-4">Contact</h4>
               <ul className="space-y-2">
-                <li><Link href="/contact" className="text-white/70 hover:text-white transition-colors">Contact Us</Link></li>
-                <li><Link href="/contact" className="text-white/70 hover:text-white transition-colors">Partnerships</Link></li>
+                <li><a href="/contact" className="text-white/70 hover:text-white transition-colors">Contact Us</a></li>
+                <li><a href="/contact" className="text-white/70 hover:text-white transition-colors">Partnerships</a></li>
               </ul>
             </div>
           </div>
