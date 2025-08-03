@@ -185,64 +185,131 @@ git clone https://github.com/PDKCbus/CollegeForecastPro.git .
 git checkout main
 ```
 
-### 4.2 Configure Production Environment
+✅ **COMPLETED**: Repository cloned, now at main branch
+
+### 4.2 Install Node.js and Dependencies
+```bash
+# Install Node.js and npm (required for package management)
+sudo apt update
+sudo apt install nodejs npm -y
+
+# Verify installation
+node --version
+npm --version
+
+# Install project dependencies (fixes Docker build issues)
+npm install
+```
+
+**Note**: This resolves package-lock.json sync issues that can cause Docker builds to fail.
+
+### 4.3 Configure Production Environment
 ```bash
 # Create production environment file
-cp .env.example .env.production
 vim .env.production
 ```
 
-**Production .env.production Configuration:**
+**Production .env.production Configuration (CURRENT STATUS):**
 ```env
 NODE_ENV=production
-DATABASE_URL=postgresql://postgres:your-secure-password@db:5432/rickspicks
-CFBD_API_KEY=your_real_cfbd_api_key
-OPENWEATHER_API_KEY=your_real_openweather_key
-VITE_GOOGLE_ADSENSE_CLIENT_ID=ca-pub-your-real-adsense-id
-SESSION_SECRET=your-super-secure-session-secret-minimum-64-characters
+DATABASE_URL=postgresql://postgres:SecureRicksPicks2025!@db:5432/rickspicks
+CFBD_API_KEY=KAqoGKrTLrTxJd5y/YJ+UhqsJFXnN4F6nHllM9VDFsE4sAR1F7CwI4BlKqB0A3DI
+OPENWEATHER_API_KEY=c86af39e6eaab7b4f0e7a3e18e5ef4d5
+VITE_GOOGLE_ADSENSE_CLIENT_ID=ca-pub-your-adsense-id-when-ready
+SESSION_SECRET=RicksPicksFootballSecureSessionSecret2025VeryLongAndSecureString123!
 POSTGRES_DB=rickspicks
 POSTGRES_USER=postgres
-POSTGRES_PASSWORD=your-secure-password
-ISSUER_URL=https://replit.com/oidc
-REPL_ID=your-repl-id
-REPLIT_DOMAINS=ricks-picks.football
+POSTGRES_PASSWORD=SecureRicksPicks2025!
 ```
 
-### 4.3 Update Nginx Configuration
+✅ **COMPLETED**: Environment file configured with working API keys
+
+### 4.4 Install Nginx and Copy Configuration
 ```bash
-# Update nginx.conf for your new domain
-nano nginx.conf
+# Install nginx web server
+sudo apt install nginx -y
+
+# Copy the project nginx configuration to system location
+sudo cp nginx.conf /etc/nginx/nginx.conf
+
+# Test configuration (will fail until Docker containers are running)
+sudo nginx -t
 ```
 
-Update the server_name line:
-```nginx
-server_name ricks-picks.football www.ricks-picks.football;
-```
+✅ **COMPLETED**: Nginx installed and configured
 
-### 4.4 Configure SSL for Docker
+### 4.5 Deploy with Docker
 ```bash
-# Create SSL directory and copy certificates
-mkdir -p ssl
-sudo cp /etc/letsencrypt/live/ricks-picks.football/fullchain.pem ssl/
-sudo cp /etc/letsencrypt/live/ricks-picks.football/privkey.pem ssl/
-sudo chown -R ubuntu:ubuntu ssl/
-```
+# Build and start Docker containers (this may take several minutes first time)
+docker-compose up -d --build
 
-## Step 5: Deploy with Docker
-
-### 5.1 Build and Start Services
-```bash
-# Build and deploy
-docker-compose --env-file .env.production up -d --build
-
-# Check status
+# Check container status
 docker-compose ps
+
+# View application logs
 docker-compose logs -f app
+```
+
+**Expected Output After Successful Build:**
+```
+Name                    Command               State                         Ports
+app_1                   docker-entrypoint.sh npm ...   Up      0.0.0.0:5000->5000/tcp
+db_1                    docker-entrypoint.sh postgres  Up      5432/tcp
+nginx_1                 /docker-entrypoint.sh nginx   Up      0.0.0.0:80->80/tcp, 0.0.0.0:443->443/tcp
+```
+
+### 4.6 Configure SSL Certificates for Nginx
+```bash
+# Create SSL certificate directory for nginx
+sudo mkdir -p /etc/ssl/certs
+
+# Copy Let's Encrypt certificates to nginx expected location
+sudo cp /etc/letsencrypt/live/ricks-picks.football/fullchain.pem /etc/ssl/certs/
+sudo cp /etc/letsencrypt/live/ricks-picks.football/privkey.pem /etc/ssl/certs/
+
+# Test nginx configuration (should work now that containers are running)
+sudo nginx -t
+
+# Start nginx with new configuration
+sudo systemctl restart nginx
+sudo systemctl enable nginx
+```
+
+## Step 5: Final Deployment Verification
+
+### 5.1 Current Deployment Status
+
+**COMPLETED STEPS:**
+✅ AWS Lightsail instance created with static IP (44.205.204.78)  
+✅ DNS configured: ricks-picks.football → static IP  
+✅ SSL certificates created with Let's Encrypt  
+✅ Repository cloned to `/home/ubuntu/ricks-picks`  
+✅ Production environment file configured with working API keys  
+✅ Nginx installed and configuration copied  
+
+**CURRENT STEP: Installing Node.js and Building Docker Containers**
+```bash
+# From /home/ubuntu/ricks-picks directory:
+
+# Install Node.js (CURRENTLY RUNNING)
+sudo apt update
+sudo apt install nodejs npm -y
+npm install
+
+# Build and start Docker containers (NEXT)
+docker-compose up -d --build
+
+# Configure SSL for nginx (NEXT)
+sudo mkdir -p /etc/ssl/certs
+sudo cp /etc/letsencrypt/live/ricks-picks.football/fullchain.pem /etc/ssl/certs/
+sudo cp /etc/letsencrypt/live/ricks-picks.football/privkey.pem /etc/ssl/certs/
+sudo nginx -t
+sudo systemctl restart nginx
 ```
 
 ### 5.2 Initialize Database
 ```bash
-# Run database migrations
+# Run database migrations (after Docker is running)
 docker-compose exec app npm run db:push
 ```
 
