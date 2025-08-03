@@ -34,8 +34,7 @@ export default function FAQ() {
             <h3 className="font-semibold mb-2">📊 No Guarantees on Results</h3>
             <p className="text-sm">
               We make no guarantees about the accuracy of our predictions or their performance. 
-              Our algorithm has been backtested and currently achieves 51.7% accuracy against the spread, 
-              which is below the 52.4% needed to be profitable after accounting for typical betting costs.
+              Sports predictions are inherently uncertain, and past performance does not guarantee future results.
             </p>
           </div>
           <div className="bg-white p-4 rounded-lg border border-orange-200">
@@ -87,16 +86,8 @@ export default function FAQ() {
           </AccordionTrigger>
           <AccordionContent className="text-gray-600 pt-4">
             <p className="mb-4">
-              We believe in complete transparency about our algorithm's performance:
+              We believe in transparency about our approach to college football analysis:
             </p>
-            <div className="bg-gray-50 p-4 rounded-lg mb-4">
-              <h4 className="font-semibold mb-2">Backtesting Results (300 games, 2022-2023)</h4>
-              <ul className="space-y-1 text-sm">
-                <li>• <strong>51.7% Against The Spread</strong> (need 52.4% to break even)</li>
-                <li>• <strong>26.5% worse than Vegas</strong> at predicting point spreads</li>
-                <li>• Average prediction error: 14.68 points vs Vegas 11.61 points</li>
-              </ul>
-            </div>
             <p className="mb-4">
               Our algorithm currently underperforms Vegas lines, which is expected since professional 
               sportsbooks have teams of experts, real-time data, and decades of refinement.
