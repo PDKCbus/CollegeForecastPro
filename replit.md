@@ -90,6 +90,15 @@ Key tables include:
 - **Architectural Change**: Eliminated client-side algorithm calculations in favor of server-side unified predictions
 - **Data Integrity**: Fixed issue where game analysis page showed 5.41 spread while Share Your Pick showed 8.5 spread for same game
 
+### Neutral Site & International Game Detection (August 2025)
+- **CRITICAL BUG FIXED**: Prediction engine was hardcoded to ignore neutral site status, applying home field advantage incorrectly
+- **Database Schema Enhanced**: Added `isNeutralSite`, `venue`, `city`, `state`, `country` columns to games table
+- **Comprehensive Detection**: Implemented algorithm to identify all neutral sites including international games, bowl games, championship venues
+- **International Game Support**: Automatic detection and proper venue information for games in Ireland, England, Germany, Mexico
+- **Algorithm Accuracy Improvement**: Dublin game spread corrected from 2.0 to 1.75 points (removed incorrect home field advantage)
+- **Visual Indicators**: Neutral site games now display "Neutral site: No home field advantage" in key factors
+- **Mass Update System**: Created comprehensive script to analyze and update ALL games in database for neutral site detection
+
 ### Advanced Analytics Engine Implementation (August 2025) - TARGET: 53-54% ATS
 - **COMPLETE IMPLEMENTATION**: All three advanced analytics modules successfully integrated into unified prediction system
 - **Player Efficiency Metrics** (+0.6 points target): QB performance analysis, completion percentage, yards per attempt, turnover rates, impact scoring (0-10 scale)
