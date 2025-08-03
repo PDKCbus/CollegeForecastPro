@@ -150,6 +150,11 @@ sudo ln -s /snap/bin/certbot /usr/bin/certbot
 # Get SSL certificate for ricks-picks.football
 sudo certbot certonly --standalone -d ricks-picks.football -d www.ricks-picks.football
 
+# When prompted:
+# Email: rickspickscfb@gmail.com
+# Terms: Yes (Y)
+# Share email with EFF: No (N) - optional
+
 # Set up auto-renewal
 sudo crontab -e
 # Add: 0 12 * * * /usr/bin/certbot renew --quiet

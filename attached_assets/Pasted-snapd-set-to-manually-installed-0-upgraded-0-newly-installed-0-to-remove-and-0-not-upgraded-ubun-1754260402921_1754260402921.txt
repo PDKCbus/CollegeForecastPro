@@ -1,0 +1,45 @@
+snapd set to manually installed.
+0 upgraded, 0 newly installed, 0 to remove and 0 not upgraded.
+ubuntu@ip-172-26-10-37:~$ sudo snap install core; sudo snap refresh core
+
+core 16-2.61.4-20250508 from Canonical✓ installed
+snap "core" has no updates available
+ubuntu@ip-172-26-10-37:~$ sudo snap install --classic certbot
+certbot 4.1.1 from Certbot Project (certbot-eff✓) installed
+ubuntu@ip-172-26-10-37:~$ sudo ln -s /snap/bin/certbot /usr/bin/certbot
+ubuntu@ip-172-26-10-37:~$ sudo certbot certonly --standalone -d ricks-picks.football -d www.ricks-picks.football
+Saving debug log to /var/log/letsencrypt/letsencrypt.log
+Enter email address or hit Enter to skip.
+ (Enter 'c' to cancel): rickspickscfb@gmail.com
+
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+Please read the Terms of Service at:
+https://letsencrypt.org/documents/LE-SA-v1.5-February-24-2025.pdf
+You must agree in order to register with the ACME server. Do you agree?
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+(Y)es/(N)o: y
+
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+Would you be willing, once your first certificate is successfully issued, to
+share your email address with the Electronic Frontier Foundation, a founding
+partner of the Let's Encrypt project and the non-profit organization that
+develops Certbot? We'd like to send you email about our work encrypting the web,
+EFF news, campaigns, and ways to support digital freedom.
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+(Y)es/(N)o: n
+Account registered.
+Requesting a certificate for ricks-picks.football and www.ricks-picks.football
+
+Successfully received certificate.
+Certificate is saved at: /etc/letsencrypt/live/ricks-picks.football/fullchain.pem
+Key is saved at:         /etc/letsencrypt/live/ricks-picks.football/privkey.pem
+This certificate expires on 2025-11-01.
+These files will be updated when the certificate renews.
+Certbot has set up a scheduled task to automatically renew this certificate in the background.
+
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+If you like Certbot, please consider supporting our work by:
+ * Donating to ISRG / Let's Encrypt:   https://letsencrypt.org/donate
+ * Donating to EFF:                    https://eff.org/donate-le
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+ubuntu@ip-172-26-10-37:~$ 
