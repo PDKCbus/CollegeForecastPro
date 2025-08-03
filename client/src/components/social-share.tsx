@@ -251,17 +251,50 @@ export function SocialShare({ game, prediction, ricksPick }: SocialShareProps) {
               
               {prediction && !ricksPick?.spreadPick && !ricksPick?.overUnderPick && (
                 <div className="bg-blue-50 dark:bg-blue-950 p-3 rounded-lg">
-                  <div className="font-semibold text-blue-700 dark:text-blue-300">
+                  <div className="font-semibold text-blue-700 dark:text-blue-300 mb-2">
                     🤓 ANALYSIS PICK:
                   </div>
                   {prediction.spreadPick && (
-                    <div className="text-sm">Spread: {prediction.spreadPick}</div>
+                    <div className="flex items-center gap-2 mb-1">
+                      {(() => {
+                        // Determine which team we're picking based on spread prediction
+                        const pickMatch = prediction.spreadPick.match(/^(.*?)\s+([+-]?\d+(?:\.\d+)?)/);
+                        if (pickMatch) {
+                          const teamName = pickMatch[1].trim();
+                          const spread = pickMatch[2];
+                          
+                          // Find the corresponding team and logo
+                          const isHomePick = teamName.toLowerCase().includes(game.homeTeam?.name?.toLowerCase() || '');
+                          const isAwayPick = teamName.toLowerCase().includes(game.awayTeam?.name?.toLowerCase() || '');
+                          
+                          const pickedTeam = isHomePick ? game.homeTeam : isAwayPick ? game.awayTeam : null;
+                          
+                          return (
+                            <>
+                              {pickedTeam?.logoUrl && (
+                                <img 
+                                  src={pickedTeam.logoUrl} 
+                                  alt={pickedTeam.name}
+                                  className="w-5 h-5 object-contain"
+                                />
+                              )}
+                              <span className="text-sm font-medium">
+                                {teamName} {spread}
+                              </span>
+                            </>
+                          );
+                        }
+                        return <span className="text-sm">Spread: {prediction.spreadPick}</span>;
+                      })()}
+                    </div>
                   )}
                   {prediction.overUnderPick && (
-                    <div className="text-sm">Total: {prediction.overUnderPick}</div>
+                    <div className="text-sm mb-1">Total: {prediction.overUnderPick}</div>
                   )}
                   {prediction.confidence && (
-                    <div className="text-sm">Confidence: {Math.round(prediction.confidence * 100)}%</div>
+                    <div className="text-sm text-blue-600 dark:text-blue-400">
+                      Confidence: {Math.round(prediction.confidence * 100)}%
+                    </div>
                   )}
                 </div>
               )}
