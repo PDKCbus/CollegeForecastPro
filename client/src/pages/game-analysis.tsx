@@ -384,11 +384,11 @@ export default function GameAnalysis() {
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
             <MetricCard
               title="Win Probability"
-              value={analysis.predictiveMetrics.winProbability > 50 ? analysis.predictiveMetrics.winProbability : 100 - analysis.predictiveMetrics.winProbability}
+              value={analysis.predictiveMetrics.spreadPrediction > 0 ? analysis.predictiveMetrics.winProbability : 100 - analysis.predictiveMetrics.winProbability}
               unit="%"
               icon={Target}
               trend="up"
-              teamLogo={analysis.predictiveMetrics.winProbability > 50 ? selectedGame.homeTeam?.logoUrl || undefined : selectedGame.awayTeam?.logoUrl || undefined}
+              teamLogo={analysis.predictiveMetrics.spreadPrediction > 0 ? selectedGame.homeTeam?.logoUrl || undefined : selectedGame.awayTeam?.logoUrl || undefined}
             />
             <MetricCard
               title="Confidence"

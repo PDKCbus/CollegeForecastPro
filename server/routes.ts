@@ -1806,20 +1806,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
         false // assuming not neutral site for now
       );
 
-      // Calculate win probabilities from Vegas spread
-      // For BSU @ SF with spread = 9: BSU is 9-point favorite (away team favored)
-      const vegasSpread = game.spread || 0;
+      // Calculate win probabilities from OUR PREDICTION spread
+      // Our prediction.spread: positive = home favored, negative = away favored
+      const ourSpread = prediction.spread;
       let homeWinProb: number;
       let awayWinProb: number;
       
-      if (vegasSpread < 0) {
-        // Negative spread = home team favored
-        const favoredTeamWinProb = Math.min(90, 50 + (Math.abs(vegasSpread) * 3.5));
+      if (ourSpread > 0) {
+        // Positive spread = home team favored by our algorithm
+        const favoredTeamWinProb = Math.min(90, 50 + (ourSpread * 3.5));
         homeWinProb = favoredTeamWinProb;
         awayWinProb = 100 - favoredTeamWinProb;
-      } else if (vegasSpread > 0) {
-        // Positive spread = away team favored (like BSU @ SF with +9)
-        const favoredTeamWinProb = Math.min(90, 50 + (vegasSpread * 3.5));
+      } else if (ourSpread < 0) {
+        // Negative spread = away team favored by our algorithm
+        const favoredTeamWinProb = Math.min(90, 50 + (Math.abs(ourSpread) * 3.5));
         awayWinProb = favoredTeamWinProb;
         homeWinProb = 100 - favoredTeamWinProb;
       } else {
