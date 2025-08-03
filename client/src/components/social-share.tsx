@@ -39,7 +39,7 @@ export function SocialShare({ game, prediction, ricksPick }: SocialShareProps) {
       shareText += "🤓 ANALYSIS PICK:\n";
       if (prediction.spreadPick) shareText += `Spread: ${prediction.spreadPick}\n`;
       if (prediction.overUnderPick) shareText += `Total: ${prediction.overUnderPick}\n`;
-      if (prediction.confidence) shareText += `Confidence: ${prediction.confidence}%\n`;
+      if (prediction.confidence) shareText += `Confidence: ${Math.round(prediction.confidence * 100)}%\n`;
     }
     
     shareText += "\n#CollegeFootball #BettingPicks #RicksPicks";
@@ -261,7 +261,7 @@ export function SocialShare({ game, prediction, ricksPick }: SocialShareProps) {
                     <div className="text-sm">Total: {prediction.overUnderPick}</div>
                   )}
                   {prediction.confidence && (
-                    <div className="text-sm">Confidence: {prediction.confidence}%</div>
+                    <div className="text-sm">Confidence: {Math.round(prediction.confidence * 100)}%</div>
                   )}
                 </div>
               )}
