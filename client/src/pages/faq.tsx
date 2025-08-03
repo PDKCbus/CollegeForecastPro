@@ -173,25 +173,25 @@ export default function FAQ() {
               How should I use this platform?
             </div>
           </AccordionTrigger>
-          <AccordionContent className="text-gray-600 pt-4">
+          <AccordionContent className="text-white pt-4">
             <div className="space-y-4">
               <div>
-                <h4 className="font-semibold mb-2">Educational Research</h4>
-                <p className="text-sm">
+                <h4 className="font-semibold mb-2 text-white">Educational Research</h4>
+                <p className="text-sm text-white/90">
                   Use our analysis to learn about college football trends, understand how various 
                   factors influence game outcomes, and deepen your knowledge of the sport.
                 </p>
               </div>
               <div>
-                <h4 className="font-semibold mb-2">Entertainment Value</h4>
-                <p className="text-sm">
+                <h4 className="font-semibold mb-2 text-white">Entertainment Value</h4>
+                <p className="text-sm text-white/90">
                   Follow along with our predictions to add excitement to games you're watching. 
                   See how our analysis compares to actual outcomes.
                 </p>
               </div>
               <div>
-                <h4 className="font-semibold mb-2">Fantasy Football Insights</h4>
-                <p className="text-sm">
+                <h4 className="font-semibold mb-2 text-white">Fantasy Football Insights</h4>
+                <p className="text-sm text-white/90">
                   Our player impact analysis and weather data can provide context for fantasy 
                   football decisions and understanding of game conditions.
                 </p>
