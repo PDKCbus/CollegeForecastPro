@@ -454,34 +454,34 @@ export default function GameAnalysis() {
                             ? 'bg-green-600 hover:bg-green-700'
                             : 'bg-blue-600 hover:bg-blue-700'
                         } text-white`}>
-                          {/* 
-                            BSU @ SF: Vegas = 9 (BSU -9), Our prediction = 5.4 (SF -5.4)
-                            We disagree on who's favored - significant value play
-                          */}
                           {(() => {
-                            const vegasSpread = selectedGame.spread;
-                            const ourSpread = analysis.predictiveMetrics.spreadPrediction;
+                            const vegasSpread = selectedGame.spread; // 9 = BSU -9
+                            const ourSpread = analysis.predictiveMetrics.spreadPrediction; // 5.41 = SF -5.4
+                            const edge = Math.abs(ourSpread - vegasSpread);
                             
-                            // Vegas: BSU favored by 9 (positive spread for away team)
-                            // Our prediction: SF favored by 5.4 (positive prediction for home team)
-                            if (vegasSpread > 0 && ourSpread > 0) {
-                              // Vegas thinks away team wins, we think home team wins
-                              return `Take ${selectedGame.homeTeam?.name} +${formatSpread(vegasSpread)} - Strong Value`;
-                            } else if (vegasSpread < 0 && ourSpread < 0) {
-                              // Both favor home team, check magnitude
-                              if (Math.abs(ourSpread) < Math.abs(vegasSpread)) {
-                                return `Take ${selectedGame.awayTeam?.name} +${formatSpread(Math.abs(vegasSpread))}`;
+                            // BSU @ SF example:
+                            // Vegas: BSU -9 (spread = 9, away team favored)
+                            // Us: SF -5.4 (ourSpread = 5.41, home team favored)
+                            // We completely disagree on who wins!
+                            
+                            if (edge >= 3) {
+                              // Major disagreement between predictions
+                              if (vegasSpread > 0 && ourSpread > 0) {
+                                // Vegas favors away, we favor home - take home team getting points
+                                return `Take ${selectedGame.homeTeam?.name} +${formatSpread(vegasSpread)} - Strong Value`;
+                              } else if (vegasSpread < 0 && ourSpread < 0) {
+                                // Both favor home, check who favors more
+                                return Math.abs(ourSpread) > Math.abs(vegasSpread) 
+                                  ? `Take ${selectedGame.homeTeam?.name} ${formatSpread(vegasSpread)}`
+                                  : `Take ${selectedGame.awayTeam?.name} +${formatSpread(Math.abs(vegasSpread))}`;
                               } else {
-                                return `Take ${selectedGame.homeTeam?.name} ${formatSpread(vegasSpread)}`;
+                                // Different favorites - major value play
+                                return ourSpread > 0 
+                                  ? `Take ${selectedGame.homeTeam?.name} +${formatSpread(Math.abs(vegasSpread))} - Major Value`
+                                  : `Take ${selectedGame.awayTeam?.name} +${formatSpread(Math.abs(vegasSpread))} - Major Value`;
                               }
-                            } else if (vegasSpread > 0 && ourSpread < 0) {
-                              // Vegas favors away, we favor home - take home team
-                              return `Take ${selectedGame.homeTeam?.name} +${formatSpread(vegasSpread)} - Major Value`;
-                            } else if (vegasSpread < 0 && ourSpread > 0) {
-                              // Vegas favors home, we favor away - take away team  
-                              return `Take ${selectedGame.awayTeam?.name} +${formatSpread(Math.abs(vegasSpread))} - Major Value`;
                             } else {
-                              return `No Strong Edge`;
+                              return `Lean ${ourSpread > vegasSpread ? selectedGame.homeTeam?.name : selectedGame.awayTeam?.name}`;
                             }
                           })()}
                         </Badge>
