@@ -384,7 +384,7 @@ export default function GameAnalysis() {
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
             <MetricCard
               title="Win Probability"
-              value={analysis.predictiveMetrics.winProbability}
+              value={analysis.predictiveMetrics.winProbability > 50 ? analysis.predictiveMetrics.winProbability : 100 - analysis.predictiveMetrics.winProbability}
               unit="%"
               icon={Target}
               trend="up"
@@ -398,9 +398,9 @@ export default function GameAnalysis() {
             />
             <MetricCard
               title="Spread Prediction"
-              value={analysis.predictiveMetrics.spreadPrediction > 0 ? `+${formatSpread(analysis.predictiveMetrics.spreadPrediction)}` : formatSpread(analysis.predictiveMetrics.spreadPrediction)}
+              value={analysis.predictiveMetrics.spreadPrediction > 0 ? `-${formatSpread(analysis.predictiveMetrics.spreadPrediction)}` : `+${formatSpread(Math.abs(analysis.predictiveMetrics.spreadPrediction))}`}
               icon={BarChart3}
-              teamLogo={analysis.predictiveMetrics.spreadPrediction < 0 ? selectedGame.homeTeam?.logoUrl || undefined : selectedGame.awayTeam?.logoUrl || undefined}
+              teamLogo={analysis.predictiveMetrics.spreadPrediction > 0 ? selectedGame.homeTeam?.logoUrl || undefined : selectedGame.awayTeam?.logoUrl || undefined}
             />
             <MetricCard
               title="O/U Prediction"
@@ -439,9 +439,9 @@ export default function GameAnalysis() {
                     <div>
                       <div className="text-sm text-muted-foreground">Our Prediction</div>
                       <div className="font-medium">
-                        {analysis.predictiveMetrics.spreadPrediction < 0 
-                          ? `${selectedGame.homeTeam?.name} ${formatSpread(analysis.predictiveMetrics.spreadPrediction)}`
-                          : `${selectedGame.awayTeam?.name} -${formatSpread(analysis.predictiveMetrics.spreadPrediction)}`
+                        {analysis.predictiveMetrics.spreadPrediction > 0 
+                          ? `${selectedGame.homeTeam?.name} -${formatSpread(analysis.predictiveMetrics.spreadPrediction)}`
+                          : `${selectedGame.awayTeam?.name} -${formatSpread(Math.abs(analysis.predictiveMetrics.spreadPrediction))}`
                         }
                       </div>
                     </div>
@@ -455,34 +455,33 @@ export default function GameAnalysis() {
                             : 'bg-blue-600 hover:bg-blue-700'
                         } text-white`}>
                           {/* 
-                            BSU @ SF: Vegas = +9 (SF gets 9), Our prediction = +5.5 (SF gets 5.5)
-                            We think SF should get fewer points, so take BSU
+                            BSU @ SF: Vegas = 9 (BSU -9), Our prediction = 5.4 (SF -5.4)
+                            We disagree on who's favored - significant value play
                           */}
                           {(() => {
-                            const vegasLine = selectedGame.spread;
-                            const ourLine = analysis.predictiveMetrics.spreadPrediction;
+                            const vegasSpread = selectedGame.spread;
+                            const ourSpread = analysis.predictiveMetrics.spreadPrediction;
                             
-                            if (vegasLine > 0 && ourLine > 0) {
-                              // Both positive - away team favored in both
-                              if (ourLine < vegasLine) {
-                                // We think underdog gets too many points - take favorite
-                                return `Take ${selectedGame.awayTeam?.name} -${formatSpread(vegasLine)}`;
+                            // Vegas: BSU favored by 9 (positive spread for away team)
+                            // Our prediction: SF favored by 5.4 (positive prediction for home team)
+                            if (vegasSpread > 0 && ourSpread > 0) {
+                              // Vegas thinks away team wins, we think home team wins
+                              return `Take ${selectedGame.homeTeam?.name} +${formatSpread(vegasSpread)} - Strong Value`;
+                            } else if (vegasSpread < 0 && ourSpread < 0) {
+                              // Both favor home team, check magnitude
+                              if (Math.abs(ourSpread) < Math.abs(vegasSpread)) {
+                                return `Take ${selectedGame.awayTeam?.name} +${formatSpread(Math.abs(vegasSpread))}`;
                               } else {
-                                // We think underdog doesn't get enough points - take underdog
-                                return `Take ${selectedGame.homeTeam?.name} +${formatSpread(vegasLine)}`;
+                                return `Take ${selectedGame.homeTeam?.name} ${formatSpread(vegasSpread)}`;
                               }
-                            } else if (vegasLine < 0 && ourLine < 0) {
-                              // Both negative - home team favored in both
-                              if (ourLine > vegasLine) {
-                                // We think underdog gets too many points - take favorite
-                                return `Take ${selectedGame.homeTeam?.name} ${formatSpread(vegasLine)}`;
-                              } else {
-                                // We think underdog doesn't get enough points - take underdog
-                                return `Take ${selectedGame.awayTeam?.name} +${formatSpread(Math.abs(vegasLine))}`;
-                              }
+                            } else if (vegasSpread > 0 && ourSpread < 0) {
+                              // Vegas favors away, we favor home - take home team
+                              return `Take ${selectedGame.homeTeam?.name} +${formatSpread(vegasSpread)} - Major Value`;
+                            } else if (vegasSpread < 0 && ourSpread > 0) {
+                              // Vegas favors home, we favor away - take away team  
+                              return `Take ${selectedGame.awayTeam?.name} +${formatSpread(Math.abs(vegasSpread))} - Major Value`;
                             } else {
-                              // Mixed signs - more complex logic needed
-                              return `Value Play Available`;
+                              return `No Strong Edge`;
                             }
                           })()}
                         </Badge>
