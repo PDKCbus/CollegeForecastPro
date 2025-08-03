@@ -6,10 +6,10 @@ export default function FAQ() {
   return (
     <div className="container mx-auto px-4 py-8 max-w-4xl">
       <div className="text-center mb-8">
-        <h1 className="text-4xl font-bold text-gray-900 mb-4">
+        <h1 className="text-4xl font-bold text-white mb-4">
           Frequently Asked Questions
         </h1>
-        <p className="text-xl text-gray-600">
+        <p className="text-xl text-white/80">
           Everything you need to know about Rick's Picks and our college football analytics
         </p>
       </div>
