@@ -257,34 +257,53 @@ export function SocialShare({ game, prediction, ricksPick }: SocialShareProps) {
                   {prediction.spreadPick && (
                     <div className="flex items-center gap-2 mb-1">
                       {(() => {
-                        // Determine which team we're picking based on spread prediction
-                        const pickMatch = prediction.spreadPick.match(/^(.*?)\s+([+-]?\d+(?:\.\d+)?)/);
-                        if (pickMatch) {
-                          const teamName = pickMatch[1].trim();
-                          const spread = pickMatch[2];
-                          
-                          // Find the corresponding team and logo
-                          const isHomePick = teamName.toLowerCase().includes(game.homeTeam?.name?.toLowerCase() || '');
-                          const isAwayPick = teamName.toLowerCase().includes(game.awayTeam?.name?.toLowerCase() || '');
-                          
-                          const pickedTeam = isHomePick ? game.homeTeam : isAwayPick ? game.awayTeam : null;
-                          
-                          return (
-                            <>
-                              {pickedTeam?.logoUrl && (
-                                <img 
-                                  src={pickedTeam.logoUrl} 
-                                  alt={pickedTeam.name}
-                                  className="w-5 h-5 object-contain"
-                                />
-                              )}
-                              <span className="text-sm font-medium">
-                                {teamName} {spread}
-                              </span>
-                            </>
-                          );
+                        // Parse spread prediction to extract team and spread
+                        console.log('Prediction spreadPick:', prediction.spreadPick);
+                        console.log('Home team:', game.homeTeam?.name);
+                        console.log('Away team:', game.awayTeam?.name);
+                        
+                        // Check if the spread contains home or away team name
+                        const homeTeamName = game.homeTeam?.name || '';
+                        const awayTeamName = game.awayTeam?.name || '';
+                        
+                        let pickedTeam = null;
+                        let displayText = prediction.spreadPick;
+                        
+                        // Check if prediction mentions home team
+                        if (prediction.spreadPick.toLowerCase().includes(homeTeamName.toLowerCase())) {
+                          pickedTeam = game.homeTeam;
                         }
-                        return <span className="text-sm">Spread: {prediction.spreadPick}</span>;
+                        // Check if prediction mentions away team  
+                        else if (prediction.spreadPick.toLowerCase().includes(awayTeamName.toLowerCase())) {
+                          pickedTeam = game.awayTeam;
+                        }
+                        // Fallback: if spread is negative, home team is favored, otherwise away team
+                        else {
+                          const spreadMatch = prediction.spreadPick.match(/([+-]?\d+(?:\.\d+)?)/);
+                          if (spreadMatch) {
+                            const spreadValue = parseFloat(spreadMatch[1]);
+                            pickedTeam = spreadValue < 0 ? game.homeTeam : game.awayTeam;
+                          }
+                        }
+                        
+                        return (
+                          <>
+                            {pickedTeam?.logoUrl && (
+                              <img 
+                                src={pickedTeam.logoUrl} 
+                                alt={pickedTeam.name}
+                                className="w-5 h-5 object-contain"
+                                onError={(e) => {
+                                  console.log('Logo failed to load:', pickedTeam.logoUrl);
+                                  e.currentTarget.style.display = 'none';
+                                }}
+                              />
+                            )}
+                            <span className="text-sm font-medium">
+                              {displayText}
+                            </span>
+                          </>
+                        );
                       })()}
                     </div>
                   )}
