@@ -287,17 +287,19 @@ sudo systemctl enable nginx
 ✅ Production environment file configured with working API keys  
 ✅ Nginx installed and configuration copied  
 
-**CURRENT STEP: Installing Node.js and Building Docker Containers**
+**CURRENT STEP: Building Docker Containers (Fixing npm ci Issue)**
 ```bash
 # From /home/ubuntu/ricks-picks directory:
 
-# Install Node.js (CURRENTLY RUNNING)
-sudo apt update
-sudo apt install nodejs npm -y
-npm install
+# Clean Docker cache and rebuild (CURRENT)
+docker-compose down
+docker system prune -f
+docker-compose --env-file .env.production up -d --build --no-cache
 
-# Build and start Docker containers (NEXT)
-docker-compose up -d --build
+# Alternative if issues persist:
+# Run npm install on host first, then copy to Docker
+npm install
+docker-compose --env-file .env.production up -d --build --no-cache
 
 # Configure SSL for nginx (NEXT)
 sudo mkdir -p /etc/ssl/certs
@@ -306,6 +308,8 @@ sudo cp /etc/letsencrypt/live/ricks-picks.football/privkey.pem /etc/ssl/certs/
 sudo nginx -t
 sudo systemctl restart nginx
 ```
+
+**Note**: The `--no-cache` flag forces Docker to rebuild all layers, fixing package-lock.json sync issues. The `--env-file .env.production` ensures your API keys are properly loaded.
 
 ### 5.2 Initialize Database
 ```bash
