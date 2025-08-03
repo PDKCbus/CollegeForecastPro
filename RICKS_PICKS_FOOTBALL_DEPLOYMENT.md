@@ -300,12 +300,15 @@ docker system prune -af
 docker-compose --env-file .env.production build --no-cache
 docker-compose --env-file .env.production up -d
 
-# Configure SSL for nginx (NEXT)
-sudo mkdir -p /etc/ssl/certs
-sudo cp /etc/letsencrypt/live/ricks-picks.football/fullchain.pem /etc/ssl/certs/
-sudo cp /etc/letsencrypt/live/ricks-picks.football/privkey.pem /etc/ssl/certs/
-sudo nginx -t
-sudo systemctl restart nginx
+# Fix port conflict and start containers (NEXT)
+sudo systemctl stop nginx
+sudo systemctl disable nginx
+docker-compose --env-file .env.production down
+docker-compose --env-file .env.production up -d
+
+# Verify deployment
+docker-compose --env-file .env.production ps
+curl -I http://localhost
 ```
 
 **Note**: The `--no-cache` flag forces Docker to rebuild all layers, fixing package-lock.json sync issues. The `--env-file .env.production` ensures your API keys are properly loaded.
