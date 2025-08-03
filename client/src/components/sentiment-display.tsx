@@ -3,7 +3,7 @@ import { apiRequest, queryClient } from "@/lib/queryClient";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { TrendingUp, TrendingDown, Minus, Twitter, BarChart3 } from "lucide-react";
+import { TrendingUp, TrendingDown, Minus, MessageSquare, BarChart3 } from "lucide-react";
 import type { SentimentAnalysis } from "@shared/schema";
 
 interface SentimentDisplayProps {
@@ -80,8 +80,9 @@ export function SentimentDisplay({ gameId, teamId, title }: SentimentDisplayProp
       <Card className="bg-surface border-surface-light">
         <CardHeader className="pb-3">
           <CardTitle className="text-sm font-medium text-white/80 flex items-center gap-2">
-            <Twitter className="h-4 w-4" />
-            {title || "Twitter Sentiment"}
+            <MessageSquare className="h-4 w-4" />
+            {title || "r/CFB Community Sentiment"}
+            <span className="text-xs text-gray-400">(4.4M users)</span>
           </CardTitle>
         </CardHeader>
         <CardContent>
@@ -99,8 +100,9 @@ export function SentimentDisplay({ gameId, teamId, title }: SentimentDisplayProp
       <Card className="bg-surface border-surface-light">
         <CardHeader className="pb-3">
           <CardTitle className="text-sm font-medium text-white/80 flex items-center gap-2">
-            <Twitter className="h-4 w-4" />
-            {title || "Twitter Sentiment"}
+            <MessageSquare className="h-4 w-4" />
+            {title || "r/CFB Community Sentiment"}
+            <span className="text-xs text-gray-400">(4.4M users)</span>
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-3">
@@ -122,14 +124,15 @@ export function SentimentDisplay({ gameId, teamId, title }: SentimentDisplayProp
   }
 
   const sentimentScore = sentiment.sentimentScore || 0;
-  const totalTweets = sentiment.totalTweets || 0;
+  const totalPosts = sentiment.totalTweets || 0;
 
   return (
     <Card className="bg-surface border-surface-light">
       <CardHeader className="pb-3">
         <CardTitle className="text-sm font-medium text-white/80 flex items-center gap-2">
-          <Twitter className="h-4 w-4" />
-          {title || "Twitter Sentiment"}
+          <MessageSquare className="h-4 w-4" />
+          {title || "r/CFB Community Sentiment"}
+          <span className="text-xs text-gray-400">(4.4M users)</span>
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
@@ -146,7 +149,7 @@ export function SentimentDisplay({ gameId, teamId, title }: SentimentDisplayProp
           </Badge>
         </div>
 
-        {/* Tweet Breakdown */}
+        {/* Post Breakdown */}
         <div className="grid grid-cols-3 gap-2 text-xs">
           <div className="text-center">
             <div className="text-green-500 font-semibold">{sentiment.positiveCount}</div>
@@ -166,21 +169,21 @@ export function SentimentDisplay({ gameId, teamId, title }: SentimentDisplayProp
         <div className="space-y-2">
           <div className="flex justify-between text-xs text-white/60">
             <span>Sentiment Distribution</span>
-            <span>{totalTweets} tweets</span>
+            <span>{totalPosts} posts</span>
           </div>
           <div className="w-full bg-surface-light rounded-full h-2 overflow-hidden">
             <div className="h-full flex">
               <div 
                 className="bg-green-500 transition-all duration-300"
-                style={{ width: `${totalTweets > 0 ? (sentiment.positiveCount / totalTweets) * 100 : 0}%` }}
+                style={{ width: `${totalPosts > 0 ? (sentiment.positiveCount / totalPosts) * 100 : 0}%` }}
               />
               <div 
                 className="bg-yellow-500 transition-all duration-300"
-                style={{ width: `${totalTweets > 0 ? (sentiment.neutralCount / totalTweets) * 100 : 0}%` }}
+                style={{ width: `${totalPosts > 0 ? (sentiment.neutralCount / totalPosts) * 100 : 0}%` }}
               />
               <div 
                 className="bg-red-500 transition-all duration-300"
-                style={{ width: `${totalTweets > 0 ? (sentiment.negativeCount / totalTweets) * 100 : 0}%` }}
+                style={{ width: `${totalPosts > 0 ? (sentiment.negativeCount / totalPosts) * 100 : 0}%` }}
               />
             </div>
           </div>

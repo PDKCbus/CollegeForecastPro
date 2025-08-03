@@ -38,7 +38,7 @@ Key tables include:
 
 ### Technical Implementations & Features
 - **Data Management**: Automated real-time and historical data synchronization from College Football Data API (2009-2024 seasons). Includes data cleaning and validation, with robust sync components (`comprehensive-data-sync.ts`, `raw-pg-storage.ts`).
-- **Analytics Engine**: Features an advanced prediction algorithm incorporating ELO ratings, weather analysis, travel distance penalties, and conference performance patterns. Includes natural language processing for Twitter sentiment.
+- **Analytics Engine**: Features an advanced prediction algorithm incorporating ELO ratings, weather analysis, travel distance penalties, and conference performance patterns. Includes natural language processing for Reddit r/CFB community sentiment (4.4M users).
 - **Statistical Player Analysis**: Python-based historical analysis of 18,645 games generates statistically-proven player impact coefficients. Elite QBs worth +5.7 points vs betting line (P < 0.000001), injury impact -8.8 points ATS penalty.
 - **User Interface**: Responsive design optimized for mobile and desktop, interactive charts, detailed game cards, and advanced filtering capabilities. Includes a "Game of the Week" feature and a comprehensive game analysis dashboard with predictive metrics.
 - **Prediction System**: Dual prediction system displays Rick's personal picks with a fallback to algorithmic predictions, clearly differentiated. Includes an admin panel for managing personal picks.
@@ -97,6 +97,14 @@ Key tables include:
 - **Unified Integration**: Advanced analytics automatically applied to all prediction calculations with enhanced confidence scoring
 - **Performance Target**: Algorithm enhancement from current 52.9% ATS to target 54.2% ATS (+1.3 percentage points total improvement)
 - **Factor Breakdown Enhancement**: Prediction engine now includes playerEfficiency, teamEfficiency, and momentum in all factor breakdowns
+
+### Reddit Sentiment Integration (August 2025)
+- **COMPLETE MIGRATION**: Successfully replaced non-functional Twitter API with Reddit r/CFB community integration
+- **Authentic Data Source**: Integrated Reddit API targeting r/CFB subreddit with 4.4M active college football fans
+- **Enhanced Sentiment Analysis**: Weighted sentiment scoring using Reddit upvote ratios and post scores for more accurate community sentiment
+- **Production Ready**: Sentiment API functional at `/api/sentiment/:gameId` with Reddit authentication and public fallback access
+- **Client Updates**: Updated all UI components to reflect Reddit data source with proper community attribution
+- **Data Quality**: Reddit posts provide more relevant college football discussion compared to general Twitter sentiment
 
 ## External Dependencies
 
