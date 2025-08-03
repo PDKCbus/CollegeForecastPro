@@ -3,6 +3,8 @@
 ## Overview
 Rick's Picks is a comprehensive college football analytics platform designed to provide advanced statistics, predictions, and social sentiment analysis for college football games. It integrates real-time data with sophisticated analytics to offer actionable insights for enthusiasts, focusing on empowering users to "Beat The Books" by providing elite college football intelligence. The platform's ambition is to deliver accurate game predictions, detailed historical analysis, and relevant betting recommendations.
 
+**Important Note**: The platform is designed for entertainment and educational purposes only, with complete transparency about algorithm performance and proper disclaimers about no guaranteed results.
+
 ## User Preferences
 Preferred communication style: Simple, everyday language.
 Admin UI preferences: Simple button interface for spread/over-under picks instead of complex form fields.
@@ -45,6 +47,9 @@ Key tables include:
 - **Betting Line System**: Automated three-tier betting line refresh schedule (Tuesday, Thursday, Saturday) to ensure predictions use the freshest data. Includes spread formatting to industry standards.
 - **Head-to-Head History**: Provides detailed historical matchup analysis between teams from the 15-year dataset.
 - **International Game Support**: Automatic detection and flag display for games played outside the USA, including proper venue information for international locations like Ireland, England, Germany, and Mexico.
+- **FAQ and Legal Compliance**: Comprehensive FAQ section with proper disclaimers about entertainment purposes, algorithm performance transparency (51.7% ATS), and no guaranteed results.
+- **Algorithm Research Framework**: Advanced metrics research completed including CFBD API endpoint analysis for SP+ ratings, player PPA/EPA data, team efficiency metrics, and coaching records.
+- **Data Sync Logging System**: Comprehensive logging system tracking all data updates, API calls, and sync operations with timestamps in `/logs/data_sync_log.txt`.
 
 ### Database Performance Optimization (January 2025)
 - **Critical Performance Fix**: Resolved N+1 database query issue that caused 109+ second API response times
@@ -64,6 +69,12 @@ Key tables include:
 - **Automated Monitoring**: Health checks, database backups, and system monitoring scripts
 - **CI/CD Scripts**: One-command deployment, backup, and monitoring automation
 - **Production Infrastructure**: PostgreSQL database, SSL certificates, and performance optimization
+
+### Algorithm Improvement Research (August 2025)
+- **Performance Analysis**: Algorithm backtesting shows 51.7% ATS accuracy (need 52.4% to break even)
+- **Available Advanced Metrics**: Research completed on CFBD API endpoints including SP+ ratings, player PPA/EPA, team efficiency metrics
+- **High-Priority Improvements Identified**: SP+ ratings integration, player efficiency tracking, team offensive/defensive metrics, coaching matchup history
+- **Research Documentation**: Complete analysis saved in `ALGORITHM_IMPROVEMENT_RESEARCH.md` and `data_analysis/cfbd_advanced_metrics_research.py`
 
 ## External Dependencies
 

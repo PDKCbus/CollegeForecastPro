@@ -17,7 +17,8 @@ export function Header() {
         return "analysis";
       case "/game-analysis":
         return "game-analysis";
-
+      case "/faq":
+        return "faq";
       default:
         return "upcoming";
     }
@@ -45,6 +46,9 @@ export function Header() {
             </Link>
             <Link href="/game-analysis" className={`px-4 py-2 font-medium rounded-md hover:bg-surface transition-colors ${currentTab === "game-analysis" ? "text-white" : "text-white/60"}`}>
               Game Analysis
+            </Link>
+            <Link href="/faq" className={`px-4 py-2 font-medium rounded-md hover:bg-surface transition-colors ${currentTab === "faq" ? "text-white" : "text-white/60"}`}>
+              FAQ
             </Link>
           </div>
         </div>
@@ -88,6 +92,9 @@ export function Header() {
           </Link>
           <Link href="/game-analysis" className={`px-4 py-3 font-medium text-left rounded-md hover:bg-gray-800 transition-colors ${currentTab === "game-analysis" ? "text-white" : "text-white/60"}`} onClick={() => setIsMobileMenuOpen(false)}>
             Game Analysis
+          </Link>
+          <Link href="/faq" className={`px-4 py-3 font-medium text-left rounded-md hover:bg-gray-800 transition-colors ${currentTab === "faq" ? "text-white" : "text-white/60"}`} onClick={() => setIsMobileMenuOpen(false)}>
+            FAQ
           </Link>
           <div className="flex items-center space-x-2 px-4 py-3">
             <button className="flex-1 bg-gray-800 text-white/80 p-2 rounded-md">
