@@ -294,7 +294,8 @@ sudo systemctl enable nginx
 # Clean Docker cache and rebuild (CURRENT)
 docker-compose down
 docker system prune -f
-docker-compose --env-file .env.production up -d --build --no-cache
+docker-compose --env-file .env.production build --no-cache
+docker-compose --env-file .env.production up -d
 
 # Alternative if issues persist:
 # Run npm install on host first, then copy to Docker
