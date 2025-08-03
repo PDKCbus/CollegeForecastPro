@@ -175,88 +175,35 @@ export function GameCard({ game }: GameCardProps) {
       }
     }
     
-    // Priority 2: Basic algorithmic fallback (always available)
-    const homeFieldAdvantage = 4.5;
-    const conferenceBonus = {
-      'SEC': 2, 'Big Ten': 2, 'Big 12': 2, 'ACC': 2
-    };
-    
-    const homeRank = game.homeTeam.rank || 999;
-    const awayRank = game.awayTeam.rank || 999;
-    
-    const homeRankBonus = homeRank <= 5 ? 5 : homeRank <= 15 ? 3 : homeRank <= 25 ? 1 : 0;
-    const awayRankBonus = awayRank <= 5 ? 5 : awayRank <= 15 ? 3 : awayRank <= 25 ? 1 : 0;
-    
-    const homeConfBonus = conferenceBonus[game.homeTeam.conference as keyof typeof conferenceBonus] || 0;
-    const awayConfBonus = conferenceBonus[game.awayTeam.conference as keyof typeof conferenceBonus] || 0;
-    
-    const rickSpread = homeFieldAdvantage + homeRankBonus + homeConfBonus - awayRankBonus - awayConfBonus;
-    
-    // Determine algorithmic pick vs Vegas - only recommend with significant edge
-    if (game.spread && Math.abs(rickSpread - (-game.spread)) >= 2.0) {
-      const pointDifference = Math.abs(rickSpread - (-game.spread));
-      
-      // If Rick's spread is less than Vegas spread (game will be closer)
-      if (rickSpread > -game.spread) {
-        // Take the underdog getting points
-        const underdogTeam = game.spread < 0 ? game.awayTeam : game.homeTeam;
-        const points = formatSpread(Math.abs(game.spread));
+    // Priority 2: Use unified server prediction (algorithmic fallback)
+    const algorithmicPrediction = predictionData?.algorithmicPredictions?.[0];
+    if (algorithmicPrediction) {
+      // Check if prediction has a meaningful recommendation
+      if (algorithmicPrediction.spreadPick && algorithmicPrediction.spreadPick !== "No Strong Play") {
         return {
-          team: underdogTeam,
-          pick: `Take ${underdogTeam.abbreviation} +${points}`,
-          reason: `Algorithm predicts a ${pointDifference.toFixed(1)} point closer game than Vegas`,
+          team: null, // Let the text describe the pick
+          pick: algorithmicPrediction.spreadPick,
+          reason: algorithmicPrediction.notes || "Data-driven algorithmic analysis",
           isRicksPick: false
         };
-      } else {
-        // Take the favorite laying points  
-        const favoriteTeam = game.spread < 0 ? game.homeTeam : game.awayTeam;
-        const points = formatSpread(Math.abs(game.spread));
+      }
+      
+      // Handle "No Strong Play" case
+      if (algorithmicPrediction.notes && algorithmicPrediction.notes.includes("No Strong Play")) {
         return {
-          team: favoriteTeam,
-          pick: `Take ${favoriteTeam.abbreviation} -${points}`,
-          reason: `Algorithm expects ${pointDifference.toFixed(1)} point larger margin than Vegas`,
+          team: null,
+          pick: "No Strong Play",
+          reason: "Algorithm assessment matches Vegas line - no significant edge",
           isRicksPick: false
         };
       }
     }
     
-    // Check if we have spread but no edge
-    if (game.spread && Math.abs(rickSpread - (-game.spread)) < 2.0) {
-      return {
-        team: null,
-        pick: "No Strong Play",
-        reason: "Algorithm close to Vegas line - no significant edge identified",
-        isRicksPick: false
-      };
-    }
-    
-    // Over/Under pick
-    const totalPoints = 45 + (homeRankBonus + awayRankBonus) * 2;
-    if (game.overUnder && Math.abs(totalPoints - game.overUnder) >= 3) {
-      const pick = totalPoints > game.overUnder ? 'OVER' : 'UNDER';
-      return {
-        team: null,
-        pick: `${pick} ${game.overUnder.toFixed(1)}`,
-        reason: `Algorithm predicts ${totalPoints.toFixed(1)} total points`,
-        isRicksPick: false
-      };
-    }
-    
-    // Default fallback - only when no spread data available
-    if (!game.spread) {
-      return {
-        team: game.homeTeam,
-        pick: `Take ${game.homeTeam.abbreviation} (Home field advantage)`,
-        reason: 'Home field advantage - no betting line available',
-        isRicksPick: false
-      };
-    }
-    
-    // No edge case
+    // Final fallback if no server prediction available
     return {
       team: null,
-      pick: "No Strong Play",
-      reason: "No significant algorithmic edge identified",
+      pick: "Analysis Pending",
+      reason: "Algorithmic analysis in progress",
       isRicksPick: false
     };
   };

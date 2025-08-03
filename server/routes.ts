@@ -832,7 +832,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Predictions API
+  // Unified Predictions API - Single source of truth for all prediction data
   app.get("/api/predictions/game/:gameId", async (req, res) => {
     try {
       const gameId = parseInt(req.params.gameId);
@@ -840,9 +840,38 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ message: "Invalid game ID" });
       }
 
-      // Get algorithmic predictions
-      const predictions = await storage.getPredictionsByGame(gameId);
-      
+      const game = await storage.getGameWithTeams(gameId);
+      if (!game) {
+        return res.status(404).json({ message: "Game not found" });
+      }
+
+      // Use the same prediction engine as game analysis for consistency
+      const { ricksPicksEngine } = await import('./prediction-engine');
+
+      // Generate unified prediction using our data-driven algorithm
+      const prediction = await ricksPicksEngine.generatePrediction(
+        game.homeTeam?.name || 'Home Team',
+        game.awayTeam?.name || 'Away Team', 
+        game.homeTeam?.conference || 'Independent',
+        game.awayTeam?.conference || 'Independent',
+        {
+          temperature: game.temperature,
+          windSpeed: game.windSpeed,
+          isDome: game.isDome || false,
+          precipitation: game.precipitation,
+          weatherCondition: game.weatherCondition
+        },
+        game.spread,
+        false
+      );
+
+      console.log(`🔮 Unified prediction for game ${gameId}:`, {
+        gameSpread: game.spread,
+        predictionSpread: prediction.spread,
+        predictionBet: prediction.recommendedBet,
+        confidence: prediction.confidence
+      });
+
       // Get Rick's personal picks if they exist
       let ricksPick = null;
       try {
@@ -856,12 +885,27 @@ export async function registerRoutes(app: Express): Promise<Server> {
         console.log("No Rick's pick found for game", gameId);
       }
 
+      // Create unified algorithmic prediction format
+      const algorithmicPrediction = {
+        id: gameId,
+        gameId: gameId,
+        predictedWinnerId: prediction.spread > 0 ? game.homeTeamId : game.awayTeamId,
+        confidence: prediction.confidence === "High" ? 0.85 : prediction.confidence === "Medium" ? 0.70 : 0.55,
+        predictedSpread: prediction.spread, // Use the SAME value as game analysis
+        predictedTotal: game.overUnder || 48.5,
+        notes: prediction.recommendedBet || prediction.prediction,
+        spreadPick: prediction.recommendedBet,
+        overUnderPick: undefined,
+        createdAt: new Date().toISOString()
+      };
+
       res.json({ 
-        algorithmicPredictions: predictions,
+        algorithmicPredictions: [algorithmicPrediction],
         ricksPick: ricksPick
       });
     } catch (error) {
-      res.status(500).json({ message: "Failed to fetch predictions" });
+      console.error("Unified prediction error:", error);
+      res.status(500).json({ message: "Failed to fetch unified predictions" });
     }
   });
 
