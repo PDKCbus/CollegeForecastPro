@@ -48,14 +48,8 @@ class DataSyncLogger {
     this.writeLogEntry('SYNC_ERROR', `${process} - ${error}`);
   }
 
-  // API requests
-  logApiRequest(endpoint: string, params: string = ''): void {
-    this.writeLogEntry('API_REQUEST', `${endpoint} ${params}`.trim());
-  }
-
-  logApiResponse(endpoint: string, count: number): void {
-    this.writeLogEntry('API_RESPONSE', `${endpoint} - ${count} records`);
-  }
+  // Removed individual API request/response logging to reduce noise
+  // Only keeping auto-sync level events for cleaner logs
 
   // Database operations
   logDbInsert(table: string, count: number): void {

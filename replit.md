@@ -49,7 +49,7 @@ Key tables include:
 - **International Game Support**: Automatic detection and flag display for games played outside the USA, including proper venue information for international locations like Ireland, England, Germany, and Mexico.
 - **FAQ and Legal Compliance**: Comprehensive FAQ section with proper disclaimers about entertainment purposes, algorithm performance transparency (51.7% ATS), and no guaranteed results.
 - **Algorithm Research Framework**: Advanced metrics research completed including CFBD API endpoint analysis for SP+ ratings, player PPA/EPA data, team efficiency metrics, and coaching records.
-- **Data Sync Logging System**: Comprehensive logging system tracking all data updates, API calls, and sync operations with timestamps in `/logs/data_sync_log.txt`.
+- **Data Sync Logging System**: Simplified logging system tracking auto-sync events and major data operations with timestamps in `/logs/data_sync_log.txt` (excludes individual API requests for cleaner logs).
 
 ### Database Performance Optimization (January 2025)
 - **Critical Performance Fix**: Resolved N+1 database query issue that caused 109+ second API response times

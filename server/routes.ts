@@ -1420,9 +1420,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
       dataSyncLogger.logSyncStart("CURRENT_WEEK_SYNC", "Week 1 2025 season");
       
       // Fetch current week games and betting lines
-      dataSyncLogger.logApiRequest("/games", "year=2025&week=1&seasonType=regular");
-      dataSyncLogger.logApiRequest("/lines", "year=2025&week=1&seasonType=regular");
-      
       const [gamesResponse, linesResponse] = await Promise.all([
         fetch(`https://api.collegefootballdata.com/games?year=2025&week=1&seasonType=regular`, {
           headers: { "Authorization": `Bearer ${apiKey}` }
@@ -1435,9 +1432,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (gamesResponse.ok && linesResponse.ok) {
         const games = await gamesResponse.json();
         const lines = await linesResponse.json();
-        
-        dataSyncLogger.logApiResponse("/games", games.length);
-        dataSyncLogger.logApiResponse("/lines", lines.length);
         
         console.log(`Auto-sync: Processing ${games.length} games with ${lines.length} betting lines`);
         
