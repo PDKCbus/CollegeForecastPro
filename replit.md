@@ -10,7 +10,7 @@ Preferred communication style: Simple, everyday language.
 Admin UI preferences: Simple button interface for spread/over-under picks instead of complex form fields.
 Branding preference: "🤓 ANALYSIS PICK" over "🤖 ALGORITHM PICK" for algorithmic predictions.
 Footer navigation: Cleaned up links - removed Support, How It Works, Betting Guide; College Football Stats links to collegefootballdata.com; Contact Us page with form; Partnerships links to Contact page.
-Social media: Instagram links to @rickspickscfb, Reddit links to r/CFB community, removed Facebook.
+Social media: Instagram links to @rickspickscfb, Reddit links to r/CFB community, Twitter/X links to ESPN CFB, removed Facebook.
 
 ## System Architecture
 The application employs a full-stack architecture with distinct frontend and backend components.
