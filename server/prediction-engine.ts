@@ -1,10 +1,12 @@
 /**
- * Rick's Picks Prediction Engine - TypeScript Integration
- * Converts Python algorithm findings into production prediction system
- * Based on analysis of 28,431 historical games
+ * Rick's Picks Prediction Engine - Advanced Analytics Integration
+ * Enhanced with Player Efficiency, Team Efficiency, and Momentum Analysis
+ * Target: 53-54% ATS accuracy (currently 52.9%)
+ * Based on analysis of 28,431 historical games + advanced metrics
  */
 
 import { storage } from './storage';
+import { advancedAnalyticsEngine } from './advanced-analytics-engine';
 
 interface WeatherConditions {
   temperature?: number;
@@ -19,6 +21,9 @@ interface PredictionFactors {
   conference: number;
   homeField: number;
   bettingValue: number;
+  playerEfficiency: number;
+  teamEfficiency: number;
+  momentum: number;
 }
 
 interface PredictionResult {
@@ -200,7 +205,7 @@ export class RicksPicksPredictionEngine {
   }
 
   /**
-   * Generate comprehensive prediction using data-driven algorithm
+   * Generate comprehensive prediction using advanced analytics
    */
   async generatePrediction(
     homeTeam: string,
@@ -212,13 +217,35 @@ export class RicksPicksPredictionEngine {
     isNeutralSite: boolean = false
   ): Promise<PredictionResult> {
     
-    // Calculate individual factors
+    // Get team IDs for advanced analytics
+    const homeTeamData = await storage.getTeamByName(homeTeam);
+    const awayTeamData = await storage.getTeamByName(awayTeam);
+    const currentSeason = new Date().getFullYear();
+    
+    // Calculate traditional factors
     const weatherFactor = this.calculateWeatherFactor(weather);
     const conferenceFactor = this.calculateConferenceFactor(homeConference, awayConference);
     const homeFieldFactor = this.calculateHomeFieldFactor(isNeutralSite);
     
     // Base prediction (home team perspective)
-    const basePrediction = homeFieldFactor.score + conferenceFactor.score + weatherFactor.score;
+    let basePrediction = homeFieldFactor.score + conferenceFactor.score + weatherFactor.score;
+    
+    // Calculate advanced analytics if team data available
+    let advancedAnalytics = null;
+    if (homeTeamData && awayTeamData) {
+      try {
+        advancedAnalytics = await advancedAnalyticsEngine.generateAdvancedAnalytics(
+          homeTeamData.id,
+          awayTeamData.id,
+          currentSeason
+        );
+        
+        // Apply advanced analytics adjustment
+        basePrediction += advancedAnalytics.totalAdvancedAdj;
+      } catch (error) {
+        console.log("Advanced analytics unavailable, using basic algorithm");
+      }
+    }
     
     // Calculate betting value
     const bettingValue = this.calculateBettingLineValue(vegasSpread, basePrediction);
@@ -226,25 +253,35 @@ export class RicksPicksPredictionEngine {
     // Final prediction
     const totalScore = basePrediction + bettingValue.score;
     
-    // Determine confidence level
-    const nonZeroFactors = [weatherFactor, conferenceFactor, homeFieldFactor, bettingValue]
+    // Determine confidence level (enhanced with advanced analytics)
+    const basicFactors = [weatherFactor, conferenceFactor, homeFieldFactor, bettingValue]
       .filter(f => f.score !== 0).length;
     
     let confidence: 'High' | 'Medium' | 'Low';
-    if (Math.abs(totalScore) > 6 && nonZeroFactors >= 3) {
+    let confidenceScore = basicFactors;
+    
+    // Boost confidence with advanced analytics
+    if (advancedAnalytics && advancedAnalytics.confidence > 0.8) {
+      confidenceScore += 2;
+    } else if (advancedAnalytics && advancedAnalytics.confidence > 0.6) {
+      confidenceScore += 1;
+    }
+    
+    if (Math.abs(totalScore) > 6 && confidenceScore >= 4) {
       confidence = "High";
-    } else if (Math.abs(totalScore) > 3 && nonZeroFactors >= 2) {
-      confidence = "Medium";
+    } else if (Math.abs(totalScore) > 3 && confidenceScore >= 2) {
+      confidence = "Medium";  
     } else {
       confidence = "Low";
     }
     
-    // Compile all key factors
+    // Compile all key factors including advanced analytics
     const allFactors: string[] = [
       ...weatherFactor.impact,
       ...conferenceFactor.impact,
       ...homeFieldFactor.impact,
-      ...bettingValue.impact
+      ...bettingValue.impact,
+      ...(advancedAnalytics ? advancedAnalytics.keyInsights : [])
     ].filter(impact => impact.length > 0);
     
     // Prediction result
@@ -270,12 +307,15 @@ export class RicksPicksPredictionEngine {
       keyFactors: allFactors,
       recommendedBet,
       vegasLine: vegasSpread,
-      edge: vegasSpread ? Math.abs(totalScore - vegasSpread) : undefined,
+      edge: vegasSpread !== null ? Math.abs(totalScore - vegasSpread) : undefined,
       factorBreakdown: {
         weather: weatherFactor.score,
         conference: conferenceFactor.score,
         homeField: homeFieldFactor.score,
-        bettingValue: bettingValue.score
+        bettingValue: bettingValue.score,
+        playerEfficiency: advancedAnalytics?.playerEfficiencyAdj || 0,
+        teamEfficiency: advancedAnalytics?.teamEfficiencyAdj || 0,
+        momentum: advancedAnalytics?.momentumAdj || 0
       }
     };
   }

@@ -13,6 +13,7 @@ import ELORatingsCollector from "./elo-ratings-collector";
 import RankingsCollector from "./rankings-collector";
 import { EnhancedPredictionEngine } from "./enhanced-prediction-engine";
 import { SPPlusIntegration } from "./sp-plus-integration";
+import { advancedAnalyticsEngine } from './advanced-analytics-engine';
 import { z } from "zod";
 import { insertGameSchema, insertTeamSchema, insertPredictionSchema, insertSentimentAnalysisSchema } from "@shared/schema";
 import { dataSyncLogger } from "./data-sync-logger";
@@ -3060,6 +3061,45 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error(`Error running manual ${req.params.day} task:`, error);
       res.status(500).json({ message: `Failed to run manual ${req.params.day} task` });
+    }
+  });
+
+  // Advanced Analytics Test Endpoint - Target: 53-54% ATS
+  app.get('/api/analytics/advanced/:gameId', async (req, res) => {
+    try {
+      const gameId = parseInt(req.params.gameId);
+      const game = await storage.getGameWithTeams(gameId);
+      
+      if (!game) {
+        return res.status(404).json({ message: 'Game not found' });
+      }
+
+      // Generate advanced analytics
+      const analytics = await advancedAnalyticsEngine.generateAdvancedAnalytics(
+        game.homeTeam.id,
+        game.awayTeam.id,
+        new Date().getFullYear()
+      );
+
+      res.json({
+        gameId,
+        homeTeam: game.homeTeam.name,
+        awayTeam: game.awayTeam.name,
+        analytics,
+        targetImprovements: {
+          playerEfficiency: "+0.6 points (QB performance, key player analysis)",
+          teamEfficiency: "+0.4 points (offensive/defensive efficiency differentials)", 
+          momentum: "+0.3 points (recent performance trends)",
+          totalTarget: "+1.3 points (52.9% → 54.2% ATS)",
+          currentStatus: "Implementation complete - testing phase"
+        }
+      });
+    } catch (error) {
+      console.error('Advanced analytics error:', error);
+      res.status(500).json({ 
+        message: 'Failed to generate advanced analytics',
+        error: error instanceof Error ? error.message : 'Unknown error'
+      });
     }
   });
 
