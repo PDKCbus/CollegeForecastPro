@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { Share2, Twitter, Facebook, MessageCircle, Copy, Download } from 'lucide-react';
+import { Share2, Twitter, Facebook, MessageCircle, Copy, Download, Check } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import type { GameWithTeams } from '@/lib/types';
 
@@ -21,6 +21,7 @@ interface SocialShareProps {
 
 export function SocialShare({ game, prediction, ricksPick }: SocialShareProps) {
   const [isOpen, setIsOpen] = useState(false);
+  const [linkCopied, setLinkCopied] = useState(false);
   const { toast } = useToast();
 
   const generateShareText = () => {
@@ -72,6 +73,43 @@ export function SocialShare({ game, prediction, ricksPick }: SocialShareProps) {
   const handleFacebookShare = () => {
     const facebookUrl = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl)}&quote=${encodeURIComponent(shareText)}`;
     window.open(facebookUrl, '_blank', 'noopener,noreferrer');
+  };
+
+  const handleRedditShare = () => {
+    const gameUrl = `${window.location.origin}/game-analysis?game=${game.id}`;
+    const title = `${game.awayTeam?.name} @ ${game.homeTeam?.name} - Rick's Picks`;
+    const redditUrl = `https://reddit.com/submit?url=${encodeURIComponent(gameUrl)}&title=${encodeURIComponent(title)}&text=${encodeURIComponent(shareText)}`;
+    window.open(redditUrl, '_blank', 'noopener,noreferrer');
+  };
+
+  const handleCopyGameLink = async () => {
+    const gameUrl = `${window.location.origin}/game-analysis?game=${game.id}`;
+    try {
+      await navigator.clipboard.writeText(gameUrl);
+      setLinkCopied(true);
+      setTimeout(() => setLinkCopied(false), 2000);
+      toast({
+        title: "Link copied!",
+        description: "Game analysis link has been copied to your clipboard.",
+        duration: 3000,
+      });
+    } catch (error) {
+      // Fallback for browsers without clipboard API
+      const textArea = document.createElement('textarea');
+      textArea.value = gameUrl;
+      document.body.appendChild(textArea);
+      textArea.select();
+      document.execCommand('copy');
+      document.body.removeChild(textArea);
+      setLinkCopied(true);
+      setTimeout(() => setLinkCopied(false), 2000);
+      
+      toast({
+        title: "Link copied!",
+        description: "Game analysis link has been copied to your clipboard.",
+        duration: 3000,
+      });
+    }
   };
 
   const handleWhatsAppShare = () => {
@@ -254,28 +292,28 @@ export function SocialShare({ game, prediction, ricksPick }: SocialShareProps) {
           <Button
             variant="outline"
             className="flex items-center gap-2"
-            onClick={handleWhatsAppShare}
+            onClick={handleRedditShare}
           >
             <MessageCircle className="h-4 w-4" />
-            WhatsApp
+            Reddit
           </Button>
           
           <Button
             variant="outline"
             className="flex items-center gap-2"
-            onClick={handleCopyLink}
+            onClick={handleCopyGameLink}
           >
-            <Copy className="h-4 w-4" />
-            Copy Text
-          </Button>
-          
-          <Button
-            variant="outline"
-            className="flex items-center gap-2 col-span-2"
-            onClick={handleDownloadImage}
-          >
-            <Download className="h-4 w-4" />
-            Download Image
+            {linkCopied ? (
+              <>
+                <Check className="h-4 w-4 text-green-500" />
+                Link Copied!
+              </>
+            ) : (
+              <>
+                <Share2 className="h-4 w-4" />
+                Copy Link
+              </>
+            )}
           </Button>
         </div>
       </DialogContent>
