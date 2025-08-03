@@ -578,11 +578,19 @@ export function GameCard({ game }: GameCardProps) {
             <div className="flex-1">
               <SocialShare 
                 game={game}
-                prediction={predictionData?.algorithmicPredictions?.[0] ? {
-                  spreadPick: predictionData.algorithmicPredictions[0].spreadPick,
-                  overUnderPick: predictionData.algorithmicPredictions[0].overUnderPick,
-                  confidence: predictionData.algorithmicPredictions[0].confidence
-                } : undefined}
+                prediction={(() => {
+                  // Use the same algorithm as game analysis page for consistency
+                  const ricksPick = getRicksPick();
+                  if (ricksPick && !ricksPick.isRicksPick) {
+                    // Convert algorithmic pick to SocialShare format
+                    return {
+                      spreadPick: ricksPick.pick,
+                      overUnderPick: undefined, // Will be added when we have O/U logic
+                      confidence: 0.70 // Default algorithmic confidence
+                    };
+                  }
+                  return undefined;
+                })()}
                 ricksPick={predictionData?.ricksPick ? {
                   spreadPick: predictionData.ricksPick.spreadPick,
                   overUnderPick: predictionData.ricksPick.overUnderPick
