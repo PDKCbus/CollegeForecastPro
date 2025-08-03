@@ -2,7 +2,7 @@ import { Button } from "@/components/ui/button";
 
 export function CTASection() {
   return (
-    <section className="py-16">
+    <section className="py-8 md:py-16">
       <div className="container mx-auto px-4">
         <div className="bg-surface rounded-2xl overflow-hidden">
           <div className="flex flex-col md:flex-row">
