@@ -319,14 +319,15 @@ export default function GameAnalysis() {
                         const ourSpread = analysis.predictiveMetrics.spreadPrediction;
                         
                         // Check if teams are favored by different teams (major disagreement)
+                        // Note: Database stores spreads as negative = away team favored, positive = home team favored
                         const vegasFavorsHome = vegasSpread > 0; // Positive spread means home team favored
                         const weFavorHome = ourSpread > 0; // Positive spread means home team favored
                         const differentTeamsFavored = vegasFavorsHome !== weFavorHome;
                         
-                        // Calculate total disagreement
+                        // Calculate total disagreement correctly
                         const totalDisagreement = differentTeamsFavored 
-                          ? Math.abs(vegasSpread) + Math.abs(ourSpread)
-                          : Math.abs(ourSpread - vegasSpread);
+                          ? Math.abs(vegasSpread) + Math.abs(ourSpread) // Different teams = add the spreads
+                          : Math.abs(vegasSpread - ourSpread); // Same team = difference in margin
                           
                         return totalDisagreement >= 2.0 || differentTeamsFavored;
                       })() ? (
@@ -344,10 +345,10 @@ export default function GameAnalysis() {
                             const weFavorHome = ourSpread > 0; // Positive spread = home team favored
                             const differentTeamsFavored = vegasFavorsHome !== weFavorHome;
                             
-                            // Calculate edge
+                            // Calculate edge correctly
                             const edge = differentTeamsFavored 
-                              ? Math.abs(vegasSpread) + Math.abs(ourSpread) // Total disagreement
-                              : Math.abs(ourSpread - vegasSpread); // Same direction disagreement
+                              ? Math.abs(vegasSpread) + Math.abs(ourSpread) // Different teams = add spreads (e.g., 3.5 + 1.75 = 5.25)
+                              : Math.abs(vegasSpread - ourSpread); // Same team = difference in margin
                             
                             // Only recommend bets with significant edge (2+ points) or different teams favored
                             if (edge >= 2.0 || differentTeamsFavored) {
