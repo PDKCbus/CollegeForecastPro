@@ -116,16 +116,21 @@ export function SpreadExplainerTooltip({
     <>
       {/* Desktop: Tooltip */}
       <div className="hidden md:block">
-        <Tooltip>
+        <Tooltip delayDuration={200}>
           <TooltipTrigger asChild>
-            <button className="inline-flex items-center justify-center p-1">
-              <HelpCircle className={`h-4 w-4 text-gray-400 hover:text-blue-400 cursor-pointer transition-colors ${className}`} />
+            <button 
+              className="inline-flex items-center justify-center p-1 hover:bg-gray-800 rounded transition-colors"
+              type="button"
+            >
+              <HelpCircle className={`h-4 w-4 text-gray-400 hover:text-blue-400 cursor-help transition-colors ${className}`} />
             </button>
           </TooltipTrigger>
           <TooltipContent 
-            className="max-w-sm p-4 bg-gray-900 border-gray-700 text-white z-50"
+            className="max-w-sm p-4 bg-gray-900 border border-gray-700 text-white shadow-xl z-[99999] backdrop-blur-sm"
             side="top"
             align="center"
+            sideOffset={8}
+            collisionPadding={10}
           >
             {explanationContent}
           </TooltipContent>
