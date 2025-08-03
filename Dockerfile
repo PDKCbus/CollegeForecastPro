@@ -23,9 +23,9 @@ WORKDIR /app
 # Create a non-root user
 RUN addgroup --system --gid 1001 nodejs
 RUN adduser --system --uid 1001 nextjs
-# Copy built application
+# Copy built application and all dependencies from builder (not deps)
 COPY --from=builder /app/dist ./dist
-COPY --from=deps /app/node_modules ./node_modules
+COPY --from=builder /app/node_modules ./node_modules
 COPY --from=builder /app/package*.json ./
 # Set proper permissions
 USER nextjs
