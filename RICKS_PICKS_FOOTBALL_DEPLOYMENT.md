@@ -63,16 +63,39 @@ A Record: www → Your Lightsail Static IP (e.g., 44.205.204.78)
 nslookup ricks-picks.football
 ```
 
+**Example DNS Verification Output:**
+```
+➜ nslookup ricks-picks.football
+Server:         2603:7001:2c40:1d::1
+Address:        2603:7001:2c40:1d::1#53
+
+Non-authoritative answer:
+Name:   ricks-picks.football
+Address: 44.205.204.78
+```
+
+✅ **DNS is working!** Your domain now points to your server.
+
 ## Step 2: Server Setup and Security
 
 ### 2.1 Connect to Instance
+
+**Download SSH Key:**
+1. In Lightsail console, go to your instance
+2. Click "Connect" tab
+3. Download the default SSH key (usually named `LightsailDefaultKey-us-east-1.pem`)
+
+**Connect via SSH:**
 ```bash
-# Download SSH key from Lightsail console
+# Set correct permissions on SSH key
 chmod 400 ~/Downloads/LightsailDefaultKey-us-east-1.pem
 
-# Connect
-ssh -i ~/Downloads/LightsailDefaultKey-us-east-1.pem ubuntu@YOUR_STATIC_IP
+# Connect to your server (using your static IP)
+ssh -i ~/Downloads/LightsailDefaultKey-us-east-1.pem ubuntu@44.205.204.78
 ```
+
+**Alternative - Browser-based SSH:**
+You can also use the browser-based SSH in Lightsail console by clicking "Connect using SSH" button.
 
 ### 2.2 Install Docker and Dependencies
 ```bash
