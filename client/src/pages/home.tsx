@@ -183,6 +183,11 @@ export default function Home() {
         )}
       </main>
       
+      {/* Rick's Season Performance Section - positioned after game cards */}
+      <section className="container mx-auto px-4 py-4 md:py-8">
+        <SeasonStatsSection />
+      </section>
+      
       <FeatureHighlights />
       <CTASection />
     </>

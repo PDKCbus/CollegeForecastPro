@@ -5,6 +5,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { Header } from "@/components/header";
 import { Footer } from "@/components/footer";
+import { useAdSense } from "@/hooks/use-adsense";
 import Home from "@/pages/home";
 import Historical from "@/pages/historical";
 import Analysis from "@/pages/analysis";
@@ -31,6 +32,9 @@ function Router() {
 }
 
 function App() {
+  // Initialize Google AdSense
+  useAdSense();
+
   return (
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>

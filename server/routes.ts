@@ -20,6 +20,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
     res.json({ message: "API is working", timestamp: new Date().toISOString() });
   });
 
+  // Data sync logging test endpoint
+  app.get("/api/test/data-sync-log", (req, res) => {
+    try {
+      dataSyncLogger.logInfo("Data sync logging test requested via API");
+      const recentLogs = dataSyncLogger.getRecentLogs(20);
+      res.json({ 
+        message: "Data sync logging is working", 
+        recentLogs: recentLogs,
+        logCount: recentLogs.length
+      });
+    } catch (error) {
+      res.status(500).json({ 
+        message: "Data sync logging test failed", 
+        error: error instanceof Error ? error.message : String(error)
+      });
+    }
+  });
+
   // Teams API
   app.get("/api/teams", async (req, res) => {
     try {
@@ -801,7 +819,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Predictions API
+  // Unified Predictions API - Single source of truth for all prediction data
   app.get("/api/predictions/game/:gameId", async (req, res) => {
     try {
       const gameId = parseInt(req.params.gameId);
@@ -830,7 +848,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         ricksPick: ricksPick
       });
     } catch (error) {
-      res.status(500).json({ message: "Failed to fetch predictions" });
+      console.error("Unified prediction error:", error);
+      res.status(500).json({ message: "Failed to fetch unified predictions" });
     }
   });
 

@@ -2,13 +2,13 @@ import { Button } from "@/components/ui/button";
 
 export function CTASection() {
   return (
-    <section className="py-16">
+    <section className="py-8 md:py-16">
       <div className="container mx-auto px-4">
         <div className="bg-surface rounded-2xl overflow-hidden">
           <div className="flex flex-col md:flex-row">
             <div 
               className="md:w-1/2 h-64 md:h-auto bg-cover bg-center" 
-              style={{backgroundImage: "url('https://images.unsplash.com/photo-1508098682722-e99c643e7f0b?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1470&q=80')"}}
+              style={{backgroundImage: "url('https://images.unsplash.com/photo-1566577739112-5180d4bf9390?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1470&q=80')"}}
             ></div>
             
             <div className="md:w-1/2 p-8 md:p-12 flex flex-col justify-center">
