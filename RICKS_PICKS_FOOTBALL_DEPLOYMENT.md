@@ -97,6 +97,8 @@ ssh -i ~/Downloads/LightsailDefaultKey-us-east-1.pem ubuntu@44.205.204.78
 **Alternative - Browser-based SSH:**
 You can also use the browser-based SSH in Lightsail console by clicking "Connect using SSH" button.
 
+✅ **Using Lightsail Browser Terminal** - This is the easiest option!
+
 ### 2.2 Install Docker and Dependencies
 ```bash
 # Update system
