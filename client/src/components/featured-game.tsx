@@ -217,18 +217,20 @@ export function FeaturedGame({ game }: FeaturedGameProps) {
               Full Analysis
             </Button>
           </Link>
-          <SocialShare 
-            game={game}
-            prediction={algorithmicPredictions?.algorithmicPredictions?.[0] ? {
-              spreadPick: algorithmicPredictions.algorithmicPredictions[0].spreadPick,
-              overUnderPick: algorithmicPredictions.algorithmicPredictions[0].overUnderPick,
-              confidence: algorithmicPredictions.algorithmicPredictions[0].confidence
-            } : undefined}
-            ricksPick={game.prediction ? {
-              spreadPick: game.prediction.spreadPick,
-              overUnderPick: game.prediction.overUnderPick
-            } : undefined}
-          />
+          <div className="flex-1">
+            <SocialShare 
+              game={game}
+              prediction={algorithmicPredictions?.algorithmicPredictions?.[0] ? {
+                spreadPick: algorithmicPredictions.algorithmicPredictions[0].spreadPick,
+                overUnderPick: algorithmicPredictions.algorithmicPredictions[0].overUnderPick,
+                confidence: algorithmicPredictions.algorithmicPredictions[0].confidence
+              } : undefined}
+              ricksPick={game.prediction ? {
+                spreadPick: game.prediction.spreadPick,
+                overUnderPick: game.prediction.overUnderPick
+              } : undefined}
+            />
+          </div>
         </div>
       </div>
     </div>

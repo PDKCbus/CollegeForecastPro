@@ -555,18 +555,20 @@ export function GameCard({ game }: GameCardProps) {
                 Full Analysis
               </Button>
             </Link>
-            <SocialShare 
-              game={game}
-              prediction={predictionData?.algorithmicPredictions?.[0] ? {
-                spreadPick: predictionData.algorithmicPredictions[0].spreadPick,
-                overUnderPick: predictionData.algorithmicPredictions[0].overUnderPick,
-                confidence: predictionData.algorithmicPredictions[0].confidence
-              } : undefined}
-              ricksPick={predictionData?.ricksPick ? {
-                spreadPick: predictionData.ricksPick.spreadPick,
-                overUnderPick: predictionData.ricksPick.overUnderPick
-              } : undefined}
-            />
+            <div className="flex-1">
+              <SocialShare 
+                game={game}
+                prediction={predictionData?.algorithmicPredictions?.[0] ? {
+                  spreadPick: predictionData.algorithmicPredictions[0].spreadPick,
+                  overUnderPick: predictionData.algorithmicPredictions[0].overUnderPick,
+                  confidence: predictionData.algorithmicPredictions[0].confidence
+                } : undefined}
+                ricksPick={predictionData?.ricksPick ? {
+                  spreadPick: predictionData.ricksPick.spreadPick,
+                  overUnderPick: predictionData.ricksPick.overUnderPick
+                } : undefined}
+              />
+            </div>
           </div>
         </div>
       </div>

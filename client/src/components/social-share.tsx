@@ -211,7 +211,7 @@ export function SocialShare({ game, prediction, ricksPick }: SocialShareProps) {
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>
-        <Button variant="outline" size="sm" className="flex items-center gap-2">
+        <Button variant="outline" className="w-full flex items-center gap-2">
           <Share2 className="h-4 w-4" />
           Share Pick
         </Button>
