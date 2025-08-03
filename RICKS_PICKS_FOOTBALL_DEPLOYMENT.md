@@ -155,8 +155,20 @@ sudo certbot certonly --standalone -d ricks-picks.football -d www.ricks-picks.fo
 # Terms: Yes (Y)
 # Share email with EFF: No (N) - optional
 
-# Set up auto-renewal
-sudo crontab -e
+**SSL Certificate Success Output:**
+```
+Successfully received certificate.
+Certificate is saved at: /etc/letsencrypt/live/ricks-picks.football/fullchain.pem
+Key is saved at:         /etc/letsencrypt/live/ricks-picks.football/privkey.pem
+This certificate expires on 2025-11-01.
+Certbot has set up a scheduled task to automatically renew this certificate in the background.
+```
+
+✅ **SSL certificates successfully created and auto-renewal configured!**
+
+# Set up auto-renewal (Certbot automatically sets this up)
+# Manual cron setup (optional, already done automatically):
+# sudo crontab -e
 # Add: 0 12 * * * /usr/bin/certbot renew --quiet
 ```
 
