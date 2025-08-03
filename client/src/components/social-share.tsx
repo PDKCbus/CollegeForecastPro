@@ -315,14 +315,16 @@ export function SocialShare({ game, prediction, ricksPick }: SocialShareProps) {
                         let pickedTeam = null;
                         let displayText = '';
                         
+                        console.log('Vegas spread:', vegasSpread, 'for', game.awayTeam?.name, '@', game.homeTeam?.name);
+                        
                         if (vegasSpread < 0) {
-                          // Home team favored
+                          // Home team favored (negative spread means home favored)
                           pickedTeam = game.homeTeam;
                           displayText = `${game.homeTeam?.name || 'Home'} ${vegasSpread}`;
                         } else if (vegasSpread > 0) {
-                          // Away team favored
+                          // Away team favored (positive spread means away favored)
                           pickedTeam = game.awayTeam;
-                          displayText = `${game.awayTeam?.name || 'Away'} +${vegasSpread}`;
+                          displayText = `${game.awayTeam?.name || 'Away'} -${vegasSpread}`;
                         } else {
                           // Pick 'em - slight home advantage
                           pickedTeam = game.homeTeam;
