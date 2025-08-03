@@ -1,8 +1,8 @@
 # Branch Merge Strategy - Current Complete App
 
 ## Current Situation
-- **Current Branch**: `feat/new-analytics` (complete working app)
-- **Target**: Get this into `develop` then `master`
+- **Current Branch**: `feat/latest` (complete working app)
+- **Target**: Get this into `develop` then `main`
 - **Issue**: Other branches have conflicts
 - **Solution**: Use this branch as the authoritative source
 
@@ -23,15 +23,15 @@
 git checkout develop
 
 # Merge this branch, keeping our changes for conflicts
-git merge feat/new-analytics -X ours
+git merge feat/latest -X ours
 
 # Push to develop
 git push origin develop
 
-# Merge develop to master
-git checkout master
+# Merge develop to main
+git checkout main
 git merge develop
-git push origin master
+git push origin main
 ```
 
 ### Option 2: Reset Develop (If heavily conflicted)
@@ -42,19 +42,19 @@ git checkout -b develop-backup
 
 # Reset develop to match this working branch
 git checkout develop
-git reset --hard feat/new-analytics
+git reset --hard feat/latest
 git push --force-with-lease origin develop
 
-# Then merge to master
-git checkout master
+# Then merge to main
+git checkout main
 git merge develop
-git push origin master
+git push origin main
 ```
 
 ### Option 3: Cherry-pick Key Commits (Most Conservative)
 ```bash
 # Get the latest commits from this branch
-git log --oneline feat/new-analytics -10
+git log --oneline feat/latest -10
 
 # Cherry-pick the algorithm enhancement commits to develop
 git checkout develop
@@ -98,4 +98,4 @@ git push origin develop
 ## Recommendation
 Use **Option 1** first. If there are too many conflicts, use **Option 2** to reset develop to match this working state, since this branch represents the complete, functional application with all enhancements.
 
-The goal is to preserve this working state as the new baseline for develop and master branches.
+The goal is to preserve this working state as the new baseline for develop and main branches.
