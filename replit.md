@@ -72,9 +72,12 @@ Key tables include:
 
 ### Algorithm Improvement Research (August 2025)
 - **Performance Analysis**: Algorithm backtesting shows 51.7% ATS accuracy (need 52.4% to break even)
+- **Backtesting Expansion**: Extended from limited 300 games (2022-2023) to comprehensive 15+ year dataset (2009-2024) with 15,000+ games
 - **Available Advanced Metrics**: Research completed on CFBD API endpoints including SP+ ratings, player PPA/EPA, team efficiency metrics
 - **High-Priority Improvements Identified**: SP+ ratings integration, player efficiency tracking, team offensive/defensive metrics, coaching matchup history
-- **Research Documentation**: Complete analysis saved in `ALGORITHM_IMPROVEMENT_RESEARCH.md` and `data_analysis/cfbd_advanced_metrics_research.py`
+- **Expected Performance Gains**: Target 53-54% ATS accuracy with advanced analytics (+1.3 to +2.3 percentage points improvement)
+- **Implementation Status**: Advanced analytics engine framework completed, SP+ integration ready for deployment
+- **Research Documentation**: Complete analysis saved in `ALGORITHM_IMPROVEMENT_RESEARCH.md`, `data_analysis/cfbd_advanced_metrics_research.py`, and `BACKTESTING_EXPANSION_SUMMARY.md`
 
 ## External Dependencies
 
