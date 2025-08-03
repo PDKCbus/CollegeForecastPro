@@ -192,8 +192,8 @@ export function GameCard({ game }: GameCardProps) {
     
     const rickSpread = homeFieldAdvantage + homeRankBonus + homeConfBonus - awayRankBonus - awayConfBonus;
     
-    // Determine algorithmic pick vs Vegas
-    if (game.spread && Math.abs(rickSpread - (-game.spread)) >= 1.5) {
+    // Determine algorithmic pick vs Vegas - only recommend with significant edge
+    if (game.spread && Math.abs(rickSpread - (-game.spread)) >= 2.0) {
       const pointDifference = Math.abs(rickSpread - (-game.spread));
       
       // If Rick's spread is less than Vegas spread (game will be closer)
@@ -204,7 +204,7 @@ export function GameCard({ game }: GameCardProps) {
         return {
           team: underdogTeam,
           pick: `Take ${underdogTeam.abbreviation} +${points}`,
-          reason: `Algorithm thinks this will be closer than Vegas predicts`,
+          reason: `Algorithm predicts a ${pointDifference.toFixed(1)} point closer game than Vegas`,
           isRicksPick: false
         };
       } else {
@@ -214,10 +214,20 @@ export function GameCard({ game }: GameCardProps) {
         return {
           team: favoriteTeam,
           pick: `Take ${favoriteTeam.abbreviation} -${points}`,
-          reason: `Algorithm thinks ${favoriteTeam.abbreviation} wins bigger than Vegas expects`,
+          reason: `Algorithm expects ${pointDifference.toFixed(1)} point larger margin than Vegas`,
           isRicksPick: false
         };
       }
+    }
+    
+    // Check if we have spread but no edge
+    if (game.spread && Math.abs(rickSpread - (-game.spread)) < 2.0) {
+      return {
+        team: null,
+        pick: "No Strong Play",
+        reason: "Algorithm close to Vegas line - no significant edge identified",
+        isRicksPick: false
+      };
     }
     
     // Over/Under pick
@@ -232,11 +242,21 @@ export function GameCard({ game }: GameCardProps) {
       };
     }
     
-    // Default fallback
+    // Default fallback - only when no spread data available
+    if (!game.spread) {
+      return {
+        team: game.homeTeam,
+        pick: `Take ${game.homeTeam.abbreviation} (Home field advantage)`,
+        reason: 'Home field advantage - no betting line available',
+        isRicksPick: false
+      };
+    }
+    
+    // No edge case
     return {
-      team: game.homeTeam,
-      pick: `Take ${game.homeTeam.abbreviation} (Home field advantage)`,
-      reason: 'Home field advantage',
+      team: null,
+      pick: "No Strong Play",
+      reason: "No significant algorithmic edge identified",
       isRicksPick: false
     };
   };

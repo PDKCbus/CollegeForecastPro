@@ -448,45 +448,48 @@ export default function GameAnalysis() {
                   </div>
                   {selectedGame.spread && (
                     <div className="flex justify-center">
-                      {Math.abs(analysis.predictiveMetrics.spreadPrediction - selectedGame.spread) >= 1.5 ? (
+                      {Math.abs(analysis.predictiveMetrics.spreadPrediction - selectedGame.spread) >= 2.0 ? (
                         <Badge className={`${
                           analysis.predictiveMetrics.spreadPrediction > selectedGame.spread
                             ? 'bg-green-600 hover:bg-green-700'
                             : 'bg-blue-600 hover:bg-blue-700'
                         } text-white`}>
                           {(() => {
-                            const vegasSpread = selectedGame.spread; // 9 = BSU -9
-                            const ourSpread = analysis.predictiveMetrics.spreadPrediction; // 5.41 = SF -5.4
+                            const vegasSpread = selectedGame.spread;
+                            const ourSpread = analysis.predictiveMetrics.spreadPrediction;
                             const edge = Math.abs(ourSpread - vegasSpread);
                             
-                            // BSU @ SF example:
-                            // Vegas: BSU -9 (spread = 9, away team favored)
-                            // Us: SF -5.4 (ourSpread = 5.41, home team favored)
-                            // We completely disagree on who wins!
-                            
-                            if (edge >= 3) {
-                              // Major disagreement between predictions
-                              if (vegasSpread > 0 && ourSpread > 0) {
-                                // Vegas favors away, we favor home - take home team getting points
-                                return `Take ${selectedGame.homeTeam?.name} +${formatSpread(vegasSpread)} - Strong Value`;
-                              } else if (vegasSpread < 0 && ourSpread < 0) {
-                                // Both favor home, check who favors more
-                                return Math.abs(ourSpread) > Math.abs(vegasSpread) 
-                                  ? `Take ${selectedGame.homeTeam?.name} ${formatSpread(vegasSpread)}`
-                                  : `Take ${selectedGame.awayTeam?.name} +${formatSpread(Math.abs(vegasSpread))}`;
+                            // Only recommend bets with significant edge (2+ points)
+                            if (edge >= 2.0) {
+                              // Check if we disagree on the favorite
+                              const vegasFavorsHome = vegasSpread < 0;
+                              const weFavorHome = ourSpread < 0;
+                              
+                              if (vegasFavorsHome !== weFavorHome) {
+                                // Complete disagreement on who wins - major value
+                                const ourFavorite = weFavorHome ? selectedGame.homeTeam?.name : selectedGame.awayTeam?.name;
+                                const points = Math.abs(vegasSpread);
+                                return `Take ${ourFavorite} +${formatSpread(points)} - Major Value`;
                               } else {
-                                // Different favorites - major value play
-                                return ourSpread > 0 
-                                  ? `Take ${selectedGame.homeTeam?.name} +${formatSpread(Math.abs(vegasSpread))} - Major Value`
-                                  : `Take ${selectedGame.awayTeam?.name} +${formatSpread(Math.abs(vegasSpread))} - Major Value`;
+                                // Same favorite, different margin
+                                if (Math.abs(ourSpread) < Math.abs(vegasSpread)) {
+                                  // Game will be closer - take underdog
+                                  const underdog = vegasSpread < 0 ? selectedGame.awayTeam?.name : selectedGame.homeTeam?.name;
+                                  const points = Math.abs(vegasSpread);
+                                  return `Take ${underdog} +${formatSpread(points)} - Game stays closer`;
+                                } else {
+                                  // Favorite covers bigger - lay the points
+                                  const favorite = vegasSpread < 0 ? selectedGame.homeTeam?.name : selectedGame.awayTeam?.name;
+                                  const points = Math.abs(vegasSpread);
+                                  return `Take ${favorite} -${formatSpread(points)} - Larger margin expected`;
+                                }
                               }
-                            } else {
-                              return `Lean ${ourSpread > vegasSpread ? selectedGame.homeTeam?.name : selectedGame.awayTeam?.name}`;
                             }
+                            return "No Strong Edge";
                           })()}
                         </Badge>
                       ) : (
-                        <Badge variant="secondary">No Strong Edge</Badge>
+                        <Badge variant="secondary">No Strong Edge - Vegas Close to Our Prediction</Badge>
                       )}
                     </div>
                   )}
