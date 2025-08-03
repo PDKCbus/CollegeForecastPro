@@ -29,20 +29,36 @@ Once your instance is running:
    - Port 22 (SSH) - Usually open by default
    - Port 80 (HTTP) - Click "Add rule" → HTTP
    - Port 443 (HTTPS) - Click "Add rule" → HTTPS
+
+**Visual Reference - Networking Tab:**
+![Networking Configuration](attached_assets/Screenshot%202025-08-03%20at%206.17.04%20PM_1754259436609.png)
+
 3. **Assign Static IP**:
-   - Click "Create static IP"
-   - Attach it to your instance
+   - Click "Attach static IP" link in the IPv4 networking section
+   - You can reuse an existing static IP or create a new one
    - **Important**: Note this IP address for DNS configuration
+
+**Visual Reference - Static IP Attachment:**
+![Static IP Attached](attached_assets/Screenshot%202025-08-03%20at%206.20.43%20PM_1754259655045.png)
 
 ### 1.3 Domain Configuration
 Configure your `ricks-picks.football` domain DNS:
 
+1. **Go to your domain's DNS records section** in Lightsail
+2. **Click "Add record"** to create two A records:
+
 ```
-A Record: @ → Your Lightsail Static IP
-A Record: www → Your Lightsail Static IP  
+A Record: @ → Your Lightsail Static IP (e.g., 44.205.204.78)
+A Record: www → Your Lightsail Static IP (e.g., 44.205.204.78)
 ```
 
-Verify DNS propagation:
+**Visual Reference - DNS Records Setup:**
+![DNS Records Interface](attached_assets/Screenshot%202025-08-03%20at%206.22.01%20PM_1754259729734.png)
+
+**Visual Reference - Completed DNS Records:**
+![DNS Records Configured](attached_assets/Screenshot%202025-08-03%20at%206.23.28%20PM_1754259815961.png)
+
+3. **Verify DNS propagation** (may take 24-48 hours):
 ```bash
 nslookup ricks-picks.football
 ```
