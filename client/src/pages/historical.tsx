@@ -1,103 +1,230 @@
-import { TabNavigation } from "@/components/tab-navigation";
+import { useQuery, useMutation } from "@tanstack/react-query";
+import { ImprovedHistoricalGameCard } from "@/components/improved-historical-game-card";
+import { FilterBar } from "@/components/filter-bar";
+import { useState, useEffect } from "react";
+import React from "react";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { useState } from "react";
+import { apiRequest, queryClient } from "@/lib/queryClient";
+
+
 
 export default function Historical() {
-  const [season, setSeason] = useState("2022");
-  const [conference, setConference] = useState("All Conferences");
-  const [team, setTeam] = useState("All Teams");
+  const [selectedWeek, setSelectedWeek] = useState("all"); // Show all weeks by default
+  const [selectedFilter, setSelectedFilter] = useState("all");
+  const [selectedSeason, setSelectedSeason] = useState("all"); // Show all seasons by default
+  const [selectedConference, setSelectedConference] = useState("all");
+  const [currentPage, setCurrentPage] = useState(0);
 
-  const seasons = ["2022", "2021", "2020", "2019", "2018"];
-  const conferences = [
-    "All Conferences", 
-    "SEC", 
-    "Big Ten", 
-    "Big 12", 
-    "ACC", 
-    "PAC-12"
+  // Reset pagination when filters change
+  const resetPage = () => setCurrentPage(0);
+
+  const { data: historicalData, isLoading, error } = useQuery({
+    queryKey: ["/api/games/historical", selectedSeason, selectedWeek, currentPage],
+    queryFn: async () => {
+      const params = new URLSearchParams({
+        page: currentPage.toString(),
+        limit: "20"
+      });
+      
+      params.append("season", selectedSeason);
+      params.append("week", selectedWeek);
+      
+      console.log(`Fetching historical games: ${params.toString()}`);
+      const response = await fetch(`/api/games/historical?${params}`);
+      if (!response.ok) throw new Error('Failed to fetch historical games');
+      const data = await response.json();
+      console.log(`Historical API returned ${data.games?.length || 0} games, total: ${data.pagination?.total || 0}`);
+      return data;
+    }
+  });
+
+  // Reset page when filters change
+  React.useEffect(() => {
+    setCurrentPage(0);
+  }, [selectedSeason, selectedWeek, selectedFilter, selectedConference]);
+
+  const games = historicalData?.games || [];
+  const pagination = historicalData?.pagination;
+
+  // Debug logging
+  React.useEffect(() => {
+    console.log(`Historical page state:`, {
+      selectedSeason,
+      selectedWeek,
+      gamesCount: games.length,
+      paginationTotal: pagination?.total,
+      isLoading,
+      error: error?.message
+    });
+  }, [games.length, pagination?.total, isLoading, error, selectedSeason, selectedWeek]);
+
+
+
+  const syncHistoricalMutation = useMutation({
+    mutationFn: () => 
+      fetch("/api/sync-historical-data", { method: "POST" })
+        .then(res => res.json()),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/games/historical"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/ricks-record"] });
+    },
+  });
+
+
+
+  // Generate options for filters - ALL 15 years of data
+  const weeks = ["all", ...Array.from({ length: 15 }, (_, i) => `${i + 1}`)];
+  const seasons = ["all", ...Array.from({ length: 16 }, (_, i) => `${2024 - i}`)]; // 2024 down to 2009
+  const conferences = ["all", "SEC", "Big Ten", "Big 12", "ACC", "PAC-12", "Independent"];
+
+  const filterOptions = [
+    { label: "All Games", value: "all", isActive: selectedFilter === "all" },
+    { label: "Conference Games", value: "conference", isActive: selectedFilter === "conference" },
+    { label: "Rivalry Games", value: "rivalry", isActive: selectedFilter === "rivalry" },
+    { label: "Top 25", value: "ranked", isActive: selectedFilter === "ranked" },
   ];
-  const teams = [
-    "All Teams",
-    "Alabama",
-    "Georgia",
-    "Ohio State",
-    "Michigan",
-    "Clemson"
-  ];
+
+  // Apply only basic filters since API already handles season/week filtering
+  const filteredGames = Array.isArray(games) ? games.filter((game: any) => {
+    // Season and week filtering is now handled by the API, but we keep this for client-side consistency
+    if (selectedFilter === "ranked" && (!game.homeTeam?.rank && !game.awayTeam?.rank)) return false;
+    // Note: Conference games and rivalry games require additional data that we don't currently have
+    // For now, we'll show all games and can enhance filtering later
+    return true;
+  }) : [];
+
+  if (isLoading) {
+    return (
+      <div className="max-w-6xl mx-auto p-6">
+        <div className="flex items-center justify-center h-64">
+          <div className="text-lg">Loading historical games...</div>
+        </div>
+      </div>
+    );
+  }
 
   return (
-    <main className="container mx-auto px-4 py-8">
-      <TabNavigation />
-      
-      <div className="bg-surface rounded-xl p-6 mb-8">
-        <h2 className="text-2xl font-bold mb-4">Browse Historical Games</h2>
-        <p className="text-white/80 mb-6">Analyze past games, stats, and outcomes to improve your predictions</p>
-        
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <div className="relative">
+    <div className="max-w-6xl mx-auto p-6">
+      <div className="mb-8">
+        <h1 className="text-3xl font-bold text-white mb-2">Historical Games</h1>
+        <p className="text-white/70">Review past games with actual results vs Vegas spreads</p>
+        {historicalData?.filters && (
+          <div className="mt-2 text-sm text-white/60">
+            Showing {historicalData.filters.season} Season, Week {historicalData.filters.week}
+            {pagination && ` • ${pagination.total} games found`}
+          </div>
+        )}
+      </div>
+
+
+
+      {/* Filter Controls */}
+      <div className="mb-6 bg-surface-light rounded-lg p-6">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
+          <div>
             <label className="block text-white/70 text-sm mb-2">Season</label>
-            <Select value={season} onValueChange={(value) => setSeason(value)}>
-              <SelectTrigger className="w-full appearance-none bg-surface-light text-white p-3 rounded-md">
-                <SelectValue placeholder="Select season" />
+            <Select value={selectedSeason} onValueChange={(value) => { setSelectedSeason(value); setCurrentPage(0); }}>
+              <SelectTrigger className="w-full bg-surface text-white">
+                <SelectValue placeholder="All Seasons" />
               </SelectTrigger>
               <SelectContent className="bg-surface text-white">
-                {seasons.map((s) => (
-                  <SelectItem key={s} value={s} className="text-white">{s}</SelectItem>
+                {seasons.map((season) => (
+                  <SelectItem key={season} value={season} className="text-white">
+                    {season === "all" ? "All Seasons" : season}
+                  </SelectItem>
                 ))}
               </SelectContent>
             </Select>
           </div>
           
-          <div className="relative">
+          <div>
             <label className="block text-white/70 text-sm mb-2">Conference</label>
-            <Select value={conference} onValueChange={(value) => setConference(value)}>
-              <SelectTrigger className="w-full appearance-none bg-surface-light text-white p-3 rounded-md">
-                <SelectValue placeholder="Select conference" />
+            <Select value={selectedConference} onValueChange={setSelectedConference}>
+              <SelectTrigger className="w-full bg-surface text-white">
+                <SelectValue placeholder="All Conferences" />
               </SelectTrigger>
               <SelectContent className="bg-surface text-white">
-                {conferences.map((c) => (
-                  <SelectItem key={c} value={c} className="text-white">{c}</SelectItem>
+                {conferences.map((conf) => (
+                  <SelectItem key={conf} value={conf} className="text-white">
+                    {conf === "all" ? "All Conferences" : conf}
+                  </SelectItem>
                 ))}
               </SelectContent>
             </Select>
           </div>
           
-          <div className="relative">
-            <label className="block text-white/70 text-sm mb-2">Team</label>
-            <Select value={team} onValueChange={(value) => setTeam(value)}>
-              <SelectTrigger className="w-full appearance-none bg-surface-light text-white p-3 rounded-md">
-                <SelectValue placeholder="Select team" />
+          <div>
+            <label className="block text-white/70 text-sm mb-2">Week</label>
+            <Select value={selectedWeek} onValueChange={(value) => { setSelectedWeek(value); setCurrentPage(0); }}>
+              <SelectTrigger className="w-full bg-surface text-white">
+                <SelectValue placeholder="All Weeks" />
               </SelectTrigger>
               <SelectContent className="bg-surface text-white">
-                {teams.map((t) => (
-                  <SelectItem key={t} value={t} className="text-white">{t}</SelectItem>
+                {weeks.map((week) => (
+                  <SelectItem key={week} value={week} className="text-white">
+                    {week === "all" ? "All Weeks" : `Week ${week}`}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+          
+          <div>
+            <label className="block text-white/70 text-sm mb-2">Game Type</label>
+            <Select value={selectedFilter} onValueChange={setSelectedFilter}>
+              <SelectTrigger className="w-full bg-surface text-white">
+                <SelectValue placeholder="All Games" />
+              </SelectTrigger>
+              <SelectContent className="bg-surface text-white">
+                {filterOptions.map((option) => (
+                  <SelectItem key={option.value} value={option.value} className="text-white">
+                    {option.label}
+                  </SelectItem>
                 ))}
               </SelectContent>
             </Select>
           </div>
         </div>
-        
-        <div className="mt-6 flex justify-end">
-          <Button className="px-6 py-3 bg-primary hover:bg-primary/90 text-white font-medium rounded-md transition-colors">
-            Search Games
+      </div>
+
+      <div className="grid gap-4 md:gap-6">
+        {filteredGames.length === 0 ? (
+          <div className="text-center py-12">
+            <div className="text-white/60 text-lg mb-2">No historical games found</div>
+            <div className="text-white/40">Try adjusting your filters to see completed games</div>
+          </div>
+        ) : (
+          filteredGames.map((game: any) => (
+            <ImprovedHistoricalGameCard key={game.id} game={game} />
+          ))
+        )}
+      </div>
+
+      {/* Pagination Controls */}
+      {pagination && pagination.total > pagination.limit && (
+        <div className="flex justify-center mt-8 space-x-4">
+          <Button
+            onClick={() => setCurrentPage(Math.max(0, currentPage - 1))}
+            disabled={currentPage === 0}
+            variant="outline"
+            className="bg-surface text-white border-surface-light"
+          >
+            Previous
+          </Button>
+          <span className="flex items-center text-white/70">
+            Page {currentPage + 1} of {Math.ceil(pagination.total / pagination.limit)}
+          </span>
+          <Button
+            onClick={() => setCurrentPage(currentPage + 1)}
+            disabled={!pagination.hasMore}
+            variant="outline"
+            className="bg-surface text-white border-surface-light"
+          >
+            Next
           </Button>
         </div>
-      </div>
-      
-      <div className="text-center py-12">
-        <div className="text-white/40 text-6xl mb-4">
-          <svg xmlns="http://www.w3.org/2000/svg" width="72" height="72" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-history mx-auto">
-            <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" />
-            <path d="M3 3v5h5" />
-            <path d="M12 7v5l4 2" />
-          </svg>
-        </div>
-        <h3 className="text-xl font-medium mb-2">Historical Games</h3>
-        <p className="text-white/60 max-w-md mx-auto">
-          Select filters above to browse historical college football games and analyze past performance
-        </p>
-      </div>
-    </main>
+      )}
+    </div>
   );
 }

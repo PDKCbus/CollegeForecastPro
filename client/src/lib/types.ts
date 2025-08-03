@@ -1,9 +1,10 @@
-import { Game, Team, Prediction } from "@shared/schema";
+import { Game, Team, Prediction, RicksPick } from "@shared/schema";
 
 export interface GameWithTeams extends Game {
   homeTeam: Team;
   awayTeam: Team;
   prediction?: Prediction;
+  ricksPicks?: RicksPick[];
 }
 
 export type TabType = "upcoming" | "historical" | "analysis";

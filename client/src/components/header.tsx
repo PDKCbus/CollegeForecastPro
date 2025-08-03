@@ -15,6 +15,9 @@ export function Header() {
         return "historical";
       case "/analysis":
         return "analysis";
+      case "/game-analysis":
+        return "game-analysis";
+
       default:
         return "upcoming";
     }
@@ -27,24 +30,21 @@ export function Header() {
       <div className="container mx-auto px-4 py-4 flex items-center justify-between">
         <div className="flex items-center">
           <Link href="/" className="flex items-center space-x-2">
-            <div className="text-accent font-bold text-2xl">RICKIE'S</div>
-            <div className="text-white font-bold text-2xl">PICKS</div>
+            <div className="text-accent font-bold text-2xl">RICK'S</div>
+            <div className="text-accent font-bold text-2xl">PICKS</div>
           </Link>
           <div className="hidden md:flex ml-8 space-x-1">
-            <Link href="/">
-              <a className={`px-4 py-2 font-medium rounded-md hover:bg-surface transition-colors ${currentTab === "upcoming" ? "text-white" : "text-white/60"}`}>
-                Upcoming Games
-              </a>
+            <Link href="/" className={`px-4 py-2 font-medium rounded-md hover:bg-surface transition-colors ${currentTab === "upcoming" ? "text-white" : "text-white/60"}`}>
+              Upcoming Games
             </Link>
-            <Link href="/historical">
-              <a className={`px-4 py-2 font-medium rounded-md hover:bg-surface transition-colors ${currentTab === "historical" ? "text-white" : "text-white/60"}`}>
-                Historical Games
-              </a>
+            <Link href="/historical" className={`px-4 py-2 font-medium rounded-md hover:bg-surface transition-colors ${currentTab === "historical" ? "text-white" : "text-white/60"}`}>
+              Historical Games
             </Link>
-            <Link href="/analysis">
-              <a className={`px-4 py-2 font-medium rounded-md hover:bg-surface transition-colors ${currentTab === "analysis" ? "text-white" : "text-white/60"}`}>
-                Analysis
-              </a>
+            <Link href="/analysis" className={`px-4 py-2 font-medium rounded-md hover:bg-surface transition-colors ${currentTab === "analysis" ? "text-white" : "text-white/60"}`}>
+              Analysis
+            </Link>
+            <Link href="/game-analysis" className={`px-4 py-2 font-medium rounded-md hover:bg-surface transition-colors ${currentTab === "game-analysis" ? "text-white" : "text-white/60"}`}>
+              Game Analysis
             </Link>
           </div>
         </div>
@@ -56,13 +56,11 @@ export function Header() {
               <path d="m21 21-4.3-4.3" />
             </svg>
           </button>
-          <button className="hidden md:flex text-white/80 hover:text-white p-2 rounded-full hover:bg-surface-light transition-colors">
-            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-user-circle">
-              <circle cx="12" cy="12" r="10" />
-              <circle cx="12" cy="10" r="3" />
-              <path d="M7 20.662V19a2 2 0 0 1 2-2h6a2 2 0 0 1 2 2v1.662" />
+          <Link href="/admin" className="hidden md:flex text-white/80 hover:text-white p-2 rounded-full hover:bg-surface-light transition-colors">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-shield">
+              <path d="M20 13c0 5-3.5 7.5-8 10.5C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6-2 1.5.8 4 2 6 2a1 1 0 0 1 1 1v7z"/>
             </svg>
-          </button>
+          </Link>
           <button 
             className="md:hidden text-white/80 hover:text-white p-2" 
             onClick={toggleMobileMenu}
@@ -77,38 +75,33 @@ export function Header() {
       </div>
       
       {/* Mobile navigation menu */}
-      <div className={`md:hidden bg-surface absolute w-full border-b border-surface-light animate-fade-in ${isMobileMenuOpen ? 'block' : 'hidden'}`}>
+      <div className={`md:hidden bg-gray-900 absolute w-full border-b border-gray-700 animate-fade-in z-50 ${isMobileMenuOpen ? 'block' : 'hidden'}`}>
         <div className="container mx-auto px-4 py-3 flex flex-col space-y-2">
-          <Link href="/">
-            <a className={`px-4 py-3 font-medium text-left rounded-md hover:bg-surface-light transition-colors ${currentTab === "upcoming" ? "text-white" : "text-white/60"}`} onClick={() => setIsMobileMenuOpen(false)}>
-              Upcoming Games
-            </a>
+          <Link href="/" className={`px-4 py-3 font-medium text-left rounded-md hover:bg-gray-800 transition-colors ${currentTab === "upcoming" ? "text-white" : "text-white/60"}`} onClick={() => setIsMobileMenuOpen(false)}>
+            Upcoming Games
           </Link>
-          <Link href="/historical">
-            <a className={`px-4 py-3 font-medium text-left rounded-md hover:bg-surface-light transition-colors ${currentTab === "historical" ? "text-white" : "text-white/60"}`} onClick={() => setIsMobileMenuOpen(false)}>
-              Historical Games
-            </a>
+          <Link href="/historical" className={`px-4 py-3 font-medium text-left rounded-md hover:bg-gray-800 transition-colors ${currentTab === "historical" ? "text-white" : "text-white/60"}`} onClick={() => setIsMobileMenuOpen(false)}>
+            Historical Games
           </Link>
-          <Link href="/analysis">
-            <a className={`px-4 py-3 font-medium text-left rounded-md hover:bg-surface-light transition-colors ${currentTab === "analysis" ? "text-white" : "text-white/60"}`} onClick={() => setIsMobileMenuOpen(false)}>
-              Analysis
-            </a>
+          <Link href="/analysis" className={`px-4 py-3 font-medium text-left rounded-md hover:bg-gray-800 transition-colors ${currentTab === "analysis" ? "text-white" : "text-white/60"}`} onClick={() => setIsMobileMenuOpen(false)}>
+            Analysis
+          </Link>
+          <Link href="/game-analysis" className={`px-4 py-3 font-medium text-left rounded-md hover:bg-gray-800 transition-colors ${currentTab === "game-analysis" ? "text-white" : "text-white/60"}`} onClick={() => setIsMobileMenuOpen(false)}>
+            Game Analysis
           </Link>
           <div className="flex items-center space-x-2 px-4 py-3">
-            <button className="flex-1 bg-surface-light text-white/80 p-2 rounded-md">
+            <button className="flex-1 bg-gray-800 text-white/80 p-2 rounded-md">
               <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-search inline-block mr-2">
                 <circle cx="11" cy="11" r="8" />
                 <path d="m21 21-4.3-4.3" />
               </svg>
               Search
             </button>
-            <button className="bg-surface-light text-white/80 p-2 rounded-md">
-              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-user-circle">
-                <circle cx="12" cy="12" r="10" />
-                <circle cx="12" cy="10" r="3" />
-                <path d="M7 20.662V19a2 2 0 0 1 2-2h6a2 2 0 0 1 2 2v1.662" />
+            <Link href="/admin" className="bg-gray-800 text-white/80 p-2 rounded-md hover:bg-gray-700 transition-colors" onClick={() => setIsMobileMenuOpen(false)}>
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-shield">
+                <path d="M20 13c0 5-3.5 7.5-8 10.5C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6-2 1.5.8 4 2 6 2a1 1 0 0 1 1 1v7z"/>
               </svg>
-            </button>
+            </Link>
           </div>
         </div>
       </div>

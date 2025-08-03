@@ -1,0 +1,193 @@
+# Rick's Picks Data Sync Log - Simplified Version
+# Only logs auto-sync events, not individual API requests
+# Format: [TIMESTAMP] - EVENT_TYPE: Description
+[2025-08-03T15:53:59.802Z] - AUTO_SYNC: Triggered - Regular 4-hour scheduled update
+[2025-08-03T15:53:59.803Z] - SYNC_START: CURRENT_WEEK_SYNC Week 1 2025 season
+[2025-08-03T15:54:06.942Z] - SYNC_COMPLETE: CURRENT_WEEK_SYNC 10 games processed
+[2025-08-03T15:54:06.943Z] - SYNC_COMPLETE: AUTO_SYNC_4H Regular scheduled sync completed
+[2025-08-03T15:57:28.940Z] - AUTO_SYNC: Triggered - Regular 4-hour scheduled update
+[2025-08-03T15:57:28.942Z] - SYNC_START: CURRENT_WEEK_SYNC Week 1 2025 season
+[2025-08-03T15:57:36.311Z] - SYNC_COMPLETE: CURRENT_WEEK_SYNC 10 games processed
+[2025-08-03T15:57:36.311Z] - SYNC_COMPLETE: AUTO_SYNC_4H Regular scheduled sync completed
+[2025-08-03T16:03:02.502Z] - AUTO_SYNC: Triggered - Regular 4-hour scheduled update
+[2025-08-03T16:03:02.503Z] - SYNC_START: CURRENT_WEEK_SYNC Week 1 2025 season
+[2025-08-03T16:03:09.759Z] - SYNC_COMPLETE: CURRENT_WEEK_SYNC 10 games processed
+[2025-08-03T16:03:09.759Z] - SYNC_COMPLETE: AUTO_SYNC_4H Regular scheduled sync completed
+[2025-08-03T16:13:33.851Z] - AUTO_SYNC: Triggered - Regular 4-hour scheduled update
+[2025-08-03T16:13:33.862Z] - SYNC_START: CURRENT_WEEK_SYNC Week 1 2025 season
+[2025-08-03T16:13:43.775Z] - SYNC_COMPLETE: CURRENT_WEEK_SYNC 10 games processed
+[2025-08-03T16:13:43.775Z] - SYNC_COMPLETE: AUTO_SYNC_4H Regular scheduled sync completed
+[2025-08-03T16:16:05.574Z] - AUTO_SYNC: Triggered - Regular 4-hour scheduled update
+[2025-08-03T16:16:05.575Z] - SYNC_START: CURRENT_WEEK_SYNC Week 1 2025 season
+[2025-08-03T16:16:12.936Z] - SYNC_COMPLETE: CURRENT_WEEK_SYNC 10 games processed
+[2025-08-03T16:16:12.937Z] - SYNC_COMPLETE: AUTO_SYNC_4H Regular scheduled sync completed
+[2025-08-03T16:16:49.909Z] - AUTO_SYNC: Triggered - Regular 4-hour scheduled update
+[2025-08-03T16:16:49.910Z] - SYNC_START: CURRENT_WEEK_SYNC Week 1 2025 season
+[2025-08-03T16:16:57.342Z] - SYNC_COMPLETE: CURRENT_WEEK_SYNC 10 games processed
+[2025-08-03T16:16:57.342Z] - SYNC_COMPLETE: AUTO_SYNC_4H Regular scheduled sync completed
+[2025-08-03T16:21:27.186Z] - AUTO_SYNC: Triggered - Regular 4-hour scheduled update
+[2025-08-03T16:21:27.188Z] - SYNC_START: CURRENT_WEEK_SYNC Week 1 2025 season
+[2025-08-03T16:21:35.193Z] - SYNC_COMPLETE: CURRENT_WEEK_SYNC 10 games processed
+[2025-08-03T16:21:35.193Z] - SYNC_COMPLETE: AUTO_SYNC_4H Regular scheduled sync completed
+[2025-08-03T16:23:20.790Z] - AUTO_SYNC: Triggered - Regular 4-hour scheduled update
+[2025-08-03T16:23:20.792Z] - SYNC_START: CURRENT_WEEK_SYNC Week 1 2025 season
+[2025-08-03T16:23:28.717Z] - SYNC_COMPLETE: CURRENT_WEEK_SYNC 10 games processed
+[2025-08-03T16:23:28.717Z] - SYNC_COMPLETE: AUTO_SYNC_4H Regular scheduled sync completed
+[2025-08-03T16:25:48.883Z] - AUTO_SYNC: Triggered - Regular 4-hour scheduled update
+[2025-08-03T16:25:48.884Z] - SYNC_START: CURRENT_WEEK_SYNC Week 1 2025 season
+[2025-08-03T16:25:56.473Z] - SYNC_COMPLETE: CURRENT_WEEK_SYNC 10 games processed
+[2025-08-03T16:25:56.474Z] - SYNC_COMPLETE: AUTO_SYNC_4H Regular scheduled sync completed
+[2025-08-03T16:26:34.707Z] - AUTO_SYNC: Triggered - Regular 4-hour scheduled update
+[2025-08-03T16:26:34.709Z] - SYNC_START: CURRENT_WEEK_SYNC Week 1 2025 season
+[2025-08-03T16:26:43.706Z] - SYNC_COMPLETE: CURRENT_WEEK_SYNC 10 games processed
+[2025-08-03T16:26:43.706Z] - SYNC_COMPLETE: AUTO_SYNC_4H Regular scheduled sync completed
+[2025-08-03T16:33:32.476Z] - AUTO_SYNC: Triggered - Regular 4-hour scheduled update
+[2025-08-03T16:33:32.477Z] - SYNC_START: CURRENT_WEEK_SYNC Week 1 2025 season
+[2025-08-03T16:33:39.769Z] - SYNC_COMPLETE: CURRENT_WEEK_SYNC 10 games processed
+[2025-08-03T16:33:39.769Z] - SYNC_COMPLETE: AUTO_SYNC_4H Regular scheduled sync completed
+[2025-08-03T16:34:56.341Z] - AUTO_SYNC: Triggered - Regular 4-hour scheduled update
+[2025-08-03T16:34:56.344Z] - SYNC_START: CURRENT_WEEK_SYNC Week 1 2025 season
+[2025-08-03T16:35:04.006Z] - SYNC_COMPLETE: CURRENT_WEEK_SYNC 10 games processed
+[2025-08-03T16:35:04.007Z] - SYNC_COMPLETE: AUTO_SYNC_4H Regular scheduled sync completed
+[2025-08-03T16:38:39.337Z] - AUTO_SYNC: Triggered - Regular 4-hour scheduled update
+[2025-08-03T16:38:39.338Z] - SYNC_START: CURRENT_WEEK_SYNC Week 1 2025 season
+[2025-08-03T16:38:47.052Z] - SYNC_COMPLETE: CURRENT_WEEK_SYNC 10 games processed
+[2025-08-03T16:38:47.052Z] - SYNC_COMPLETE: AUTO_SYNC_4H Regular scheduled sync completed
+[2025-08-03T16:40:21.450Z] - AUTO_SYNC: Triggered - Regular 4-hour scheduled update
+[2025-08-03T16:40:21.451Z] - SYNC_START: CURRENT_WEEK_SYNC Week 1 2025 season
+[2025-08-03T16:40:29.026Z] - SYNC_COMPLETE: CURRENT_WEEK_SYNC 10 games processed
+[2025-08-03T16:40:29.027Z] - SYNC_COMPLETE: AUTO_SYNC_4H Regular scheduled sync completed
+[2025-08-03T16:40:52.996Z] - AUTO_SYNC: Triggered - Regular 4-hour scheduled update
+[2025-08-03T16:40:52.997Z] - SYNC_START: CURRENT_WEEK_SYNC Week 1 2025 season
+[2025-08-03T16:41:00.938Z] - SYNC_COMPLETE: CURRENT_WEEK_SYNC 10 games processed
+[2025-08-03T16:41:00.939Z] - SYNC_COMPLETE: AUTO_SYNC_4H Regular scheduled sync completed
+[2025-08-03T16:44:32.322Z] - AUTO_SYNC: Triggered - Regular 4-hour scheduled update
+[2025-08-03T16:44:32.323Z] - SYNC_START: CURRENT_WEEK_SYNC Week 1 2025 season
+[2025-08-03T16:44:39.615Z] - SYNC_COMPLETE: CURRENT_WEEK_SYNC 10 games processed
+[2025-08-03T16:44:39.615Z] - SYNC_COMPLETE: AUTO_SYNC_4H Regular scheduled sync completed
+[2025-08-03T16:48:44.423Z] - AUTO_SYNC: Triggered - Regular 4-hour scheduled update
+[2025-08-03T16:48:44.426Z] - SYNC_START: CURRENT_WEEK_SYNC Week 1 2025 season
+[2025-08-03T16:48:52.185Z] - SYNC_COMPLETE: CURRENT_WEEK_SYNC 10 games processed
+[2025-08-03T16:48:52.185Z] - SYNC_COMPLETE: AUTO_SYNC_4H Regular scheduled sync completed
+[2025-08-03T16:51:23.685Z] - AUTO_SYNC: Triggered - Regular 4-hour scheduled update
+[2025-08-03T16:51:23.686Z] - SYNC_START: CURRENT_WEEK_SYNC Week 1 2025 season
+[2025-08-03T16:51:31.042Z] - SYNC_COMPLETE: CURRENT_WEEK_SYNC 10 games processed
+[2025-08-03T16:51:31.042Z] - SYNC_COMPLETE: AUTO_SYNC_4H Regular scheduled sync completed
+[2025-08-03T16:55:00.937Z] - AUTO_SYNC: Triggered - Regular 4-hour scheduled update
+[2025-08-03T16:55:00.938Z] - SYNC_START: CURRENT_WEEK_SYNC Week 1 2025 season
+[2025-08-03T16:55:08.465Z] - SYNC_COMPLETE: CURRENT_WEEK_SYNC 10 games processed
+[2025-08-03T16:55:08.465Z] - SYNC_COMPLETE: AUTO_SYNC_4H Regular scheduled sync completed
+[2025-08-03T16:55:56.596Z] - AUTO_SYNC: Triggered - Regular 4-hour scheduled update
+[2025-08-03T16:55:56.597Z] - SYNC_START: CURRENT_WEEK_SYNC Week 1 2025 season
+[2025-08-03T16:56:04.698Z] - SYNC_COMPLETE: CURRENT_WEEK_SYNC 10 games processed
+[2025-08-03T16:56:04.698Z] - SYNC_COMPLETE: AUTO_SYNC_4H Regular scheduled sync completed
+[2025-08-03T17:04:54.949Z] - AUTO_SYNC: Triggered - Regular 4-hour scheduled update
+[2025-08-03T17:04:54.950Z] - SYNC_START: CURRENT_WEEK_SYNC Week 1 2025 season
+[2025-08-03T17:05:02.152Z] - SYNC_COMPLETE: CURRENT_WEEK_SYNC 10 games processed
+[2025-08-03T17:05:02.152Z] - SYNC_COMPLETE: AUTO_SYNC_4H Regular scheduled sync completed
+[2025-08-03T17:07:39.757Z] - AUTO_SYNC: Triggered - Regular 4-hour scheduled update
+[2025-08-03T17:07:39.758Z] - SYNC_START: CURRENT_WEEK_SYNC Week 1 2025 season
+[2025-08-03T17:07:47.039Z] - SYNC_COMPLETE: CURRENT_WEEK_SYNC 10 games processed
+[2025-08-03T17:07:47.039Z] - SYNC_COMPLETE: AUTO_SYNC_4H Regular scheduled sync completed
+[2025-08-03T17:12:03.819Z] - AUTO_SYNC: Triggered - Regular 4-hour scheduled update
+[2025-08-03T17:12:03.821Z] - SYNC_START: CURRENT_WEEK_SYNC Week 1 2025 season
+[2025-08-03T17:12:11.521Z] - SYNC_COMPLETE: CURRENT_WEEK_SYNC 10 games processed
+[2025-08-03T17:12:11.521Z] - SYNC_COMPLETE: AUTO_SYNC_4H Regular scheduled sync completed
+[2025-08-03T17:13:17.499Z] - AUTO_SYNC: Triggered - Regular 4-hour scheduled update
+[2025-08-03T17:13:17.500Z] - SYNC_START: CURRENT_WEEK_SYNC Week 1 2025 season
+[2025-08-03T17:13:25.774Z] - SYNC_COMPLETE: CURRENT_WEEK_SYNC 10 games processed
+[2025-08-03T17:13:25.774Z] - SYNC_COMPLETE: AUTO_SYNC_4H Regular scheduled sync completed
+[2025-08-03T17:18:16.634Z] - AUTO_SYNC: Triggered - Regular 4-hour scheduled update
+[2025-08-03T17:18:16.635Z] - SYNC_START: CURRENT_WEEK_SYNC Week 1 2025 season
+[2025-08-03T17:18:25.021Z] - SYNC_COMPLETE: CURRENT_WEEK_SYNC 10 games processed
+[2025-08-03T17:18:25.021Z] - SYNC_COMPLETE: AUTO_SYNC_4H Regular scheduled sync completed
+[2025-08-03T17:19:39.013Z] - AUTO_SYNC: Triggered - Regular 4-hour scheduled update
+[2025-08-03T17:19:39.014Z] - SYNC_START: CURRENT_WEEK_SYNC Week 1 2025 season
+[2025-08-03T17:19:46.410Z] - SYNC_COMPLETE: CURRENT_WEEK_SYNC 10 games processed
+[2025-08-03T17:19:46.410Z] - SYNC_COMPLETE: AUTO_SYNC_4H Regular scheduled sync completed
+[2025-08-03T17:22:48.681Z] - AUTO_SYNC: Triggered - Regular 4-hour scheduled update
+[2025-08-03T17:22:48.682Z] - SYNC_START: CURRENT_WEEK_SYNC Week 1 2025 season
+[2025-08-03T17:22:58.395Z] - SYNC_COMPLETE: CURRENT_WEEK_SYNC 10 games processed
+[2025-08-03T17:22:58.395Z] - SYNC_COMPLETE: AUTO_SYNC_4H Regular scheduled sync completed
+[2025-08-03T17:26:36.434Z] - AUTO_SYNC: Triggered - Regular 4-hour scheduled update
+[2025-08-03T17:26:36.435Z] - SYNC_START: CURRENT_WEEK_SYNC Week 1 2025 season
+[2025-08-03T17:26:44.273Z] - SYNC_COMPLETE: CURRENT_WEEK_SYNC 10 games processed
+[2025-08-03T17:26:44.273Z] - SYNC_COMPLETE: AUTO_SYNC_4H Regular scheduled sync completed
+[2025-08-03T17:28:21.598Z] - AUTO_SYNC: Triggered - Regular 4-hour scheduled update
+[2025-08-03T17:28:21.599Z] - SYNC_START: CURRENT_WEEK_SYNC Week 1 2025 season
+[2025-08-03T17:28:29.477Z] - SYNC_COMPLETE: CURRENT_WEEK_SYNC 10 games processed
+[2025-08-03T17:28:29.478Z] - SYNC_COMPLETE: AUTO_SYNC_4H Regular scheduled sync completed
+[2025-08-03T17:29:01.019Z] - AUTO_SYNC: Triggered - Regular 4-hour scheduled update
+[2025-08-03T17:29:01.020Z] - SYNC_START: CURRENT_WEEK_SYNC Week 1 2025 season
+[2025-08-03T17:29:08.979Z] - SYNC_COMPLETE: CURRENT_WEEK_SYNC 10 games processed
+[2025-08-03T17:29:08.980Z] - SYNC_COMPLETE: AUTO_SYNC_4H Regular scheduled sync completed
+[2025-08-03T17:35:02.625Z] - AUTO_SYNC: Triggered - Regular 4-hour scheduled update
+[2025-08-03T17:35:02.627Z] - SYNC_START: CURRENT_WEEK_SYNC Week 1 2025 season
+[2025-08-03T17:35:10.780Z] - SYNC_COMPLETE: CURRENT_WEEK_SYNC 10 games processed
+[2025-08-03T17:35:10.780Z] - SYNC_COMPLETE: AUTO_SYNC_4H Regular scheduled sync completed
+[2025-08-03T17:35:51.573Z] - AUTO_SYNC: Triggered - Regular 4-hour scheduled update
+[2025-08-03T17:35:51.574Z] - SYNC_START: CURRENT_WEEK_SYNC Week 1 2025 season
+[2025-08-03T17:35:58.994Z] - SYNC_COMPLETE: CURRENT_WEEK_SYNC 10 games processed
+[2025-08-03T17:35:58.994Z] - SYNC_COMPLETE: AUTO_SYNC_4H Regular scheduled sync completed
+[2025-08-03T17:37:58.715Z] - AUTO_SYNC: Triggered - Regular 4-hour scheduled update
+[2025-08-03T17:37:58.716Z] - SYNC_START: CURRENT_WEEK_SYNC Week 1 2025 season
+[2025-08-03T17:38:05.991Z] - SYNC_COMPLETE: CURRENT_WEEK_SYNC 10 games processed
+[2025-08-03T17:38:05.992Z] - SYNC_COMPLETE: AUTO_SYNC_4H Regular scheduled sync completed
+[2025-08-03T17:38:50.109Z] - AUTO_SYNC: Triggered - Regular 4-hour scheduled update
+[2025-08-03T17:38:50.110Z] - SYNC_START: CURRENT_WEEK_SYNC Week 1 2025 season
+[2025-08-03T17:38:57.832Z] - SYNC_COMPLETE: CURRENT_WEEK_SYNC 10 games processed
+[2025-08-03T17:38:57.832Z] - SYNC_COMPLETE: AUTO_SYNC_4H Regular scheduled sync completed
+[2025-08-03T17:42:52.317Z] - AUTO_SYNC: Triggered - Regular 4-hour scheduled update
+[2025-08-03T17:42:52.318Z] - SYNC_START: CURRENT_WEEK_SYNC Week 1 2025 season
+[2025-08-03T17:42:59.985Z] - SYNC_COMPLETE: CURRENT_WEEK_SYNC 10 games processed
+[2025-08-03T17:42:59.985Z] - SYNC_COMPLETE: AUTO_SYNC_4H Regular scheduled sync completed
+[2025-08-03T17:45:35.787Z] - AUTO_SYNC: Triggered - Regular 4-hour scheduled update
+[2025-08-03T17:45:35.788Z] - SYNC_START: CURRENT_WEEK_SYNC Week 1 2025 season
+[2025-08-03T17:45:43.524Z] - SYNC_COMPLETE: CURRENT_WEEK_SYNC 10 games processed
+[2025-08-03T17:45:43.524Z] - SYNC_COMPLETE: AUTO_SYNC_4H Regular scheduled sync completed
+[2025-08-03T17:47:19.584Z] - AUTO_SYNC: Triggered - Regular 4-hour scheduled update
+[2025-08-03T17:47:19.585Z] - SYNC_START: CURRENT_WEEK_SYNC Week 1 2025 season
+[2025-08-03T17:47:31.555Z] - AUTO_SYNC: Triggered - Regular 4-hour scheduled update
+[2025-08-03T17:47:31.556Z] - SYNC_START: CURRENT_WEEK_SYNC Week 1 2025 season
+[2025-08-03T17:47:38.850Z] - SYNC_COMPLETE: CURRENT_WEEK_SYNC 10 games processed
+[2025-08-03T17:47:38.850Z] - SYNC_COMPLETE: AUTO_SYNC_4H Regular scheduled sync completed
+[2025-08-03T17:50:22.698Z] - AUTO_SYNC: Triggered - Regular 4-hour scheduled update
+[2025-08-03T17:50:22.699Z] - SYNC_START: CURRENT_WEEK_SYNC Week 1 2025 season
+[2025-08-03T17:50:30.105Z] - SYNC_COMPLETE: CURRENT_WEEK_SYNC 10 games processed
+[2025-08-03T17:50:30.105Z] - SYNC_COMPLETE: AUTO_SYNC_4H Regular scheduled sync completed
+[2025-08-03T17:50:38.413Z] - AUTO_SYNC: Triggered - Regular 4-hour scheduled update
+[2025-08-03T17:50:38.414Z] - SYNC_START: CURRENT_WEEK_SYNC Week 1 2025 season
+[2025-08-03T17:50:45.704Z] - SYNC_COMPLETE: CURRENT_WEEK_SYNC 10 games processed
+[2025-08-03T17:50:45.704Z] - SYNC_COMPLETE: AUTO_SYNC_4H Regular scheduled sync completed
+[2025-08-03T17:51:46.875Z] - AUTO_SYNC: Triggered - Regular 4-hour scheduled update
+[2025-08-03T17:51:46.876Z] - SYNC_START: CURRENT_WEEK_SYNC Week 1 2025 season
+[2025-08-03T17:51:54.007Z] - SYNC_COMPLETE: CURRENT_WEEK_SYNC 10 games processed
+[2025-08-03T17:51:54.007Z] - SYNC_COMPLETE: AUTO_SYNC_4H Regular scheduled sync completed
+[2025-08-03T17:53:30.355Z] - AUTO_SYNC: Triggered - Regular 4-hour scheduled update
+[2025-08-03T17:53:30.356Z] - SYNC_START: CURRENT_WEEK_SYNC Week 1 2025 season
+[2025-08-03T17:53:37.671Z] - SYNC_COMPLETE: CURRENT_WEEK_SYNC 10 games processed
+[2025-08-03T17:53:37.672Z] - SYNC_COMPLETE: AUTO_SYNC_4H Regular scheduled sync completed
+[2025-08-03T17:58:03.176Z] - AUTO_SYNC: Triggered - Regular 4-hour scheduled update
+[2025-08-03T17:58:03.177Z] - SYNC_START: CURRENT_WEEK_SYNC Week 1 2025 season
+[2025-08-03T17:58:10.665Z] - SYNC_COMPLETE: CURRENT_WEEK_SYNC 10 games processed
+[2025-08-03T17:58:10.665Z] - SYNC_COMPLETE: AUTO_SYNC_4H Regular scheduled sync completed
+[2025-08-03T18:15:52.259Z] - AUTO_SYNC: Triggered - Regular 4-hour scheduled update
+[2025-08-03T18:15:52.261Z] - SYNC_START: CURRENT_WEEK_SYNC Week 1 2025 season
+[2025-08-03T18:15:59.647Z] - SYNC_COMPLETE: CURRENT_WEEK_SYNC 10 games processed
+[2025-08-03T18:15:59.647Z] - SYNC_COMPLETE: AUTO_SYNC_4H Regular scheduled sync completed
+[2025-08-03T18:21:24.821Z] - AUTO_SYNC: Triggered - Regular 4-hour scheduled update
+[2025-08-03T18:21:24.821Z] - SYNC_START: CURRENT_WEEK_SYNC Week 1 2025 season
+[2025-08-03T18:21:32.363Z] - SYNC_COMPLETE: CURRENT_WEEK_SYNC 10 games processed
+[2025-08-03T18:21:32.363Z] - SYNC_COMPLETE: AUTO_SYNC_4H Regular scheduled sync completed
+[2025-08-03T18:31:33.854Z] - AUTO_SYNC: Triggered - Regular 4-hour scheduled update
+[2025-08-03T18:31:33.855Z] - SYNC_START: CURRENT_WEEK_SYNC Week 1 2025 season
+[2025-08-03T18:31:41.074Z] - SYNC_COMPLETE: CURRENT_WEEK_SYNC 10 games processed
+[2025-08-03T18:31:41.074Z] - SYNC_COMPLETE: AUTO_SYNC_4H Regular scheduled sync completed
+[2025-08-03T19:56:11.548Z] - AUTO_SYNC: Triggered - Regular 4-hour scheduled update
+[2025-08-03T19:56:11.549Z] - SYNC_START: CURRENT_WEEK_SYNC Week 1 2025 season
+[2025-08-03T19:56:18.929Z] - SYNC_COMPLETE: CURRENT_WEEK_SYNC 10 games processed
+[2025-08-03T19:56:18.929Z] - SYNC_COMPLETE: AUTO_SYNC_4H Regular scheduled sync completed
+[2025-08-03T20:03:22.417Z] - AUTO_SYNC: Triggered - Regular 4-hour scheduled update
+[2025-08-03T20:03:22.418Z] - SYNC_START: CURRENT_WEEK_SYNC Week 1 2025 season
+[2025-08-03T20:03:29.549Z] - SYNC_COMPLETE: CURRENT_WEEK_SYNC 10 games processed
+[2025-08-03T20:03:29.549Z] - SYNC_COMPLETE: AUTO_SYNC_4H Regular scheduled sync completed

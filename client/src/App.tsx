@@ -5,9 +5,15 @@ import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { Header } from "@/components/header";
 import { Footer } from "@/components/footer";
+import { useAdSense } from "@/hooks/use-adsense";
 import Home from "@/pages/home";
 import Historical from "@/pages/historical";
 import Analysis from "@/pages/analysis";
+import Sentiment from "@/pages/sentiment";
+import DataAnalysis from "@/pages/data-analysis";
+import GameAnalysis from "@/pages/game-analysis";
+import SeasonStats from "@/pages/season-stats";
+import AdminPanel from "@/pages/admin-panel";
 import NotFound from "@/pages/not-found";
 
 function Router() {
@@ -16,12 +22,19 @@ function Router() {
       <Route path="/" component={Home} />
       <Route path="/historical" component={Historical} />
       <Route path="/analysis" component={Analysis} />
+      <Route path="/game-analysis" component={GameAnalysis} />
+      <Route path="/sentiment" component={Sentiment} />
+      <Route path="/season-stats" component={SeasonStats} />
+      <Route path="/admin" component={AdminPanel} />
       <Route component={NotFound} />
     </Switch>
   );
 }
 
 function App() {
+  // Initialize Google AdSense
+  useAdSense();
+
   return (
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>

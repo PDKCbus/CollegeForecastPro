@@ -1,0 +1,247 @@
+{
+  "timestamp": "2025-08-03T15:46:02.867527",
+  "current_performance": {
+    "ats_percentage": 51.7,
+    "break_even_needed": 52.4,
+    "vs_vegas_performance": -26.5
+  },
+  "available_cfbd_metrics": {
+    "team_metrics": {
+      "advanced_season_stats": {
+        "available": true,
+        "sample_metrics": [
+          "season",
+          "team",
+          "conference",
+          "offense",
+          "defense"
+        ],
+        "description": "Team efficiency metrics, EPA, success rates"
+      },
+      "ppa_data": {
+        "available": true,
+        "metrics": [
+          "season",
+          "conference",
+          "team",
+          "offense",
+          "defense"
+        ],
+        "description": "Expected Points Added by team and situation"
+      },
+      "sp_ratings": {
+        "available": true,
+        "metrics": [
+          "year",
+          "team",
+          "conference",
+          "rating",
+          "ranking",
+          "secondOrderWins",
+          "sos",
+          "offense",
+          "defense",
+          "specialTeams"
+        ],
+        "description": "Bill Connelly SP+ ratings and components"
+      },
+      "fpi_ratings": {
+        "available": true,
+        "metrics": [
+          "year",
+          "team",
+          "conference",
+          "fpi",
+          "resumeRanks",
+          "efficiencies"
+        ],
+        "description": "ESPN Football Power Index ratings"
+      }
+    },
+    "player_metrics": {
+      "player_season_stats": {
+        "available": true,
+        "categories": [
+          "passing",
+          "rushing",
+          "receiving",
+          "defensive"
+        ],
+        "sample_metrics": [
+          "season",
+          "playerId",
+          "player",
+          "position",
+          "team",
+          "conference",
+          "category",
+          "statType",
+          "stat"
+        ],
+        "description": "Comprehensive player statistics by category"
+      },
+      "player_ppa": {
+        "available": true,
+        "metrics": [
+          "season",
+          "id",
+          "name",
+          "position",
+          "team",
+          "conference",
+          "averagePPA",
+          "totalPPA"
+        ],
+        "description": "Player expected points added by situation"
+      },
+      "player_usage": {
+        "available": true,
+        "metrics": [
+          "season",
+          "id",
+          "name",
+          "position",
+          "team",
+          "conference",
+          "usage"
+        ],
+        "description": "Player usage rates and opportunity metrics"
+      },
+      "returning_production": {
+        "available": true,
+        "metrics": [
+          "season",
+          "team",
+          "conference",
+          "totalPPA",
+          "totalPassingPPA",
+          "totalReceivingPPA",
+          "totalRushingPPA",
+          "percentPPA",
+          "percentPassingPPA",
+          "percentReceivingPPA",
+          "percentRushingPPA",
+          "usage",
+          "passingUsage",
+          "receivingUsage",
+          "rushingUsage"
+        ],
+        "description": "Team returning production from previous season"
+      }
+    },
+    "game_metrics": {
+      "game_advanced_stats": {
+        "available": true,
+        "metrics": [
+          "gameId",
+          "season",
+          "week",
+          "team",
+          "opponent",
+          "offense",
+          "defense"
+        ],
+        "description": "Game-level efficiency and advanced metrics"
+      },
+      "win_probability": {
+        "available": true,
+        "metrics": [
+          "gameId",
+          "homeId",
+          "home",
+          "awayId",
+          "away",
+          "playId",
+          "playText",
+          "homeScore",
+          "awayScore",
+          "down",
+          "distance",
+          "homeWinProbability",
+          "spread",
+          "yardLine",
+          "homeBall",
+          "playNumber"
+        ],
+        "description": "Play-by-play win probability data"
+      },
+      "game_ppa": {
+        "available": true,
+        "metrics": [
+          "gameId",
+          "season",
+          "week",
+          "seasonType",
+          "team",
+          "conference",
+          "opponent",
+          "offense",
+          "defense"
+        ],
+        "description": "Expected points added by game"
+      }
+    },
+    "situational_metrics": {
+      "team_talent": {
+        "available": true,
+        "metrics": [
+          "year",
+          "team",
+          "talent"
+        ],
+        "description": "Recruiting-based talent composite scores"
+      },
+      "coaching_records": {
+        "available": true,
+        "metrics": [
+          "firstName",
+          "lastName",
+          "hireDate",
+          "seasons"
+        ],
+        "description": "Head coach records and tenure"
+      },
+      "conference_data": {
+        "available": true,
+        "metrics": [
+          "id",
+          "name",
+          "shortName",
+          "abbreviation",
+          "classification"
+        ],
+        "description": "Conference affiliations and details"
+      }
+    }
+  },
+  "missing_factors": {
+    "high_impact": [
+      "player_efficiency_ratings",
+      "team_offensive_defensive_efficiency",
+      "recent_performance_trends",
+      "strength_of_schedule_adjusted",
+      "coaching_matchup_history"
+    ],
+    "medium_impact": [
+      "advanced_statistical_models_sp_plus",
+      "situational_performance_metrics",
+      "travel_distance_fatigue",
+      "motivation_factors_bowl_eligibility",
+      "injury_impact_key_players"
+    ],
+    "low_impact": [
+      "public_betting_percentages",
+      "line_movement_sharp_money",
+      "social_media_sentiment_refined",
+      "historical_referee_tendencies"
+    ]
+  },
+  "immediate_implementation_plan": [
+    "Integrate SP+ ratings if available",
+    "Add player efficiency metrics (PPA/EPA)",
+    "Implement team offensive/defensive efficiency",
+    "Calculate strength of schedule adjustments",
+    "Add recent performance momentum (weighted recent games)",
+    "Include coaching matchup history"
+  ]
+}

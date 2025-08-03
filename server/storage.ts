@@ -2,7 +2,10 @@ import {
   users, 
   teams, 
   games, 
-  predictions, 
+  predictions,
+  sentimentAnalysis,
+  ricksPicks,
+  adminUsers,
   type User, 
   type InsertUser, 
   type Team, 
@@ -10,7 +13,13 @@ import {
   type Game, 
   type InsertGame, 
   type Prediction, 
-  type InsertPrediction, 
+  type InsertPrediction,
+  type SentimentAnalysis,
+  type InsertSentimentAnalysis,
+  type RicksPick,
+  type InsertRicksPick,
+  type AdminUser,
+  type InsertAdminUser,
   type GameWithTeams
 } from "@shared/schema";
 
@@ -35,9 +44,11 @@ export interface IStorage {
   getHistoricalGames(
     season?: number, 
     week?: number, 
-    teamId?: number, 
-    conference?: string
+    limit?: number,
+    offset?: number
   ): Promise<GameWithTeams[]>;
+  getHistoricalGamesCount(season?: number, week?: number): Promise<number>;
+  getGamesByWeek(season: number, week: number): Promise<GameWithTeams[]>;
   createGame(game: InsertGame): Promise<Game>;
   updateGame(id: number, game: Partial<Game>): Promise<Game | undefined>;
   
@@ -46,6 +57,44 @@ export interface IStorage {
   getPredictionsByGame(gameId: number): Promise<Prediction[]>;
   createPrediction(prediction: InsertPrediction): Promise<Prediction>;
   updatePrediction(id: number, prediction: Partial<Prediction>): Promise<Prediction | undefined>;
+  
+  // Sentiment Analysis operations
+  getSentimentAnalysis(id: number): Promise<SentimentAnalysis | undefined>;
+  getSentimentByGame(gameId: number): Promise<SentimentAnalysis[]>;
+  getSentimentByTeam(teamId: number): Promise<SentimentAnalysis[]>;
+  createSentimentAnalysis(sentiment: InsertSentimentAnalysis): Promise<SentimentAnalysis>;
+  updateSentimentAnalysis(id: number, sentiment: Partial<SentimentAnalysis>): Promise<SentimentAnalysis | undefined>;
+  
+  // Rick's Picks operations
+  getRicksPick(gameId: number): Promise<RicksPick | undefined>;
+  getRicksPicksByWeek(season: number, week: number): Promise<RicksPick[]>;
+  createRicksPick(pick: InsertRicksPick): Promise<RicksPick>;
+  updateRicksPick(gameId: number, pick: Partial<RicksPick>): Promise<RicksPick | undefined>;
+  deleteRicksPick(gameId: number): Promise<boolean>;
+  lockRicksPick(gameId: number): Promise<boolean>;
+  
+  // Admin User operations
+  getAdminUser(username: string): Promise<AdminUser | undefined>;
+  createAdminUser(adminUser: InsertAdminUser): Promise<AdminUser>;
+  updateAdminUserLastLogin(username: string): Promise<boolean>;
+
+  // Player operations
+  getTeamPlayers(teamId: number): Promise<any[]>;
+  getPlayerById(playerId: number): Promise<any>;
+  getPlayerStats(playerId: number, season?: number): Promise<any[]>;
+  collectTeamRoster(teamName: string, season?: number): Promise<void>;
+  getPlayerImpactAnalysis(playerId: number): Promise<any>;
+
+  // Injury operations  
+  getTeamInjuryReport(teamId: number): Promise<any[]>;
+  addInjuryReport(injuryData: any): Promise<void>;
+  updateInjuryStatus(injuryId: number, status: string, severity?: string): Promise<void>;
+  calculateTeamInjuryImpact(teamId: number): Promise<any>;
+
+  // Handicapping operations
+  getHandicappingAnalysis(gameId: number): Promise<any>;
+  getKeyPlayerMatchups(gameId: number): Promise<any[]>;
+  calculateGameInjuryImpact(gameId: number): Promise<any>;
 }
 
 export class MemStorage implements IStorage {
@@ -53,20 +102,24 @@ export class MemStorage implements IStorage {
   private teams: Map<number, Team>;
   private games: Map<number, Game>;
   private predictions: Map<number, Prediction>;
+  private sentiments: Map<number, SentimentAnalysis>;
   private userCurrentId: number;
   private teamCurrentId: number;
   private gameCurrentId: number;
   private predictionCurrentId: number;
+  private sentimentCurrentId: number;
 
   constructor() {
     this.users = new Map();
     this.teams = new Map();
     this.games = new Map();
     this.predictions = new Map();
+    this.sentiments = new Map();
     this.userCurrentId = 1;
     this.teamCurrentId = 1;
     this.gameCurrentId = 1;
     this.predictionCurrentId = 1;
+    this.sentimentCurrentId = 1;
     
     // Initialize with some sample teams
     this.initializeTeams();
@@ -98,8 +151,9 @@ export class MemStorage implements IStorage {
   }
 
   async getTeamByName(name: string): Promise<Team | undefined> {
+    if (!name) return undefined;
     return Array.from(this.teams.values()).find(
-      (team) => team.name.toLowerCase() === name.toLowerCase(),
+      (team) => team.name?.toLowerCase() === name.toLowerCase(),
     );
   }
 
@@ -150,7 +204,11 @@ export class MemStorage implements IStorage {
   async getUpcomingGames(limit = 10, offset = 0): Promise<GameWithTeams[]> {
     const now = new Date();
     const upcomingGames = Array.from(this.games.values())
-      .filter(game => new Date(game.startDate) > now && !game.completed)
+      .filter(game => 
+        new Date(game.startDate) > now && 
+        !game.completed &&
+        (game.spread !== null || game.overUnder !== null)
+      )
       .sort((a, b) => new Date(a.startDate).getTime() - new Date(b.startDate).getTime());
     
     const paginatedGames = upcomingGames.slice(offset, offset + limit);
@@ -182,7 +240,10 @@ export class MemStorage implements IStorage {
     conference?: string
   ): Promise<GameWithTeams[]> {
     let historicalGames = Array.from(this.games.values())
-      .filter(game => game.completed);
+      .filter(game => 
+        game.completed &&
+        (game.spread !== null || game.overUnder !== null)
+      );
     
     if (season) {
       historicalGames = historicalGames.filter(game => game.season === season);
@@ -271,6 +332,74 @@ export class MemStorage implements IStorage {
     return updatedPrediction;
   }
 
+  // Sentiment Analysis operations
+  async getSentimentAnalysis(id: number): Promise<SentimentAnalysis | undefined> {
+    return this.sentiments.get(id);
+  }
+
+  async getSentimentByGame(gameId: number): Promise<SentimentAnalysis[]> {
+    return Array.from(this.sentiments.values()).filter(sentiment => sentiment.gameId === gameId);
+  }
+
+  async getSentimentByTeam(teamId: number): Promise<SentimentAnalysis[]> {
+    return Array.from(this.sentiments.values()).filter(sentiment => sentiment.teamId === teamId);
+  }
+
+  async createSentimentAnalysis(insertSentiment: InsertSentimentAnalysis): Promise<SentimentAnalysis> {
+    const id = this.sentimentCurrentId++;
+    const sentiment: SentimentAnalysis = { 
+      ...insertSentiment, 
+      id,
+      lastUpdated: new Date()
+    };
+    this.sentiments.set(id, sentiment);
+    return sentiment;
+  }
+
+  async updateSentimentAnalysis(id: number, sentimentUpdate: Partial<SentimentAnalysis>): Promise<SentimentAnalysis | undefined> {
+    const existingSentiment = this.sentiments.get(id);
+    if (!existingSentiment) return undefined;
+    
+    const updatedSentiment = { 
+      ...existingSentiment, 
+      ...sentimentUpdate,
+      lastUpdated: new Date()
+    };
+    this.sentiments.set(id, updatedSentiment);
+    return updatedSentiment;
+  }
+
+  // Missing method needed for week filtering
+  async getGamesByWeek(season: number, week: number): Promise<GameWithTeams[]> {
+    const gamesInWeek = Array.from(this.games.values())
+      .filter(game => game.season === season && game.week === week && !game.completed)
+      .sort((a, b) => {
+        // Sort by game date
+        const dateA = new Date(a.startDate);
+        const dateB = new Date(b.startDate);
+        return dateA.getTime() - dateB.getTime();
+      });
+    
+    return Promise.all(gamesInWeek.map(async game => {
+      const homeTeam = await this.getTeam(game.homeTeamId);
+      const awayTeam = await this.getTeam(game.awayTeamId);
+      
+      if (!homeTeam || !awayTeam) {
+        throw new Error(`Missing team data for game ${game.id}`);
+      }
+      
+      const predictions = Array.from(this.predictions.values())
+        .filter(p => p.gameId === game.id);
+      
+      return {
+        ...game,
+        homeTeam,
+        awayTeam,
+        prediction: predictions.length > 0 ? predictions[0] : undefined
+      };
+    }));
+  }
+
   // Helper methods to initialize sample data
   private initializeTeams() {
     const sampleTeams: InsertTeam[] = [
@@ -284,7 +413,7 @@ export class MemStorage implements IStorage {
         altColor: "#666666",
         logoUrl: "https://cdn.freebiesupply.com/logos/large/2x/ohio-state-buckeyes-logo-png-transparent.png",
         rank: 2,
-        wins: 9,
+        wins: 0,
         losses: 0
       },
       { 
@@ -297,8 +426,8 @@ export class MemStorage implements IStorage {
         altColor: "#FFCB05",
         logoUrl: "https://cdn.freebiesupply.com/logos/large/2x/michigan-wolverines-logo-png-transparent.png",
         rank: 3,
-        wins: 8,
-        losses: 1
+        wins: 0,
+        losses: 0
       },
       { 
         name: "Alabama",
@@ -310,8 +439,8 @@ export class MemStorage implements IStorage {
         altColor: "#FFFFFF",
         logoUrl: "https://cdn.freebiesupply.com/logos/large/2x/alabama-crimson-tide-logo-png-transparent.png",
         rank: 9,
-        wins: 7,
-        losses: 2
+        wins: 0,
+        losses: 0
       },
       { 
         name: "Ole Miss",
@@ -323,8 +452,8 @@ export class MemStorage implements IStorage {
         altColor: "#14213D",
         logoUrl: "https://cdn.freebiesupply.com/logos/large/2x/ole-miss-rebels-logo-png-transparent.png",
         rank: 11,
-        wins: 8,
-        losses: 1
+        wins: 0,
+        losses: 0
       },
       { 
         name: "LSU",
@@ -336,8 +465,8 @@ export class MemStorage implements IStorage {
         altColor: "#FDD023",
         logoUrl: "https://cdn.freebiesupply.com/logos/large/2x/lsu-tigers-logo-png-transparent.png",
         rank: 7,
-        wins: 7,
-        losses: 2
+        wins: 0,
+        losses: 0
       },
       { 
         name: "Arkansas",
@@ -349,8 +478,8 @@ export class MemStorage implements IStorage {
         altColor: "#FFFFFF",
         logoUrl: "https://cdn.freebiesupply.com/logos/large/2x/arkansas-razorbacks-logo-png-transparent.png",
         rank: null,
-        wins: 5,
-        losses: 4
+        wins: 0,
+        losses: 0
       },
       { 
         name: "Clemson",
@@ -362,8 +491,8 @@ export class MemStorage implements IStorage {
         altColor: "#522D80",
         logoUrl: "https://cdn.freebiesupply.com/logos/large/2x/clemson-tigers-logo-png-transparent.png",
         rank: 10,
-        wins: 8,
-        losses: 1
+        wins: 0,
+        losses: 0
       },
       { 
         name: "Louisville",
@@ -375,8 +504,8 @@ export class MemStorage implements IStorage {
         altColor: "#000000",
         logoUrl: "https://cdn.freebiesupply.com/logos/large/2x/louisville-cardinals-logo-png-transparent.png",
         rank: null,
-        wins: 6,
-        losses: 3
+        wins: 0,
+        losses: 0
       },
       { 
         name: "Texas",
@@ -388,8 +517,8 @@ export class MemStorage implements IStorage {
         altColor: "#FFFFFF",
         logoUrl: "https://cdn.freebiesupply.com/logos/large/2x/texas-longhorns-logo-png-transparent.png",
         rank: null,
-        wins: 6,
-        losses: 3
+        wins: 0,
+        losses: 0
       },
       { 
         name: "TCU",
@@ -401,7 +530,7 @@ export class MemStorage implements IStorage {
         altColor: "#A3A9AC",
         logoUrl: "https://cdn.freebiesupply.com/logos/large/2x/tcu-horned-frogs-logo-png-transparent.png",
         rank: 4,
-        wins: 9,
+        wins: 0,
         losses: 0
       },
       { 
@@ -414,7 +543,7 @@ export class MemStorage implements IStorage {
         altColor: "#000000",
         logoUrl: "https://cdn.freebiesupply.com/logos/large/2x/georgia-bulldogs-logo-png-transparent.png",
         rank: 1,
-        wins: 9,
+        wins: 0,
         losses: 0
       },
       { 
@@ -427,8 +556,8 @@ export class MemStorage implements IStorage {
         altColor: "#FFFFFF",
         logoUrl: "https://cdn.freebiesupply.com/logos/large/2x/mississippi-state-bulldogs-logo-png-transparent.png",
         rank: null,
-        wins: 6,
-        losses: 3
+        wins: 0,
+        losses: 0
       },
       { 
         name: "Oregon",
@@ -440,8 +569,8 @@ export class MemStorage implements IStorage {
         altColor: "#FEE123",
         logoUrl: "https://cdn.freebiesupply.com/logos/large/2x/oregon-ducks-logo-png-transparent.png",
         rank: 6,
-        wins: 8,
-        losses: 1
+        wins: 0,
+        losses: 0
       },
       { 
         name: "Washington",
@@ -453,8 +582,138 @@ export class MemStorage implements IStorage {
         altColor: "#B7A57A",
         logoUrl: "https://cdn.freebiesupply.com/logos/large/2x/washington-huskies-logo-png-transparent.png",
         rank: null,
-        wins: 7,
-        losses: 2
+        wins: 0,
+        losses: 0
+      },
+      { 
+        name: "Wisconsin",
+        abbreviation: "WISC",
+        mascot: "Badgers",
+        conference: "Big Ten",
+        division: "West",
+        color: "#C5050C",
+        altColor: "#FFFFFF",
+        logoUrl: "https://cdn.freebiesupply.com/logos/large/2x/wisconsin-badgers-logo-png-transparent.png",
+        rank: null,
+        wins: 0,
+        losses: 0
+      },
+      { 
+        name: "USC",
+        abbreviation: "USC",
+        mascot: "Trojans",
+        conference: "Pac-12",
+        division: "South",
+        color: "#990000",
+        altColor: "#FFCC00",
+        logoUrl: "https://cdn.freebiesupply.com/logos/large/2x/usc-trojans-logo-png-transparent.png",
+        rank: null,
+        wins: 0,
+        losses: 0
+      },
+      { 
+        name: "Fresno State",
+        abbreviation: "FRES",
+        mascot: "Bulldogs",
+        conference: "Mountain West",
+        division: null,
+        color: "#E31837",
+        altColor: "#003479",
+        logoUrl: "https://cdn.freebiesupply.com/logos/large/2x/fresno-state-bulldogs-logo-png-transparent.png",
+        rank: null,
+        wins: 0,
+        losses: 0
+      },
+      { 
+        name: "Idaho",
+        abbreviation: "IDHO",
+        mascot: "Vandals",
+        conference: "FCS Big Sky",
+        division: null,
+        color: "#FFCC00",
+        altColor: "#000000",
+        logoUrl: "https://cdn.freebiesupply.com/logos/large/2x/idaho-vandals-logo-png-transparent.png",
+        rank: null,
+        wins: 0,
+        losses: 0
+      },
+      { 
+        name: "Stanford",
+        abbreviation: "STAN",
+        mascot: "Cardinal",
+        conference: "Pac-12",
+        division: "North",
+        color: "#8C1515",
+        altColor: "#FFFFFF",
+        logoUrl: "https://cdn.freebiesupply.com/logos/large/2x/stanford-cardinal-logo-png-transparent.png",
+        rank: null,
+        wins: 0,
+        losses: 0
+      },
+      { 
+        name: "Weber State",
+        abbreviation: "WEB",
+        mascot: "Wildcats",
+        conference: "FCS Big Sky",
+        division: null,
+        color: "#663399",
+        altColor: "#FFFFFF",
+        logoUrl: "https://cdn.freebiesupply.com/logos/large/2x/weber-state-wildcats-logo-png-transparent.png",
+        rank: null,
+        wins: 0,
+        losses: 0
+      },
+      { 
+        name: "UTEP",
+        abbreviation: "UTEP",
+        mascot: "Miners",
+        conference: "Conference USA",
+        division: null,
+        color: "#FF8200",
+        altColor: "#041E42",
+        logoUrl: "https://cdn.freebiesupply.com/logos/large/2x/utep-miners-logo-png-transparent.png",
+        rank: null,
+        wins: 0,
+        losses: 0
+      },
+      { 
+        name: "Austin Peay",
+        abbreviation: "APSU",
+        mascot: "Governors",
+        conference: "FCS ASUN",
+        division: null,
+        color: "#C8102E",
+        altColor: "#FFFFFF",
+        logoUrl: "https://cdn.freebiesupply.com/logos/large/2x/austin-peay-governors-logo-png-transparent.png",
+        rank: null,
+        wins: 0,
+        losses: 0
+      },
+      { 
+        name: "Marshall",
+        abbreviation: "MARS",
+        mascot: "Thundering Herd",
+        conference: "Sun Belt",
+        division: null,
+        color: "#00B04F",
+        altColor: "#FFFFFF",
+        logoUrl: "https://cdn.freebiesupply.com/logos/large/2x/marshall-thundering-herd-logo-png-transparent.png",
+        rank: null,
+        wins: 0,
+        losses: 0
+      },
+      { 
+        name: "Georgia Tech",
+        abbreviation: "GT",
+        mascot: "Yellow Jackets",
+        conference: "ACC",
+        division: "Coastal",
+        color: "#B3A369",
+        altColor: "#003057",
+        logoUrl: "https://cdn.freebiesupply.com/logos/large/2x/georgia-tech-yellow-jackets-logo-png-transparent.png",
+        rank: null,
+        wins: 0,
+        losses: 0
       }
     ];
 
@@ -478,83 +737,113 @@ export class MemStorage implements IStorage {
     const nextSaturday = new Date(startOfWeek);
     nextSaturday.setDate(startOfWeek.getDate() + 5); // Saturday
     
-    // Featured game: Ohio State vs Michigan
+    // Featured game: Ohio State vs Texas
     this.createGame({
       homeTeamId: getTeamIdByName("Ohio State"),
-      awayTeamId: getTeamIdByName("Michigan"),
-      startDate: new Date(nextSaturday.getFullYear(), nextSaturday.getMonth(), nextSaturday.getDate() + 14, 12, 0), // 12:00 PM in 2 weeks
+      awayTeamId: getTeamIdByName("Texas"),
+      startDate: new Date("2025-08-30T19:30:00Z"),
       stadium: "Ohio Stadium",
       location: "Columbus, OH",
-      spread: -2.5,
-      overUnder: 45.5,
-      season: 2023,
-      week: 12,
-      isConferenceGame: true,
+      spread: -6.5,
+      overUnder: 52.5,
+      season: 2025,
+      week: 1,
+      isConferenceGame: false,
       isRivalryGame: true,
       isFeatured: true
     });
 
-    // Regular upcoming games
+    // Real 2025 Week 1 College Football Games
     const upcomingGames = [
       {
+        homeTeam: "Texas",
+        awayTeam: "Ohio State",
+        date: new Date("2025-08-30T12:00:00Z"),
+        spread: 3.5,
+        overUnder: 56.5,
+        stadium: "Darrell K Royal Stadium",
+        location: "Austin, TX",
+        isConference: false
+      },
+      {
         homeTeam: "Alabama",
-        awayTeam: "Ole Miss",
-        date: new Date(nextSaturday.getFullYear(), nextSaturday.getMonth(), nextSaturday.getDate(), 15, 30), // 3:30 PM
-        spread: -2.5,
-        overUnder: 64.5,
+        awayTeam: "Wisconsin",
+        date: new Date("2025-08-30T15:30:00Z"),
+        spread: -14.5,
+        overUnder: 47.5,
         stadium: "Bryant-Denny Stadium",
         location: "Tuscaloosa, AL",
-        isConference: true
+        isConference: false
       },
       {
-        homeTeam: "Arkansas",
-        awayTeam: "LSU",
-        date: new Date(nextSaturday.getFullYear(), nextSaturday.getMonth(), nextSaturday.getDate(), 19, 0), // 7:00 PM
-        spread: 3.5,
+        homeTeam: "LSU",
+        awayTeam: "USC",
+        date: new Date("2025-08-31T19:00:00Z"),
+        spread: 2.5,
+        overUnder: 65.5,
+        stadium: "Tiger Stadium",
+        location: "Baton Rouge, LA",
+        isConference: false
+      },
+      {
+        homeTeam: "Michigan",
+        awayTeam: "Fresno State",
+        date: new Date("2025-08-30T12:00:00Z"),
+        spread: -17.5,
+        overUnder: 44.5,
+        stadium: "Michigan Stadium",
+        location: "Ann Arbor, MI",
+        isConference: false
+      },
+      {
+        homeTeam: "Oregon",
+        awayTeam: "Idaho",
+        date: new Date("2025-08-30T22:00:00Z"),
+        spread: -35.5,
         overUnder: 62.5,
-        stadium: "Razorback Stadium",
-        location: "Fayetteville, AR",
-        isConference: true
+        stadium: "Autzen Stadium",
+        location: "Eugene, OR",
+        isConference: false
       },
       {
-        homeTeam: "Louisville",
-        awayTeam: "Clemson",
-        date: new Date(nextSaturday.getFullYear(), nextSaturday.getMonth(), nextSaturday.getDate(), 12, 0), // 12:00 PM
-        spread: 7.0,
-        overUnder: 51.5,
-        stadium: "Cardinal Stadium",
-        location: "Louisville, KY",
-        isConference: true
-      },
-      {
-        homeTeam: "TCU",
-        awayTeam: "Texas",
-        date: new Date(nextSaturday.getFullYear(), nextSaturday.getMonth(), nextSaturday.getDate(), 19, 30), // 7:30 PM
-        spread: -7.0,
-        overUnder: 64.5,
-        stadium: "Amon G. Carter Stadium",
-        location: "Fort Worth, TX",
-        isConference: true
-      },
-      {
-        homeTeam: "Mississippi State",
-        awayTeam: "Georgia",
-        date: new Date(nextSaturday.getFullYear(), nextSaturday.getMonth(), nextSaturday.getDate(), 16, 0), // 4:00 PM
-        spread: 16.5,
-        overUnder: 53.5,
-        stadium: "Davis Wade Stadium",
-        location: "Starkville, MS",
+        homeTeam: "Clemson",
+        awayTeam: "Georgia Tech",
+        date: new Date("2025-08-30T19:30:00Z"),
+        spread: -13.5,
+        overUnder: 55.5,
+        stadium: "Memorial Stadium",
+        location: "Clemson, SC",
         isConference: true
       },
       {
         homeTeam: "Washington",
-        awayTeam: "Oregon",
-        date: new Date(nextSaturday.getFullYear(), nextSaturday.getMonth(), nextSaturday.getDate(), 15, 30), // 3:30 PM
-        spread: 13.5,
-        overUnder: 72.5,
+        awayTeam: "Weber State",
+        date: new Date("2025-08-30T15:30:00Z"),
+        spread: -21.5,
+        overUnder: 51.5,
         stadium: "Husky Stadium",
         location: "Seattle, WA",
-        isConference: true
+        isConference: false
+      },
+      {
+        homeTeam: "Arkansas",
+        awayTeam: "UTEP",
+        date: new Date("2025-08-30T16:00:00Z"),
+        spread: -24.5,
+        overUnder: 56.5,
+        stadium: "Razorback Stadium",
+        location: "Fayetteville, AR",
+        isConference: false
+      },
+      {
+        homeTeam: "Louisville",
+        awayTeam: "Austin Peay",
+        date: new Date("2025-08-30T17:00:00Z"),
+        spread: -28.5,
+        overUnder: 59.5,
+        stadium: "Cardinal Stadium",
+        location: "Louisville, KY",
+        isConference: false
       }
     ];
 
@@ -567,8 +856,8 @@ export class MemStorage implements IStorage {
         location: game.location,
         spread: game.spread,
         overUnder: game.overUnder,
-        season: 2023,
-        week: 10,
+        season: 2025,
+        week: 1,
         isConferenceGame: game.isConference,
         isRivalryGame: false,
         isFeatured: false
@@ -586,6 +875,33 @@ export class MemStorage implements IStorage {
       notes: "Michigan's defense gives them the edge in this classic rivalry matchup."
     });
   }
+
+  async getGamesByWeek(season: number, week: number): Promise<GameWithTeams[]> {
+    const gamesForWeek = Array.from(this.games.values())
+      .filter(game => game.season === season && game.week === week);
+    
+    return Promise.all(gamesForWeek.map(async game => {
+      const homeTeam = await this.getTeam(game.homeTeamId);
+      const awayTeam = await this.getTeam(game.awayTeamId);
+      
+      if (!homeTeam || !awayTeam) {
+        throw new Error(`Missing team data for game ${game.id}`);
+      }
+      
+      const predictions = Array.from(this.predictions.values())
+        .filter(p => p.gameId === game.id);
+      
+      return {
+        ...game,
+        homeTeam,
+        awayTeam,
+        prediction: predictions.length > 0 ? predictions[0] : undefined
+      };
+    }));
+  }
 }
 
-export const storage = new MemStorage();
+import { PostgresStorage } from './postgres-storage';
+
+// Use PostgreSQL storage for persistent data
+export const storage = new PostgresStorage();

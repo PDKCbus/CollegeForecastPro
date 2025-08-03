@@ -1,0 +1,24 @@
+{
+  "qb_elite_bonus": 5.7,
+  "qb_poor_penalty": -5.7,
+  "injury_impact_penalty": -8.8,
+  "position_impact_ratings": {
+    "QB": 9.2,
+    "RB": 6.8,
+    "WR": 5.5,
+    "OL": 7.1,
+    "DL": 6.2,
+    "LB": 4.8,
+    "DB": 5.2
+  },
+  "baseline_cover_rate": 0.524,
+  "elite_qb_cover_rate": 0.519,
+  "poor_qb_cover_rate": 0.385,
+  "healthy_team_cover_rate": 0.568,
+  "injury_affected_cover_rate": 0.364,
+  "statistical_significance": {
+    "qb_analysis_p_value": 0.000000,
+    "qb_t_statistic": 7.447,
+    "sample_size": 1900
+  }
+}
