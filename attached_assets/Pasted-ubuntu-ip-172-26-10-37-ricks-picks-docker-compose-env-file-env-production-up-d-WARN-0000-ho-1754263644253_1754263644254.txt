@@ -1,0 +1,33 @@
+ubuntu@ip-172-26-10-37:~/ricks-picks$ docker-compose --env-file .env.production up -d
+WARN[0000] /home/ubuntu/ricks-picks/docker-compose.yml: the attribute `version` is obsolete, it will be ignored, please remove it to avoid potential co
+nfusion 
+[+] Running 20/20
+ ✔ nginx Pulled                                                                                                                                   2.3s 
+   ✔ a5585638209e Pull complete                                                                                                                   0.5s 
+   ✔ fd372c3c84a2 Pull complete                                                                                                                   0.6s 
+   ✔ 958a74d6a238 Pull complete                                                                                                                   0.6s 
+   ✔ c1d2dc189e38 Pull complete                                                                                                                   0.8s 
+   ✔ 828fa206d77b Pull complete                                                                                                                   0.8s 
+   ✔ bdaad27fd04a Pull complete                                                                                                                   0.8s 
+   ✔ f23865b38cc6 Pull complete                                                                                                                   1.8s 
+ ✔ db Pulled                                                                                                                                      5.1s 
+   ✔ 9824c27679d3 Already exists                                                                                                                  0.0s 
+   ✔ 2d24f7d1d290 Pull complete                                                                                                                   0.1s 
+   ✔ 608e634a9332 Pull complete                                                                                                                   0.2s 
+   ✔ ec7962788232 Pull complete                                                                                                                   0.2s 
+   ✔ 299375ace78d Pull complete                                                                                                                   0.3s 
+   ✔ 5b57d5761443 Pull complete                                                                                                                   4.7s 
+   ✔ d0aede649ee3 Pull complete                                                                                                                   4.7s 
+   ✔ 4477580949b1 Pull complete                                                                                                                   4.7s 
+   ✔ 7c314e1269bc Pull complete                                                                                                                   4.7s 
+   ✔ d71e886fe3be Pull complete                                                                                                                   4.8s 
+   ✔ 9d240404d8bc Pull complete                                                                                                                   4.8s 
+[+] Running 4/5
+ ✔ Network ricks-picks_default         Created                                                                                                    0.1s 
+ ✔ Volume "ricks-picks_postgres_data"  Created                                                                                                    0.0s 
+ ✔ Container ricks-picks-db-1          Started                                                                                                    0.7s 
+ ✔ Container ricks-picks-app-1         Started                                                                                                    0.7s 
+ ⠧ Container ricks-picks-nginx-1       Starting                                                                                                   1.3s 
+Error response from daemon: failed to set up container networking: driver failed programming external connectivity on endpoint ricks-picks-nginx-1 (9e4
+845f11c05fc644cc768bb749f42af36b88958a97229ce956648826f1021eb): failed to bind host port for 0.0.0.0:80:172.18.0.4:80/tcp: address already in use
+ubuntu@ip-172-26-10-37:~/ricks-picks$ 
