@@ -1,21 +1,13 @@
 # Use Node.js 20 LTS as base image
 FROM node:20-alpine AS base
 
-# Install dependencies only when needed
-FROM base AS deps
+# Single stage build
+FROM base AS production
 WORKDIR /app
 
-# Copy package files
+# Copy package files and install dependencies
 COPY package*.json ./
 RUN npm install && npm cache clean --force
-
-# Build the application
-FROM base AS builder
-WORKDIR /app
-
-# Copy dependencies from deps stage
-COPY --from=deps /app/node_modules ./node_modules
-COPY package*.json ./
 
 # Copy source code
 COPY . .
@@ -28,19 +20,9 @@ RUN npx vite build && npx esbuild server/index.ts --platform=node --packages=ext
 RUN mkdir -p server/public
 RUN cp -r client/dist/* server/public/ 2>/dev/null || echo "No frontend dist found"
 
-# Production image
-FROM base AS runner
-WORKDIR /app
-
 # Create a non-root user
 RUN addgroup --system --gid 1001 nodejs
 RUN adduser --system --uid 1001 nextjs
-
-# Copy built application and dependencies
-COPY --from=builder /app/dist ./dist
-COPY --from=builder /app/server/public ./server/public
-COPY --from=deps /app/node_modules ./node_modules
-COPY --from=builder /app/package*.json ./
 
 # Set proper permissions
 USER nextjs
