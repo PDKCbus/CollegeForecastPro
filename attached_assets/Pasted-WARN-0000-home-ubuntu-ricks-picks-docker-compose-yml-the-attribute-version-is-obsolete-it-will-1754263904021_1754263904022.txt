@@ -1,0 +1,39 @@
+WARN[0000] /home/ubuntu/ricks-picks/docker-compose.yml: the attribute `version` is obsolete, it will be ignored, please remove it to avoid potential co
+nfusion 
+app-1  | node:internal/modules/esm/resolve:873
+app-1  |   throw new ERR_MODULE_NOT_FOUND(packageName, fileURLToPath(base), null);
+app-1  |         ^
+app-1  | 
+app-1  | Error [ERR_MODULE_NOT_FOUND]: Cannot find package 'axios' imported from /app/dist/index.js
+app-1  |     at packageResolve (node:internal/modules/esm/resolve:873:9)
+app-1  |     at moduleResolve (node:internal/modules/esm/resolve:946:18)
+app-1  |     at defaultResolve (node:internal/modules/esm/resolve:1188:11)
+app-1  |     at ModuleLoader.defaultResolve (node:internal/modules/esm/loader:642:12)
+app-1  |     at #cachedDefaultResolve (node:internal/modules/esm/loader:591:25)
+app-1  |     at ModuleLoader.resolve (node:internal/modules/esm/loader:574:38)
+app-1  |     at ModuleLoader.getModuleJobForImport (node:internal/modules/esm/loader:236:38)
+app-1  |     at ModuleJob._link (node:internal/modules/esm/module_job:130:49) {
+app-1  |   code: 'ERR_MODULE_NOT_FOUND'
+app-1  | }
+app-1  | 
+app-1  | Node.js v20.19.4
+app-1  | node:internal/modules/esm/resolve:873
+app-1  |   throw new ERR_MODULE_NOT_FOUND(packageName, fileURLToPath(base), null);
+app-1  |         ^
+app-1  | 
+app-1  | Error [ERR_MODULE_NOT_FOUND]: Cannot find package 'axios' imported from /app/dist/index.js
+app-1  |     at packageResolve (node:internal/modules/esm/resolve:873:9)
+app-1  |     at moduleResolve (node:internal/modules/esm/resolve:946:18)
+app-1  |     at defaultResolve (node:internal/modules/esm/resolve:1188:11)
+app-1  |     at ModuleLoader.defaultResolve (node:internal/modules/esm/loader:642:12)
+app-1  |     at #cachedDefaultResolve (node:internal/modules/esm/loader:591:25)
+app-1  |     at ModuleLoader.resolve (node:internal/modules/esm/loader:574:38)
+app-1  |     at ModuleLoader.getModuleJobForImport (node:internal/modules/esm/loader:236:38)
+app-1  |     at ModuleJob._link (node:internal/modules/esm/module_job:130:49) {
+app-1  |   code: 'ERR_MODULE_NOT_FOUND'
+app-1  | }
+app-1  | 
+app-1  | Node.js v20.19.4
+app-1  | node:internal/modules/esm/resolve:873
+app-1  |   throw new ERR_MODULE_NOT_FOUND(packageName, fileURLToPath(base), null);
+app-1  |         ^

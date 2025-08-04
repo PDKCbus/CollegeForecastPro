@@ -1,0 +1,44 @@
+app-1  |   routine: 'parserOpenTable'
+app-1  | }
+app-1  | /app/server/vite.ts:74
+app-1  |     throw new Error(
+app-1  |           ^
+app-1  | 
+app-1  | 
+app-1  | Error: Could not find the build directory: /app/server/public, make sure to build the client first
+app-1  |     at serveStatic (/app/server/vite.ts:74:11)
+app-1  |     at <anonymous> (/app/server/index.ts:60:5)
+app-1  |     at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+app-1  | 
+app-1  | Node.js v20.19.4
+app-1  | Twitter credentials not found - sentiment analysis will use simulated data
+app-1  | Initializing database tables...
+app-1  | Database connection successful
+app-1  | ❌ Failed to initialize admin user: PostgresError: relation "admin_users" does not exist
+app-1  |     at ErrorResponse (file:///app/node_modules/postgres/src/connection.js:794:26)
+app-1  |     at handle (file:///app/node_modules/postgres/src/connection.js:480:6)
+app-1  |     at Socket.data (file:///app/node_modules/postgres/src/connection.js:315:9)
+app-1  |     at Socket.emit (node:events:524:28)
+app-1  |     at addChunk (node:internal/streams/readable:561:12)
+app-1  |     at readableAddChunkPushByteMode (node:internal/streams/readable:512:3)
+app-1  |     at Readable.push (node:internal/streams/readable:392:5)
+app-1  |     at TCP.onStreamRead (node:internal/stream_base_commons:191:23) {
+app-1  |   severity_local: 'ERROR',
+app-1  |   severity: 'ERROR',
+app-1  |   code: '42P01',
+app-1  |   position: '96',
+app-1  |   file: 'parse_relation.c',
+app-1  |   line: '1392',
+app-1  |   routine: 'parserOpenTable'
+app-1  | }
+app-1  | /app/server/vite.ts:74
+app-1  |     throw new Error(
+app-1  |           ^
+app-1  | 
+app-1  | 
+app-1  | Error: Could not find the build directory: /app/server/public, make sure to build the client first
+app-1  |     at serveStatic (/app/server/vite.ts:74:11)
+app-1  |     at <anonymous> (/app/server/index.ts:60:5)
+app-1  |     at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+app-1  | 
+app-1  | Node.js v20.19.4

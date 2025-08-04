@@ -1,0 +1,42 @@
+#9 [deps 3/3] RUN npm ci --only=production && npm cache clean --force
+#9 0.689 npm warn config only Use `--omit=dev` to omit dev dependencies from the install.
+#9 2.068 npm error code EUSAGE
+#9 2.069 npm error
+#9 2.069 npm error `npm ci` can only install packages when your package.json and package-lo
+ck.json or npm-shrinkwrap.json are in sync. Please update your lock file with `npm install`
+ before continuing.
+#9 2.069 npm error
+#9 2.069 npm error Missing: es-object-atoms@1.1.1 from lock file
+#9 2.069 npm error
+#9 2.069 npm error Clean install a project
+#9 2.069 npm error
+#9 2.069 npm error Usage:
+#9 2.069 npm error npm ci
+#9 2.069 npm error
+#9 2.069 npm error Options:
+#9 2.069 npm error [--install-strategy <hoisted|nested|shallow|linked>] [--legacy-bundling]
+#9 2.069 npm error [--global-style] [--omit <dev|optional|peer> [--omit <dev|optional|peer>
+ ...]]
+#9 2.069 npm error [--include <prod|dev|optional|peer> [--include <prod|dev|optional|peer> 
+...]]
+#9 2.069 npm error [--strict-peer-deps] [--foreground-scripts] [--ignore-scripts] [--no-aud
+it]
+#9 2.069 npm error [--no-bin-links] [--no-fund] [--dry-run]
+#9 2.069 npm error [-w|--workspace <workspace-name> [-w|--workspace <workspace-name> ...]]
+#9 2.069 npm error [-ws|--workspaces] [--include-workspace-root] [--install-links]
+#9 2.069 npm error
+#9 2.069 npm error aliases: clean-install, ic, install-clean, isntall-clean
+#9 2.069 npm error
+#9 2.069 npm error Run "npm help ci" for more info
+#9 2.074 npm notice
+#9 2.074 npm notice New major version of npm available! 10.8.2 -> 11.5.2
+#9 2.074 npm notice Changelog: https://github.com/npm/cli/releases/tag/v11.5.2
+#9 2.074 npm notice To update run: npm install -g npm@11.5.2
+#9 2.074 npm notice
+#9 2.075 npm error A complete log of this run can be found in: /root/.npm/_logs/2025-08-03T
+22_56_25_739Z-debug-0.log
+#9 ERROR: process "/bin/sh -c npm ci --only=production && npm cache clean --force" did not 
+complete successfully: exit code: 1
+
+#12 [builder 3/5] RUN npm ci
+#12 2.083 npm error code EUSAGE

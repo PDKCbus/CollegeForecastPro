@@ -1,0 +1,45 @@
+#12 2.740 npm error A complete log of this run can be found in: /root/.npm/_logs/2025-08-03
+T23_00_09_979Z-debug-0.log
+#12 ERROR: process "/bin/sh -c npm ci --only=production && npm cache clean --force" did not
+ complete successfully: exit code: 1
+
+#11 [builder 3/5] RUN npm ci
+#11 2.766 npm error code EUSAGE
+#11 2.766 npm error
+#11 2.766 npm error `npm ci` can only install packages when your package.json and package-l
+ock.json or npm-shrinkwrap.json are in sync. Please update your lock file with `npm install
+` before continuing.
+#11 2.766 npm error
+#11 2.766 npm error Missing: es-object-atoms@1.1.1 from lock file
+#11 2.766 npm error
+#11 2.766 npm error Clean install a project
+#11 2.766 npm error
+#11 2.766 npm error Usage:
+#11 2.766 npm error npm ci
+#11 2.766 npm error
+#11 2.766 npm error Options:
+#11 2.766 npm error [--install-strategy <hoisted|nested|shallow|linked>] [--legacy-bundling
+]
+#11 2.766 npm error [--global-style] [--omit <dev|optional|peer> [--omit <dev|optional|peer
+> ...]]
+#11 2.766 npm error [--include <prod|dev|optional|peer> [--include <prod|dev|optional|peer>
+ ...]]
+#11 2.766 npm error [--strict-peer-deps] [--foreground-scripts] [--ignore-scripts] [--no-au
+dit]
+#11 2.766 npm error [--no-bin-links] [--no-fund] [--dry-run]
+#11 2.766 npm error [-w|--workspace <workspace-name> [-w|--workspace <workspace-name> ...]]
+#11 2.766 npm error [-ws|--workspaces] [--include-workspace-root] [--install-links]
+#11 2.766 npm error
+#11 2.766 npm error aliases: clean-install, ic, install-clean, isntall-clean
+#11 2.766 npm error
+#11 2.766 npm error Run "npm help ci" for more info
+#11 2.773 npm notice
+#11 2.773 npm notice New major version of npm available! 10.8.2 -> 11.5.2
+#11 2.773 npm notice Changelog: https://github.com/npm/cli/releases/tag/v11.5.2
+#11 2.773 npm notice To update run: npm install -g npm@11.5.2
+#11 2.773 npm notice
+#11 2.773 npm error A complete log of this run can be found in: /root/.npm/_logs/2025-08-03
+T23_00_09_979Z-debug-0.log
+#11 ERROR: process "/bin/sh -c npm ci" did not complete successfully: exit code: 1
+------
+ > [deps 3/3] RUN npm ci --only=production && npm cache clean --force:
