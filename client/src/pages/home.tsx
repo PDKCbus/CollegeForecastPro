@@ -11,7 +11,7 @@ import { useState, useEffect } from "react";
 import { FilterOption, GameWithTeams } from "@/lib/types";
 
 export default function Home() {
-  const [selectedWeek, setSelectedWeek] = useState("Week 0");
+  const [selectedWeek, setSelectedWeek] = useState("Week 1");
   const [activeFilter, setActiveFilter] = useState("all");
   const [teamFilter, setTeamFilter] = useState("");
   const [selectedConference, setSelectedConference] = useState("");

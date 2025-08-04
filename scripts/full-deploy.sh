@@ -1,32 +1,41 @@
 #!/bin/bash
-# Complete deployment script for Rick's Picks production environment
 
-echo "🚀 Starting Rick's Picks production deployment..."
+echo "🚀 Starting full Rick's Picks production deployment..."
 
-# Stop any existing containers
-echo "Stopping existing containers..."
-docker-compose --env-file .env.production down
+# Exit on any error
+set -e
+
+# Stop any running containers
+echo "🛑 Stopping existing containers..."
+docker-compose --env-file .env.production down 2>/dev/null || true
+
+# Pull latest code
+echo "📥 Pulling latest code..."
+git pull origin main
+
+# Initialize database schema
+echo "🔧 Initializing database schema..."
+npm run db:push
 
 # Build and start containers
-echo "Building and starting containers..."
-docker-compose --env-file .env.production up -d --build
+echo "🏗️ Building and starting containers..."
+docker-compose --env-file .env.production up --build -d
 
-# Wait for containers to be ready
-echo "Waiting for containers to initialize..."
+# Wait for services to be ready
+echo "⏳ Waiting for services to start..."
 sleep 30
 
-# Check container status
-echo "Checking container status..."
+# Check if containers are running
+echo "🔍 Checking container status..."
 docker-compose --env-file .env.production ps
 
-# Deploy frontend
-echo "Deploying frontend..."
-./scripts/deploy-frontend.sh
+# Test the deployment
+echo "🧪 Testing deployment..."
+echo "Checking health endpoint..."
+curl -f https://ricks-picks.football/api/health || echo "Health check failed"
 
-# Test platform
-echo "Testing platform connectivity..."
-curl -I http://localhost/health
+echo "Checking main site..."
+curl -f https://ricks-picks.football || echo "Main site check failed"
 
 echo "✅ Deployment complete!"
-echo "Platform accessible at: http://ricks-picks.football"
-echo "To add SSL: sudo certbot --nginx -d ricks-picks.football"
+echo "🌐 Site available at: https://ricks-picks.football"
