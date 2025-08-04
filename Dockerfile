@@ -18,7 +18,7 @@ RUN npx vite build
 
 # Copy frontend build to server public directory
 RUN mkdir -p server/public
-RUN cp -r client/dist/* server/public/ 2>/dev/null || echo "No frontend dist found"
+RUN if [ -d "dist/public" ]; then cp -r dist/public/* server/public/; else echo "Frontend build failed - checking client/dist"; if [ -d "client/dist" ]; then cp -r client/dist/* server/public/; else echo "No frontend build found"; exit 1; fi; fi
 
 # Create a non-root user
 RUN addgroup --system --gid 1001 nodejs
