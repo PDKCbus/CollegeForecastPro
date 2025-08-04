@@ -11,12 +11,8 @@ import { RicksPicksPredictionEngine } from "./rick-picks-engine";
 import CFBDELOService from "./cfbd-elo-integration";
 import ELORatingsCollector from "./elo-ratings-collector";
 import RankingsCollector from "./rankings-collector";
-import { EnhancedPredictionEngine } from "./enhanced-prediction-engine";
-import { SPPlusIntegration } from "./sp-plus-integration";
-import { advancedAnalyticsEngine } from './advanced-analytics-engine';
 import { z } from "zod";
 import { insertGameSchema, insertTeamSchema, insertPredictionSchema, insertSentimentAnalysisSchema } from "@shared/schema";
-import { dataSyncLogger } from "./data-sync-logger";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Test endpoint
@@ -452,24 +448,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
         // Calculate spread result if available
         let spreadResult = null;
-        let favoriteTeam = null;
-        let spreadCovered = null;
         if (game.spread && homeScore !== null && awayScore !== null) {
           const actualMargin = homeScore - awayScore;
           const spreadMargin = -game.spread; // Convert to home team perspective
           
-          // Determine favorite (negative spread means home favored)
-          favoriteTeam = game.spread < 0 ? 'home' : 'away';
-          
           if (Math.abs(actualMargin - spreadMargin) < 0.5) {
             spreadResult = 'push';
-            spreadCovered = null;
           } else if (actualMargin > spreadMargin) {
             spreadResult = 'covered';
-            spreadCovered = true;
           } else {
-            spreadResult = 'not_covered';
-            spreadCovered = false;
+            spreadResult = 'missed';
           }
         }
 
@@ -485,9 +473,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           awayTeamScore: game.away_team_score,
           spread: game.spread,
           overUnder: game.over_under,
-          spreadResult,
-          favoriteTeam,
-          spreadCovered
+          spreadResult
         };
       });
 
@@ -841,38 +827,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ message: "Invalid game ID" });
       }
 
-      const game = await storage.getGameWithTeams(gameId);
-      if (!game) {
-        return res.status(404).json({ message: "Game not found" });
-      }
-
-      // Use the same prediction engine as game analysis for consistency
-      const { ricksPicksEngine } = await import('./prediction-engine');
-
-      // Generate unified prediction using our data-driven algorithm
-      const prediction = await ricksPicksEngine.generatePrediction(
-        game.homeTeam?.name || 'Home Team',
-        game.awayTeam?.name || 'Away Team', 
-        game.homeTeam?.conference || 'Independent',
-        game.awayTeam?.conference || 'Independent',
-        {
-          temperature: game.temperature,
-          windSpeed: game.windSpeed,
-          isDome: game.isDome || false,
-          precipitation: game.precipitation,
-          weatherCondition: game.weatherCondition
-        },
-        game.spread,
-        game.isNeutralSite || false
-      );
-
-      console.log(`🔮 Unified prediction for game ${gameId}:`, {
-        gameSpread: game.spread,
-        predictionSpread: prediction.spread,
-        predictionBet: prediction.recommendedBet,
-        confidence: prediction.confidence
-      });
-
+      // Get algorithmic predictions
+      const predictions = await storage.getPredictionsByGame(gameId);
+      
       // Get Rick's personal picks if they exist
       let ricksPick = null;
       try {
@@ -886,22 +843,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         console.log("No Rick's pick found for game", gameId);
       }
 
-      // Create unified algorithmic prediction format
-      const algorithmicPrediction = {
-        id: gameId,
-        gameId: gameId,
-        predictedWinnerId: prediction.spread > 0 ? game.homeTeamId : game.awayTeamId,
-        confidence: prediction.confidence === "High" ? 0.85 : prediction.confidence === "Medium" ? 0.70 : 0.55,
-        predictedSpread: prediction.spread, // Use the SAME value as game analysis
-        predictedTotal: game.overUnder || 48.5,
-        notes: prediction.recommendedBet || prediction.prediction,
-        spreadPick: prediction.recommendedBet,
-        overUnderPick: undefined,
-        createdAt: new Date().toISOString()
-      };
-
       res.json({ 
-        algorithmicPredictions: [algorithmicPrediction],
+        algorithmicPredictions: predictions,
         ricksPick: ricksPick
       });
     } catch (error) {
@@ -1426,11 +1369,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       // Regular 4-hour sync with smart caching
       if (now - lastSyncTime > SYNC_INTERVAL) {
-        dataSyncLogger.logAutoSyncTrigger("Regular 4-hour scheduled update");
         console.log("Auto-syncing: Regular 4-hour update");
         await syncCurrentWeekData();
         lastSyncTime = now;
-        dataSyncLogger.logSyncComplete("AUTO_SYNC_4H", "Regular scheduled sync completed");
       }
       
       // Check for games starting within 1 hour
@@ -1444,18 +1385,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
         
         if (gamesWithinHour.length > 0) {
-          dataSyncLogger.logAutoSyncTrigger(`${gamesWithinHour.length} games starting within 1 hour`);
           console.log(`Auto-syncing: ${gamesWithinHour.length} games starting within 1 hour`);
           await syncCurrentWeekData();
           lastSyncTime = now;
-          dataSyncLogger.logSyncComplete("AUTO_SYNC_PREGAME", `Pre-game sync completed for ${gamesWithinHour.length} games`);
         }
         
         lastGameCheckTime = now;
       }
     } catch (error) {
       console.error("Auto-sync error:", error);
-      dataSyncLogger.logSyncError("AUTO_SYNC", error instanceof Error ? error.message : String(error));
     }
   }
 
@@ -1464,8 +1402,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
     if (!apiKey) return;
 
     try {
-      dataSyncLogger.logSyncStart("CURRENT_WEEK_SYNC", "Week 1 2025 season");
-      
       // Fetch current week games and betting lines
       const [gamesResponse, linesResponse] = await Promise.all([
         fetch(`https://api.collegefootballdata.com/games?year=2025&week=1&seasonType=regular`, {
@@ -1598,54 +1534,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
               isFeatured: i === 0
             });
 
-            // Generate intelligent algorithmic pick based on actual prediction vs Vegas line
-            let algorithmicNotes = "";
-            
-            if (spread && overUnder) {
-              const vegasSpread = spread; // negative means home team favored
-              const ourSpread = Math.random() > 0.5 ? spread + (Math.random() * 6 - 3) : spread; // Slight variation for demo
-              const spreadDiff = Math.abs(ourSpread - vegasSpread);
-              
-              // Only make recommendations when there's significant edge (2+ points)
-              if (spreadDiff >= 2) {
-                const vegasFavorite = vegasSpread < 0 ? homeTeam.name : awayTeam.name;
-                const vegasUnderdog = vegasSpread < 0 ? awayTeam.name : homeTeam.name;
-                const points = Math.abs(vegasSpread);
-                
-                if (ourSpread > vegasSpread) {
-                  // Game will be closer than Vegas thinks
-                  algorithmicNotes = `SPREAD: Take ${vegasUnderdog} +${points.toFixed(1)} - Game stays closer than Vegas expects`;
-                } else {
-                  // Favorite covers bigger than Vegas line
-                  algorithmicNotes = `SPREAD: Take ${vegasFavorite} -${points.toFixed(1)} - Expect larger margin of victory`;
-                }
-              } else {
-                // No significant edge
-                algorithmicNotes = "SPREAD: No strong edge identified - close to Vegas assessment";
-              }
-              
-              // Add total recommendation
-              const vegasTotal = overUnder;
-              const ourTotal = overUnder + (Math.random() * 8 - 4); // Variation for demo
-              const totalDiff = Math.abs(ourTotal - vegasTotal);
-              
-              if (totalDiff >= 3) {
-                const totalRec = ourTotal > vegasTotal ? "OVER" : "UNDER";
-                algorithmicNotes += ` | O/U: Take ${totalRec} ${vegasTotal} - ${totalDiff.toFixed(1)} point edge`;
-              } else {
-                algorithmicNotes += " | O/U: No strong total edge";
-              }
-            } else {
-              // Fallback for games without lines
-              const genericPicks = [
-                "Home field advantage expected to be significant",
-                "Road favorite situation - proceed with caution", 
-                "Defensive battle anticipated",
-                "High-scoring affair expected",
-                "Conference matchup - emotions run high"
-              ];
-              algorithmicNotes = genericPicks[i % genericPicks.length];
-            }
+            // Add Rick's picks
+            const spreadPick = ricksSpreadPicks[i % ricksSpreadPicks.length];
+            const overUnderPick = ricksOverUnderPicks[i % ricksOverUnderPicks.length];
+            const combinedPick = `SPREAD: ${spreadPick} | O/U: ${overUnderPick}`;
 
             await storage.createPrediction({
               gameId: newGame.id,
@@ -1653,7 +1545,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
               confidence: 0.65 + (Math.random() * 0.25),
               predictedSpread: spread,
               predictedTotal: overUnder,
-              notes: algorithmicNotes
+              notes: combinedPick
             });
           }
 
@@ -1661,11 +1553,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
         }
         
         console.log(`Auto-sync completed: ${processedCount} games processed`);
-        dataSyncLogger.logSyncComplete("CURRENT_WEEK_SYNC", `${processedCount} games processed`);
       }
     } catch (error) {
       console.error("Sync current week data error:", error);
-      dataSyncLogger.logSyncError("CURRENT_WEEK_SYNC", error instanceof Error ? error.message : String(error));
     }
   }
 
@@ -1922,29 +1812,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
           weatherCondition: game.weatherCondition
         },
         game.spread,
-        game.isNeutralSite || false
+        false // assuming not neutral site for now
       );
 
-      // Calculate win probabilities from OUR PREDICTION spread
-      // Our prediction.spread: positive = home favored, negative = away favored
-      const ourSpread = prediction.spread;
+      // Calculate win probabilities from spread
+      const spread = prediction.spread;
       let homeWinProb: number;
       let awayWinProb: number;
       
-      if (ourSpread > 0) {
-        // Positive spread = home team favored by our algorithm
-        const favoredTeamWinProb = Math.min(90, 50 + (ourSpread * 3.5));
-        homeWinProb = favoredTeamWinProb;
-        awayWinProb = 100 - favoredTeamWinProb;
-      } else if (ourSpread < 0) {
-        // Negative spread = away team favored by our algorithm
-        const favoredTeamWinProb = Math.min(90, 50 + (Math.abs(ourSpread) * 3.5));
-        awayWinProb = favoredTeamWinProb;
-        homeWinProb = 100 - favoredTeamWinProb;
+      if (spread > 0) {
+        // Home team favored
+        homeWinProb = Math.min(90, 50 + (spread * 3.5)); // Roughly 3.5% per point
+        awayWinProb = 100 - homeWinProb;
       } else {
-        // Pick 'em game
-        homeWinProb = 52; // Slight home field advantage
-        awayWinProb = 48;
+        // Away team favored
+        awayWinProb = Math.min(90, 50 + (Math.abs(spread) * 3.5));
+        homeWinProb = 100 - awayWinProb;
       }
 
       // Helper function for conference ratings
@@ -1964,7 +1847,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const analysis = {
         predictiveMetrics: {
           winProbability: Math.round(homeWinProb),
-          confidence: prediction.confidence === "High" ? 85 : prediction.confidence === "Medium" ? 70 : 55,
+          confidence: prediction.confidence,
           spreadPrediction: prediction.spread,
           overUnderPrediction: game.overUnder || 48.5,
           keyFactors: prediction.keyFactors,
@@ -2403,62 +2286,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error('Rick\'s Picks bulk prediction error:', error);
       res.status(500).json({ message: 'Failed to generate Rick\'s predictions' });
-    }
-  });
-
-  // SP+ Enhanced Predictions endpoints
-  app.get("/api/predictions/enhanced/:gameId", async (req, res) => {
-    try {
-      const gameId = parseInt(req.params.gameId);
-      if (isNaN(gameId)) {
-        return res.status(400).json({ message: "Invalid game ID" });
-      }
-
-      const enhancedEngine = new EnhancedPredictionEngine();
-      const enhancedPrediction = await enhancedEngine.generateEnhancedPrediction(gameId);
-      
-      if (!enhancedPrediction) {
-        return res.status(404).json({ message: "Enhanced prediction not available" });
-      }
-
-      res.json(enhancedPrediction);
-    } catch (error) {
-      console.error("Error generating enhanced prediction:", error);
-      res.status(500).json({ message: "Failed to generate enhanced prediction" });
-    }
-  });
-
-  // SP+ Integration Test endpoint
-  app.get("/api/sp-plus/test", async (req, res) => {
-    try {
-      const spPlusIntegration = new SPPlusIntegration();
-      const testResults = await spPlusIntegration.testSPPlusAccuracy(2024);
-      res.json({
-        message: "SP+ integration test completed",
-        results: testResults,
-        status: testResults.improvement > 0 ? "Algorithm improved" : "No improvement detected",
-        profitabilityStatus: testResults.spPlusAccuracy > 52.4 ? "Above profitable threshold" : "Below threshold"
-      });
-    } catch (error) {
-      console.error("Error testing SP+ integration:", error);
-      res.status(500).json({ message: "SP+ test failed" });
-    }
-  });
-
-  // Enhanced Algorithm Validation endpoint
-  app.get("/api/algorithm/validate", async (req, res) => {
-    try {
-      const enhancedEngine = new EnhancedPredictionEngine();
-      const validation = await enhancedEngine.validateEnhancedAlgorithm();
-      res.json({
-        message: "Enhanced algorithm validation completed",
-        validation,
-        profitabilityStatus: validation.spPlusIntegration.spPlusAccuracy > 52.4 ? 
-          "Above profitable threshold" : "Needs further improvement"
-      });
-    } catch (error) {
-      console.error("Error validating enhanced algorithm:", error);
-      res.status(500).json({ message: "Algorithm validation failed" });
     }
   });
 
@@ -3061,143 +2888,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error(`Error running manual ${req.params.day} task:`, error);
       res.status(500).json({ message: `Failed to run manual ${req.params.day} task` });
-    }
-  });
-
-  // Advanced Analytics Test Endpoint - Target: 53-54% ATS
-  app.get('/api/analytics/advanced/:gameId', async (req, res) => {
-    try {
-      const gameId = parseInt(req.params.gameId);
-      const game = await storage.getGameWithTeams(gameId);
-      
-      if (!game) {
-        return res.status(404).json({ message: 'Game not found' });
-      }
-
-      // Generate advanced analytics
-      const analytics = await advancedAnalyticsEngine.generateAdvancedAnalytics(
-        game.homeTeam.id,
-        game.awayTeam.id,
-        new Date().getFullYear()
-      );
-
-      res.json({
-        gameId,
-        homeTeam: game.homeTeam.name,
-        awayTeam: game.awayTeam.name,
-        analytics,
-        targetImprovements: {
-          playerEfficiency: "+0.6 points (QB performance, key player analysis)",
-          teamEfficiency: "+0.4 points (offensive/defensive efficiency differentials)", 
-          momentum: "+0.3 points (recent performance trends)",
-          totalTarget: "+1.3 points (52.9% → 54.2% ATS)",
-          currentStatus: "Implementation complete - testing phase"
-        }
-      });
-    } catch (error) {
-      console.error('Advanced analytics error:', error);
-      res.status(500).json({ 
-        message: 'Failed to generate advanced analytics',
-        error: error instanceof Error ? error.message : 'Unknown error'
-      });
-    }
-  });
-
-  // Contact form endpoint
-  app.post("/api/contact", async (req, res) => {
-    try {
-      const { name, email, subject, message } = req.body;
-      
-      // Basic validation
-      if (!name || !email || !message) {
-        return res.status(400).json({ message: "Name, email, and message are required" });
-      }
-      
-      // In a real implementation, you would:
-      // 1. Send email to rickspickscfb@gmail.com using a service like SendGrid, Mailgun, etc.
-      // 2. Store the contact form submission in database for tracking
-      // 3. Send auto-reply confirmation to the user
-      
-      // For now, we'll log the contact form and return success
-      console.log('📧 Contact form submission received:');
-      console.log(`From: ${name} <${email}>`);
-      console.log(`Subject: ${subject || 'No subject'}`);
-      console.log(`Message: ${message}`);
-      console.log('---');
-      
-      // TODO: Implement actual email sending
-      // Example with nodemailer or SendGrid would go here
-      
-      res.json({ 
-        success: true, 
-        message: "Your message has been received. We'll get back to you soon!" 
-      });
-      
-    } catch (error) {
-      console.error('Contact form error:', error);
-      res.status(500).json({ message: "Failed to send message. Please try again." });
-    }
-  });
-
-  // Data Pipeline Endpoints for Advanced Analytics
-  app.post("/api/analytics/pipeline/run", async (req, res) => {
-    try {
-      const { simpleDataPipeline } = await import('./simple-data-pipeline');
-      
-      console.log('🚀 Starting simple analytics data pipeline...');
-      
-      // Run in background to avoid request timeout
-      simpleDataPipeline.generateAnalyticsFromGames().then(() => {
-        console.log('✅ Simple analytics pipeline completed successfully!');
-      }).catch((error) => {
-        console.error('❌ Simple analytics pipeline failed:', error);
-      });
-      
-      res.json({ 
-        message: "Advanced analytics pipeline started", 
-        note: "This will populate player stats and team efficiency data for 54%+ ATS performance",
-        expectedImprovement: "+1.3 percentage points (52.9% → 54.2% ATS)",
-        targetFactors: ["Player Efficiency (+0.6pts)", "Team Efficiency (+0.4pts)", "Momentum (+0.3pts)"],
-        status: "processing",
-        estimatedTime: "15-20 minutes"
-      });
-      
-    } catch (error) {
-      console.error('Error starting analytics pipeline:', error);
-      res.status(500).json({ message: "Failed to start pipeline", error: error.message });
-    }
-  });
-
-  app.get("/api/analytics/pipeline/status", async (req, res) => {
-    try {
-      // Check data availability
-      const playerCount = await db.execute(sql.raw('SELECT COUNT(*) as count FROM players'));
-      const playerStatsCount = await db.execute(sql.raw('SELECT COUNT(*) as count FROM player_stats'));
-      const teamStatsCount = await db.execute(sql.raw('SELECT COUNT(*) as count FROM team_season_stats'));
-      
-      const players = parseInt(playerCount[0]?.count || '0');
-      const playerStats = parseInt(playerStatsCount[0]?.count || '0');
-      const teamStats = parseInt(teamStatsCount[0]?.count || '0');
-      
-      const isReady = players > 50 && playerStats > 100 && teamStats > 50;
-      const currentATS = isReady ? "54.2%" : "52.9%";
-      
-      res.json({
-        pipelineStatus: isReady ? "COMPLETE" : "NEEDS_DATA",
-        currentPerformance: currentATS,
-        dataAvailable: {
-          players,
-          playerStats,
-          teamStats
-        },
-        analyticsReady: isReady,
-        performanceTarget: "54.2% ATS",
-        currentTarget: "52.9% ATS (SP+ only)"
-      });
-      
-    } catch (error) {
-      console.error('Error checking pipeline status:', error);
-      res.status(500).json({ message: "Status check failed", error: error.message });
     }
   });
 

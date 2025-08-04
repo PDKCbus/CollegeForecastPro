@@ -7,10 +7,10 @@ echo "🏗️  Building and deploying frontend for Rick's Picks..."
 docker-compose --env-file .env.production exec app sh -c "
   echo 'Building frontend with Vite...'
   npx vite build
-  
+
   echo 'Creating server/public directory...'
   mkdir -p /app/server/public
-  
+
   echo 'Deploying frontend files...'
   if [ -d '/app/dist/public' ]; then
     cp -r /app/dist/public/* /app/server/public/
@@ -19,7 +19,8 @@ docker-compose --env-file .env.production exec app sh -c "
     cp -r /app/dist/* /app/server/public/
     echo '✅ Frontend deployed from dist'
   fi
-  
+
+
   echo 'Frontend files deployed:'
   ls -la /app/server/public/
 "

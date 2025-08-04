@@ -20,9 +20,19 @@ RUN npm install
 # Copy source code
 COPY . .
 
-# Build the application
+# Build the backend
 ENV NODE_ENV=production
 RUN npm run build
+
+# Build the frontend
+WORKDIR /app/client
+RUN npm install
+RUN npm run build
+
+# Copy frontend build to server public directory
+WORKDIR /app
+RUN mkdir -p server/public
+RUN cp -r client/dist/* server/public/
 
 # Production image
 FROM base AS runner
@@ -34,6 +44,7 @@ RUN adduser --system --uid 1001 nextjs
 
 # Copy built application
 COPY --from=builder /app/dist ./dist
+COPY --from=builder /app/server/public ./server/public
 COPY --from=builder /app/node_modules ./node_modules
 COPY --from=builder /app/package*.json ./
 
