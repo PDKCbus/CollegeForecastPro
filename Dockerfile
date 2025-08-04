@@ -7,7 +7,7 @@ WORKDIR /app
 
 # Copy package files
 COPY package*.json ./
-RUN npm install --production && npm cache clean --force
+RUN npm ci && npm cache clean --force
 
 # Build the application
 FROM base AS builder
@@ -22,7 +22,7 @@ COPY . .
 
 # Build both frontend and backend
 ENV NODE_ENV=production
-RUN npm run build
+RUN npx vite build && npx esbuild server/index.ts --platform=node --bundle --format=esm --outdir=dist
 
 # Copy frontend build to server public directory
 RUN mkdir -p server/public
@@ -39,7 +39,7 @@ RUN adduser --system --uid 1001 nextjs
 # Copy built application
 COPY --from=builder /app/dist ./dist
 COPY --from=builder /app/server/public ./server/public
-COPY --from=builder /app/node_modules ./node_modules
+COPY --from=deps /app/node_modules ./node_modules
 COPY --from=builder /app/package*.json ./
 
 # Set proper permissions
