@@ -1,0 +1,39 @@
+#11 [deps 3/3] RUN npm ci && npm cache clean --force
+#11 2.608 npm error code EUSAGE
+#11 2.609 npm error
+#11 2.609 npm error `npm ci` can only install packages when your package.json and package-lock.json or npm-shrinkwrap.json are in sync. Please update y
+our lock file with `npm install` before continuing.
+#11 2.609 npm error
+#11 2.609 npm error Missing: es-object-atoms@1.1.1 from lock file
+#11 2.609 npm error
+#11 2.609 npm error Clean install a project
+#11 2.609 npm error
+#11 2.609 npm error Usage:
+#11 2.609 npm error npm ci
+#11 2.609 npm error
+#11 2.609 npm error Options:
+#11 2.609 npm error [--install-strategy <hoisted|nested|shallow|linked>] [--legacy-bundling]
+#11 2.609 npm error [--global-style] [--omit <dev|optional|peer> [--omit <dev|optional|peer> ...]]
+#11 2.609 npm error [--include <prod|dev|optional|peer> [--include <prod|dev|optional|peer> ...]]
+#11 2.609 npm error [--strict-peer-deps] [--foreground-scripts] [--ignore-scripts] [--no-audit]
+#11 2.609 npm error [--no-bin-links] [--no-fund] [--dry-run]
+#11 2.609 npm error [-w|--workspace <workspace-name> [-w|--workspace <workspace-name> ...]]
+#11 2.609 npm error [-ws|--workspaces] [--include-workspace-root] [--install-links]
+#11 2.609 npm error
+#11 2.609 npm error aliases: clean-install, ic, install-clean, isntall-clean
+#11 2.609 npm error
+#11 2.609 npm error Run "npm help ci" for more info
+#11 2.613 npm notice
+#11 2.613 npm notice New major version of npm available! 10.8.2 -> 11.5.2
+#11 2.613 npm notice Changelog: https://github.com/npm/cli/releases/tag/v11.5.2
+#11 2.613 npm notice To update run: npm install -g npm@11.5.2
+#11 2.613 npm notice
+#11 2.614 npm error A complete log of this run can be found in: /root/.npm/_logs/2025-08-04T14_37_28_284Z-debug-0.log
+#11 ERROR: process "/bin/sh -c npm ci && npm cache clean --force" did not complete successfully: exit code: 1
+
+#12 [builder 5/7] RUN npx vite build && npx esbuild server/index.ts --platform=node --bundle --format=esm --outdir=dist
+#12 1.765 vite v5.4.14 building for production...
+#12 CANCELED
+------
+ > [deps 3/3] RUN npm ci && npm cache clean --force:
+2.609 npm error
