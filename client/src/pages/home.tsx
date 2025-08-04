@@ -11,7 +11,7 @@ import { useState, useEffect } from "react";
 import { FilterOption, GameWithTeams } from "@/lib/types";
 
 export default function Home() {
-  const [selectedWeek, setSelectedWeek] = useState("Week 1");
+  const [selectedWeek, setSelectedWeek] = useState("Week 0");
   const [activeFilter, setActiveFilter] = useState("all");
   const [teamFilter, setTeamFilter] = useState("");
   const [selectedConference, setSelectedConference] = useState("");
@@ -20,7 +20,7 @@ export default function Home() {
   const gamesPerPage = 12;
   
   // Show all weeks that have authentic 2025 data
-  const weeks = ["Week 1", "Week 2", "Week 3", "Week 4", "Week 5", "Week 6", "Week 7", "Week 8", "Week 9", "Week 10", "Week 11", "Week 12", "Week 13", "Week 14", "Week 15"];
+  const weeks = ["Week 0", "Week 1", "Week 2", "Week 3", "Week 4", "Week 5", "Week 6", "Week 7", "Week 8", "Week 9", "Week 10", "Week 11", "Week 12", "Week 13", "Week 14", "Week 15"];
   
   const filterOptions: FilterOption[] = [
     { label: "All Games", value: "all", isActive: activeFilter === "all" },
@@ -108,7 +108,7 @@ export default function Home() {
     }
     
     return categoryMatch && conferenceMatch && teamMatch;
-  }).sort((a, b) => {
+  }).sort((a: GameWithTeams, b: GameWithTeams) => {
     // Sort by highest ranking (lowest number = higher rank)
     const aHighestRank = Math.min(a.homeTeam?.rank || 999, a.awayTeam?.rank || 999);
     const bHighestRank = Math.min(b.homeTeam?.rank || 999, b.awayTeam?.rank || 999);
