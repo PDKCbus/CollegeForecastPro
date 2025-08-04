@@ -20,9 +20,15 @@ RUN npx vite build
 RUN mkdir -p server/public
 RUN if [ -d "dist/public" ]; then cp -r dist/public/* server/public/; else echo "Frontend build failed - checking client/dist"; if [ -d "client/dist" ]; then cp -r client/dist/* server/public/; else echo "No frontend build found"; exit 1; fi; fi
 
+# Create logs directory and set permissions
+RUN mkdir -p logs && chmod 755 logs
+
 # Create a non-root user
 RUN addgroup --system --gid 1001 nodejs
 RUN adduser --system --uid 1001 nextjs
+
+# Change ownership of the app directory to the nextjs user
+RUN chown -R nextjs:nodejs /app
 
 # Set proper permissions
 USER nextjs
