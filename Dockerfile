@@ -22,7 +22,7 @@ COPY . .
 
 # Build both frontend and backend
 ENV NODE_ENV=production
-RUN npx vite build && npx esbuild server/index.ts --platform=node --packages=external --bundle --format=esm --outdir=dist --external:lightningcss --external:@babel/preset-typescript
+RUN npx vite build && npx esbuild server/index.ts --platform=node --bundle --format=esm --outdir=dist --external:lightningcss --external:@babel/preset-typescript --external:sentiment --external:@neondatabase/serverless
 
 # Copy frontend build to server public directory
 RUN mkdir -p server/public
