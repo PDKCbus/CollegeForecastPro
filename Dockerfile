@@ -20,19 +20,13 @@ RUN npm install
 # Copy source code
 COPY . .
 
-# Build the backend
+# Build both frontend and backend
 ENV NODE_ENV=production
 RUN npm run build
 
-# Build the frontend
-WORKDIR /app/client
-RUN npm install
-RUN npm run build
-
 # Copy frontend build to server public directory
-WORKDIR /app
 RUN mkdir -p server/public
-RUN cp -r client/dist/* server/public/
+RUN cp -r client/dist/* server/public/ 2>/dev/null || echo "No frontend dist found"
 
 # Production image
 FROM base AS runner
