@@ -1,13 +1,10 @@
 /**
- * Rick's Picks Prediction Engine - Advanced Analytics Integration
- * Enhanced with Player Efficiency, Team Efficiency, and Momentum Analysis
- * Target: 53-54% ATS accuracy (currently 52.9%)
- * Based on analysis of 28,431 historical games + advanced metrics
+ * Rick's Picks Prediction Engine - TypeScript Integration
+ * Converts Python algorithm findings into production prediction system
+ * Based on analysis of 28,431 historical games
  */
 
 import { storage } from './storage';
-import { advancedAnalyticsEngine } from './advanced-analytics-engine';
-import { RosterAnalyticsEngine } from './roster-analytics-engine';
 
 interface WeatherConditions {
   temperature?: number;
@@ -22,9 +19,6 @@ interface PredictionFactors {
   conference: number;
   homeField: number;
   bettingValue: number;
-  playerEfficiency: number;
-  teamEfficiency: number;
-  momentum: number;
 }
 
 interface PredictionResult {
@@ -39,11 +33,6 @@ interface PredictionResult {
 }
 
 export class RicksPicksPredictionEngine {
-  private rosterAnalytics: RosterAnalyticsEngine;
-  
-  constructor() {
-    this.rosterAnalytics = new RosterAnalyticsEngine();
-  }
   // Conference power ratings based on our statistical analysis
   private readonly conferencePowerRatings: Record<string, number> = {
     'SEC': 5.7,
@@ -211,7 +200,7 @@ export class RicksPicksPredictionEngine {
   }
 
   /**
-   * Generate comprehensive prediction using advanced analytics
+   * Generate comprehensive prediction using data-driven algorithm
    */
   async generatePrediction(
     homeTeam: string,
@@ -223,55 +212,13 @@ export class RicksPicksPredictionEngine {
     isNeutralSite: boolean = false
   ): Promise<PredictionResult> {
     
-    // Get team IDs for advanced analytics
-    const homeTeamData = await storage.getTeamByName(homeTeam);
-    const awayTeamData = await storage.getTeamByName(awayTeam);
-    const currentSeason = new Date().getFullYear();
-    
-    // Calculate traditional factors
+    // Calculate individual factors
     const weatherFactor = this.calculateWeatherFactor(weather);
     const conferenceFactor = this.calculateConferenceFactor(homeConference, awayConference);
     const homeFieldFactor = this.calculateHomeFieldFactor(isNeutralSite);
     
     // Base prediction (home team perspective)
-    let basePrediction = homeFieldFactor.score + conferenceFactor.score + weatherFactor.score;
-    
-    // Calculate advanced analytics if team data available
-    let advancedAnalytics = null;
-    let rosterAnalytics = null;
-    
-    if (homeTeamData && awayTeamData) {
-      try {
-        // Get existing advanced analytics
-        advancedAnalytics = await advancedAnalyticsEngine.generateAdvancedAnalytics(
-          homeTeamData.id,
-          awayTeamData.id,
-          currentSeason
-        );
-        
-        // Apply advanced analytics adjustment
-        basePrediction += advancedAnalytics.totalAdvancedAdj;
-      } catch (error) {
-        console.log("Advanced analytics unavailable, using basic algorithm");
-      }
-      
-      try {
-        // NEW: Get roster analytics for final algorithm improvements
-        rosterAnalytics = await this.rosterAnalytics.calculateGameAnalytics(gameId);
-        
-        // Apply roster analytics (+1.3 points target improvement)
-        const rosterAdjustment = (rosterAnalytics.playerEfficiency * 0.06) + // Player efficiency: +0.6 pts
-                                (rosterAnalytics.teamEfficiency * 0.04) +    // Team efficiency: +0.4 pts  
-                                (rosterAnalytics.momentum * 0.06);           // Momentum: +0.3 pts (scaled)
-        
-        basePrediction += rosterAdjustment;
-        
-        console.log(`🚀 Roster analytics applied: Player(${rosterAnalytics.playerEfficiency.toFixed(2)}) + Team(${rosterAnalytics.teamEfficiency.toFixed(2)}) + Momentum(${rosterAnalytics.momentum.toFixed(2)}) = ${rosterAdjustment.toFixed(2)} pts`);
-        
-      } catch (error) {
-        console.log("Roster analytics unavailable, using existing algorithms");
-      }
-    }
+    const basePrediction = homeFieldFactor.score + conferenceFactor.score + weatherFactor.score;
     
     // Calculate betting value
     const bettingValue = this.calculateBettingLineValue(vegasSpread, basePrediction);
@@ -279,56 +226,25 @@ export class RicksPicksPredictionEngine {
     // Final prediction
     const totalScore = basePrediction + bettingValue.score;
     
-    // Determine confidence level (enhanced with advanced analytics)
-    const basicFactors = [weatherFactor, conferenceFactor, homeFieldFactor, bettingValue]
+    // Determine confidence level
+    const nonZeroFactors = [weatherFactor, conferenceFactor, homeFieldFactor, bettingValue]
       .filter(f => f.score !== 0).length;
     
     let confidence: 'High' | 'Medium' | 'Low';
-    let confidenceScore = basicFactors;
-    
-    // Boost confidence with advanced analytics
-    if (advancedAnalytics && advancedAnalytics.confidence > 0.8) {
-      confidenceScore += 2;
-    } else if (advancedAnalytics && advancedAnalytics.confidence > 0.6) {
-      confidenceScore += 1;
-    }
-    
-    // Additional confidence boost from roster analytics
-    if (rosterAnalytics && rosterAnalytics.confidence > 0.8) {
-      confidenceScore += 2;
-    } else if (rosterAnalytics && rosterAnalytics.confidence > 0.6) {
-      confidenceScore += 1;
-    }
-    
-    if (Math.abs(totalScore) > 6 && confidenceScore >= 4) {
+    if (Math.abs(totalScore) > 6 && nonZeroFactors >= 3) {
       confidence = "High";
-    } else if (Math.abs(totalScore) > 3 && confidenceScore >= 2) {
-      confidence = "Medium";  
+    } else if (Math.abs(totalScore) > 3 && nonZeroFactors >= 2) {
+      confidence = "Medium";
     } else {
       confidence = "Low";
     }
     
-    // Compile all key factors including advanced analytics and roster analytics
-    const rosterInsights: string[] = [];
-    if (rosterAnalytics) {
-      if (Math.abs(rosterAnalytics.playerEfficiency) > 2) {
-        rosterInsights.push(`Player advantage: ${rosterAnalytics.playerEfficiency > 0 ? homeTeam : awayTeam} (+${Math.abs(rosterAnalytics.playerEfficiency).toFixed(1)} rating)`);
-      }
-      if (Math.abs(rosterAnalytics.teamEfficiency) > 2) {
-        rosterInsights.push(`Roster talent: ${rosterAnalytics.teamEfficiency > 0 ? homeTeam : awayTeam} (+${Math.abs(rosterAnalytics.teamEfficiency).toFixed(1)} talent)`);
-      }
-      if (Math.abs(rosterAnalytics.momentum) > 1) {
-        rosterInsights.push(`Recent momentum: ${rosterAnalytics.momentum > 0 ? homeTeam : awayTeam} (+${Math.abs(rosterAnalytics.momentum).toFixed(1)} trend)`);
-      }
-    }
-    
+    // Compile all key factors
     const allFactors: string[] = [
       ...weatherFactor.impact,
       ...conferenceFactor.impact,
       ...homeFieldFactor.impact,
-      ...bettingValue.impact,
-      ...(advancedAnalytics ? advancedAnalytics.keyInsights : []),
-      ...rosterInsights
+      ...bettingValue.impact
     ].filter(impact => impact.length > 0);
     
     // Prediction result
@@ -359,10 +275,7 @@ export class RicksPicksPredictionEngine {
         weather: weatherFactor.score,
         conference: conferenceFactor.score,
         homeField: homeFieldFactor.score,
-        bettingValue: bettingValue.score,
-        playerEfficiency: rosterAnalytics?.playerEfficiency || advancedAnalytics?.playerEfficiencyAdj || 0,
-        teamEfficiency: rosterAnalytics?.teamEfficiency || advancedAnalytics?.teamEfficiencyAdj || 0,
-        momentum: rosterAnalytics?.momentum || advancedAnalytics?.momentumAdj || 0
+        bettingValue: bettingValue.score
       }
     };
   }

@@ -1,5 +1,4 @@
 import { pgTable, text, varchar, serial, integer, boolean, timestamp, real } from "drizzle-orm/pg-core";
-import { relations } from "drizzle-orm";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
@@ -76,11 +75,6 @@ export const games = pgTable("games", {
   isConferenceGame: boolean("is_conference_game").default(false),
   isRivalryGame: boolean("is_rivalry_game").default(false),
   isFeatured: boolean("is_featured").default(false),
-  isNeutralSite: boolean("is_neutral_site").default(false),
-  venue: text("venue"),
-  city: text("city"),
-  state: text("state"),
-  country: text("country").default("USA"),
   // Weather data
   temperature: real("temperature"), // Fahrenheit
   windSpeed: real("wind_speed"), // MPH
@@ -441,59 +435,3 @@ export type RicksPick = typeof ricksPicks.$inferSelect;
 export type InsertRicksPick = z.infer<typeof insertRicksPickSchema>;
 export type AdminUser = typeof adminUsers.$inferSelect;
 export type InsertAdminUser = z.infer<typeof insertAdminUserSchema>;
-
-// Define relations for player data system
-export const playersRelations = relations(players, ({ one, many }) => ({
-  team: one(teams, {
-    fields: [players.teamId],
-    references: [teams.id],
-  }),
-  stats: many(playerStats),
-  injuries: many(injuries),
-  depthChart: one(depthChart),
-  impactAnalysis: many(playerImpactAnalysis),
-}));
-
-export const playerStatsRelations = relations(playerStats, ({ one }) => ({
-  player: one(players, {
-    fields: [playerStats.playerId],
-    references: [players.id],
-  }),
-  game: one(games, {
-    fields: [playerStats.gameId],
-    references: [games.id],
-  }),
-}));
-
-export const injuriesRelations = relations(injuries, ({ one }) => ({
-  player: one(players, {
-    fields: [injuries.playerId],
-    references: [players.id],
-  }),
-  team: one(teams, {
-    fields: [injuries.teamId],
-    references: [teams.id],
-  }),
-}));
-
-export const teamsRelations = relations(teams, ({ many }) => ({
-  players: many(players),
-  homeGames: many(games, { relationName: "homeTeam" }),
-  awayGames: many(games, { relationName: "awayTeam" }),
-  injuries: many(injuries),
-}));
-
-export const gamesRelations = relations(games, ({ one, many }) => ({
-  homeTeam: one(teams, {
-    fields: [games.homeTeamId],
-    references: [teams.id],
-    relationName: "homeTeam",
-  }),
-  awayTeam: one(teams, {
-    fields: [games.awayTeamId],
-    references: [teams.id],
-    relationName: "awayTeam",
-  }),
-  playerStats: many(playerStats),
-  playerMatchups: many(keyPlayerMatchups),
-}));

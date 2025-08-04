@@ -44,7 +44,7 @@ export function SeasonStatsSection() {
 
   if (isLoading) {
     return (
-      <div className="mb-6 md:mb-8 bg-surface rounded-xl p-6">
+      <div className="mb-12 bg-surface rounded-xl p-6">
         <div className="animate-pulse">
           <div className="h-6 bg-surface-light rounded w-48 mb-4"></div>
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
@@ -64,7 +64,7 @@ export function SeasonStatsSection() {
   const currentStreak = rickRecord?.currentStreak || 0; // Current season win streak
 
   return (
-    <div className="mb-6 md:mb-8 bg-surface rounded-xl p-6">
+    <div className="mb-12 bg-surface rounded-xl p-6">
       <div className="flex items-center gap-3 mb-6">
         <Trophy className="w-6 h-6 text-accent" />
         <h2 className="text-2xl font-bold text-white">Rick's Season Performance</h2>
