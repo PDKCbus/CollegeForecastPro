@@ -415,7 +415,7 @@ export const ricksPicks = pgTable("ricks_picks", {
 // Admin users for Rick's access
 export const adminUsers = pgTable("admin_users", {
   id: serial("id").primaryKey(),
-  username: varchar("username", { length: 50 }).unique().notNull(),
+  username: varchar("username", { length: 255 }).unique().notNull(),
   passwordHash: varchar("password_hash", { length: 255 }).notNull(),
   role: varchar("role", { length: 20 }).notNull().default("admin"), // "admin", "editor"
   isActive: boolean("is_active").default(true),
