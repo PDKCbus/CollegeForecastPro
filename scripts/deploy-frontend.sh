@@ -25,4 +25,4 @@ docker-compose --env-file .env.production exec app sh -c "
 "
 
 echo "🚀 Frontend deployment complete!"
-echo "Platform should now be accessible at http://ricks-picks.football"
+echo "Platform should now be accessible at https://ricks-picks.football"
