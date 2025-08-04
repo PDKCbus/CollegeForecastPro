@@ -19,6 +19,29 @@ import { insertGameSchema, insertTeamSchema, insertPredictionSchema, insertSenti
 import { dataSyncLogger } from "./data-sync-logger";
 
 export async function registerRoutes(app: Express): Promise<Server> {
+  // Health check endpoint
+  app.get("/api/health", async (req, res) => {
+    try {
+      // Test database connection
+      const testQuery = await db.select().from(teams).limit(1);
+      res.json({ 
+        status: "healthy", 
+        timestamp: new Date().toISOString(),
+        environment: process.env.NODE_ENV || "development",
+        database: "connected",
+        teamsCount: testQuery.length
+      });
+    } catch (error) {
+      res.status(500).json({ 
+        status: "unhealthy", 
+        timestamp: new Date().toISOString(),
+        environment: process.env.NODE_ENV || "development",
+        database: "disconnected",
+        error: error instanceof Error ? error.message : String(error)
+      });
+    }
+  });
+
   // Test endpoint
   app.get("/api/test", (req, res) => {
     res.json({ message: "API is working", timestamp: new Date().toISOString() });
