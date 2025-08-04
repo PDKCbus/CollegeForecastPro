@@ -9,8 +9,9 @@ set -e
 echo "🛑 Stopping existing containers..."
 docker-compose --env-file .env.production down 2>/dev/null || true
 
-# Pull latest code
-echo "📥 Pulling latest code..."
+# Pull latest code from main branch (production-ready)
+echo "📥 Pulling latest code from main..."
+git checkout main 2>/dev/null || git switch main 2>/dev/null || echo "Already on main"
 git pull origin main
 
 # Initialize database schema
