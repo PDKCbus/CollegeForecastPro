@@ -25,23 +25,40 @@ The application follows a modern full-stack architecture with clear separation o
 - RESTful API design with proper error handling and logging
 
 ### Database Design
-- **Teams table**: Stores team information including logos, conferences, and records
-- **Games table**: Central table for game data with betting lines and scores
-- **Predictions table**: Rick's predictions with confidence scores and reasoning
-- **Sentiment Analysis table**: Twitter sentiment data linked to games and teams
-- **Users table**: User authentication and profile management
+Key tables include:
+- `Teams`: Stores team details.
+- `Games`: Core game data, including betting lines and scores.
+- `Predictions`: Rick's generated predictions.
+- `Sentiment Analysis`: Twitter sentiment data.
+- `Users`: For authentication and profile management.
+- `Players`, `PlayerStats`, `Injuries`, `PlayerImpactAnalysis`, `KeyPlayerMatchups`: For detailed player tracking and injury analysis.
 
-## Key Components
+### Technical Implementations & Features
+- **Data Management**: Automated real-time and historical data synchronization from College Football Data API (2009-2024 seasons). Includes data cleaning and validation, with robust sync components (`comprehensive-data-sync.ts`, `raw-pg-storage.ts`).
+- **Analytics Engine**: Features an advanced prediction algorithm incorporating ELO ratings, weather analysis, travel distance penalties, and conference performance patterns. Includes natural language processing for Reddit r/CFB community sentiment (4.4M users).
+- **Statistical Player Analysis**: Python-based historical analysis of 18,645 games generates statistically-proven player impact coefficients. Elite QBs worth +5.7 points vs betting line (P < 0.000001), injury impact -8.8 points ATS penalty.
+- **User Interface**: Responsive design optimized for mobile and desktop, interactive charts, detailed game cards, and advanced filtering capabilities. Includes a "Game of the Week" feature and a comprehensive game analysis dashboard with predictive metrics.
+- **Prediction System**: Dual prediction system displays Rick's personal picks with a fallback to algorithmic predictions, clearly differentiated. Includes an admin panel for managing personal picks.
+- **Player & Injury Tracking**: Comprehensive system for collecting player data, tracking injuries, and analyzing player impact on game outcomes, integrated into the handicapping engine with historical statistical backing.
+- **Real-Time Handicapping Engine**: TypeScript implementation applies Python-derived coefficients to live player data, calculating QB vs Defense matchups, injury impacts, and position-specific value ratings.
+- **Betting Line System**: Automated three-tier betting line refresh schedule (Tuesday, Thursday, Saturday) to ensure predictions use the freshest data. Includes spread formatting to industry standards.
+- **Head-to-Head History**: Provides detailed historical matchup analysis between teams from the 15-year dataset.
+- **International Game Support**: Automatic detection and flag display for games played outside the USA, including proper venue information for international locations like Ireland, England, Germany, and Mexico.
+- **FAQ and Legal Compliance**: Comprehensive FAQ section with proper disclaimers about entertainment purposes, algorithm performance transparency (51.7% ATS), and no guaranteed results.
+- **Algorithm Research Framework**: Advanced metrics research completed including CFBD API endpoint analysis for SP+ ratings, player PPA/EPA data, team efficiency metrics, and coaching records.
+- **Data Sync Logging System**: Simplified logging system tracking auto-sync events and major data operations with timestamps in `/logs/data_sync_log.txt` (excludes individual API requests for cleaner logs).
 
-### Data Management
-- **Real-time Data Sync**: Automated fetching from College Football Data API
-- **Historical Data Import**: Bulk import functionality for past seasons (2009-2024)
-- **Data Cleaning Pipeline**: Robust data validation and normalization using `data-cleaner.ts`
-- **Multiple Storage Implementations**: PostgreSQL with fallback direct SQL operations
-- **Proven Sync Components**: 
-  - `comprehensive-data-sync.ts` - Handles bulk season collection (29,114+ games collected)
-  - `raw-pg-storage.ts` - Bypasses undefined value restrictions 
-  - Existing API endpoints for gap filling: `/api/comprehensive/sync-missing`
+### Database Performance Optimization (January 2025)
+- **Critical Performance Fix**: Resolved N+1 database query issue that caused 109+ second API response times
+- **Query Optimization**: Implemented efficient batch team lookups using OR clauses instead of individual queries  
+- **Database Cleanup**: Eliminated massive duplication issue (317 duplicate games reduced to 17 unique matchups)
+- **Result**: API response times improved from 109+ seconds to under 0.3 seconds
+
+### Monetization Implementation (January 2025)
+- **Google AdSense Integration**: Complete ad system with responsive design and mobile compatibility
+- **Strategic Ad Placement**: Header ads after hero section, in-content ads between featured games and game lists
+- **Development Environment**: Ad placeholders prevent layout issues during development
+- **Production Ready**: Async script loading, proper error handling, and policy-compliant placement
 
 ### Production Deployment System (August 2025) - LIVE ✅
 - **Docker Containerization**: Multi-stage Docker build with optimized production image
