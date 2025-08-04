@@ -68,7 +68,7 @@ Key tables include:
 ### Production Deployment System (August 2025) - LIVE ✅
 - **Docker Containerization**: Multi-stage Docker build with optimized production image
 - **AWS Lightsail Deployed**: Complete deployment pipeline with Nginx reverse proxy live on $12/month plan
-- **Domain Live**: Successfully deployed at http://ricks-picks.football with 52.9% ATS algorithm operational
+- **Domain Live**: Successfully deployed at https://ricks-picks.football with 52.9% ATS algorithm operational
 - **Database**: PostgreSQL running with all required tables and admin user configured
 - **Frontend**: React application built and deployed with comprehensive college football analytics
 - **SSL Certificate**: HTTPS enabled with Let's Encrypt, auto-redirect from HTTP
