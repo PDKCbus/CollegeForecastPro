@@ -41,21 +41,6 @@ interface PlayerMatchup {
 }
 
 export class HandicappingEngine {
-  // Historical player impact coefficients from statistical analysis of 18,645 games
-  private readonly PLAYER_IMPACT_COEFFICIENTS = {
-    QB_ELITE_BONUS: 5.7,      // Elite QBs worth +5.7 points vs betting line
-    QB_POOR_PENALTY: -5.7,    // Poor QBs worth -5.7 points vs betting line  
-    INJURY_PENALTY: -8.8,     // Major injuries worth -8.8 points ATS
-    POSITION_RATINGS: {
-      'QB': 9.2,   // Highest impact position
-      'RB': 6.8,   // High impact
-      'OL': 7.1,   // High impact (undervalued by public)
-      'WR': 5.5,   // Moderate impact
-      'DL': 6.2,   // Moderate-high impact
-      'LB': 4.8,   // Moderate impact
-      'DB': 5.2    // Moderate impact
-    }
-  };
 
   async generateHandicappingAnalysis(gameId: number): Promise<HandicappingAnalysis> {
     console.log(`⚡ Generating handicapping analysis for game ${gameId}`);
@@ -265,36 +250,21 @@ export class HandicappingEngine {
   }
 
   private async analyzeQBvsDefenseMatchup(qb: any, opposingPlayers: any, side: 'home' | 'away'): Promise<PlayerMatchup> {
-    // Analyze QB stats vs opposing defense using historical coefficients
+    // Analyze QB stats vs opposing defense
     const qbStats = qb.stats?.[0];
     const passingYards = qbStats?.passingYards || 0;
     const passingTDs = qbStats?.passingTouchdowns || 0;
     const interceptions = qbStats?.passingInterceptions || 0;
-    const completionPct = qbStats?.completionPercentage || 0;
 
-    // Calculate QB rating using statistical analysis findings
-    let qbRating = 5; // Base rating
-    
-    // Elite QB indicators (statistical thresholds from analysis)
-    if (passingYards > 3500 && passingTDs > 28 && interceptions < 10) {
-      qbRating = 9; // Elite QB rating
-    } else if (passingYards > 2800 && passingTDs > 20 && completionPct > 0.65) {
-      qbRating = 7; // Good QB rating
-    } else if (passingYards < 2000 || interceptions > 15) {
-      qbRating = 3; // Poor QB rating
-    }
-
-    // Calculate advantage rating based on historical analysis
+    // Calculate advantage rating based on QB performance and defensive strength
     let advantageRating = 0;
     
-    // Apply historical QB impact coefficients
-    if (qbRating >= 8) {
-      advantageRating += this.PLAYER_IMPACT_COEFFICIENTS.QB_ELITE_BONUS / 2; // Scale for matchup context
-    } else if (qbRating <= 4) {
-      advantageRating += this.PLAYER_IMPACT_COEFFICIENTS.QB_POOR_PENALTY / 2;
-    }
+    // QB performance factors
+    if (passingYards > 3000) advantageRating += 2;
+    if (passingTDs > 25) advantageRating += 2;
+    if (interceptions < 8) advantageRating += 1;
 
-    // Defensive strength factors
+    // Defensive strength factors (simplified)
     const defenseStrength = opposingPlayers.Defense?.length || 0;
     advantageRating -= Math.min(3, defenseStrength);
 
