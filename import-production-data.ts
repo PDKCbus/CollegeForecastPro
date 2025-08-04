@@ -26,7 +26,14 @@ async function importProductionData(filename: string) {
     // Import teams first (other tables reference teams)
     console.log("📊 Importing teams...");
     if (exportData.teams && exportData.teams.length > 0) {
-      await db.insert(teams).values(exportData.teams).onConflictDoNothing();
+      // Convert date strings back to Date objects for teams
+      const teamsWithDates = exportData.teams.map((team: any) => ({
+        ...team,
+        createdAt: team.createdAt ? new Date(team.createdAt) : null,
+        updatedAt: team.updatedAt ? new Date(team.updatedAt) : null
+      }));
+      
+      await db.insert(teams).values(teamsWithDates).onConflictDoNothing();
       console.log(`✅ Imported ${exportData.teams.length} teams`);
     }
     
@@ -46,7 +53,13 @@ async function importProductionData(filename: string) {
     // Import predictions
     console.log("🔮 Importing predictions...");
     if (exportData.predictions && exportData.predictions.length > 0) {
-      await db.insert(predictions).values(exportData.predictions).onConflictDoNothing();
+      // Convert date strings back to Date objects for predictions
+      const predictionsWithDates = exportData.predictions.map((prediction: any) => ({
+        ...prediction,
+        createdAt: prediction.createdAt ? new Date(prediction.createdAt) : null
+      }));
+      
+      await db.insert(predictions).values(predictionsWithDates).onConflictDoNothing();
       console.log(`✅ Imported ${exportData.predictions.length} predictions`);
     }
     
