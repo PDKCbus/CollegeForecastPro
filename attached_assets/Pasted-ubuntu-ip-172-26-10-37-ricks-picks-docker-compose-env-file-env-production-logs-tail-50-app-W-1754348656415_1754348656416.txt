@@ -1,0 +1,32 @@
+ubuntu@ip-172-26-10-37:~/ricks-picks$ docker-compose --env-file .env.production logs --tail=50 app
+WARN[0000] /home/ubuntu/ricks-picks/docker-compose.yml: the attribute `version` is obsolete, it will be ignored, please remove it to avoid potential co
+nfusion 
+app-1  | Twitter credentials not found - sentiment analysis will use simulated data
+app-1  | Initializing database tables...
+app-1  | Database connection successful
+app-1  | 10:55:07 PM [express] serving on port 5000
+app-1  | Auto-syncing: Regular 4-hour update
+app-1  |  Starting betting lines scheduler...
+app-1  |     Tuesday: Full weekly collection
+app-1  |     Thursday: Mid-week line refresh
+app-1  |     Saturday: Pre-game line refresh
+app-1  |  Betting lines scheduler initialized successfully
+app-1  | 10:55:18 PM [express] GET /api/games/featured 404 in 11ms :: {"message":"No upcoming games found"}
+app-1  | 10:55:18 PM [express] GET /api/ricks-record 304 in 2ms :: {"spread":{"wins":0,"losses":0,"total":0,"p…
+app-1  | 10:55:18 PM [express] GET /api/games/upcoming 200 in 30ms :: {"games":[],"hasMore":false,"total":0}
+app-1  | 10:58:53 PM [express] GET /api/ricks-record 304 in 1ms :: {"spread":{"wins":0,"losses":0,"total":0,"p…
+app-1  | 10:58:53 PM [express] GET /api/games/featured 404 in 5ms :: {"message":"No upcoming games found"}
+app-1  | 10:58:53 PM [express] GET /api/games/upcoming 304 in 3ms :: {"games":[],"hasMore":false,"total":0}
+app-1  | 10:58:58 PM [express] GET /api/ricks-record 304 in 1ms :: {"spread":{"wins":0,"losses":0,"total":0,"p…
+app-1  | 10:58:58 PM [express] GET /api/games/featured 404 in 5ms :: {"message":"No upcoming games found"}
+app-1  | 10:58:58 PM [express] GET /api/games/upcoming 304 in 4ms :: {"games":[],"hasMore":false,"total":0}
+app-1  | 11:01:47 PM [express] GET /api/ricks-record 304 in 1ms :: {"spread":{"wins":0,"losses":0,"total":0,"p…
+app-1  | 11:01:47 PM [express] GET /api/games/featured 404 in 4ms :: {"message":"No upcoming games found"}
+app-1  | 11:01:47 PM [express] GET /api/games/upcoming 304 in 4ms :: {"games":[],"hasMore":false,"total":0}
+app-1  | 11:03:17 PM [express] GET /api/games/featured 404 in 3ms :: {"message":"No upcoming games found"}
+app-1  | 11:03:17 PM [express] GET /api/ricks-record 304 in 1ms :: {"spread":{"wins":0,"losses":0,"total":0,"p…
+app-1  | 11:03:17 PM [express] GET /api/games/upcoming 304 in 4ms :: {"games":[],"hasMore":false,"total":0}
+app-1  |  Historical games API called with params: { page: '0', limit: '20', season: 'all', week: 'all' }
+app-1  |  Retrieved 0 historical games from database (0 total)
+app-1  | 11:03:26 PM [express] GET /api/games/historical 200 in 12ms :: {"games":[],"pagination":{"page":0,"li…
+ubuntu@ip-172-26-10-37:~/ricks-picks$ 
