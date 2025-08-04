@@ -22,7 +22,7 @@ COPY . .
 
 # Build both frontend and backend
 ENV NODE_ENV=production
-RUN npx vite build && npx esbuild server/index.ts --platform=node --bundle --format=esm --outdir=dist
+RUN npx vite build && npx esbuild server/index.ts --platform=node --packages=external --bundle --format=esm --outdir=dist --external:lightningcss --external:@babel/preset-typescript
 
 # Copy frontend build to server public directory
 RUN mkdir -p server/public
@@ -36,10 +36,10 @@ WORKDIR /app
 RUN addgroup --system --gid 1001 nodejs
 RUN adduser --system --uid 1001 nextjs
 
-# Copy built application
+# Copy built application and dependencies
 COPY --from=builder /app/dist ./dist
 COPY --from=builder /app/server/public ./server/public
-COPY --from=deps /app/node_modules ./node_modules
+COPY --from=builder /app/node_modules ./node_modules
 COPY --from=builder /app/package*.json ./
 
 # Set proper permissions
