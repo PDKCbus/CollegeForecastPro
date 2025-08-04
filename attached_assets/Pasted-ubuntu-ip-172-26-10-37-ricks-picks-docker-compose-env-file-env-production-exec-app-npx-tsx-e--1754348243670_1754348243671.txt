@@ -1,0 +1,44 @@
+ubuntu@ip-172-26-10-37:~/ricks-picks$ docker-compose --env-file .env.production exec app npx tsx -e "import { db } from './server/db.js'; import { game
+s } from './shared/schema.js'; const result = await db.select().from(games).limit(5); console.log('Games found:', result.length); process.exit(0);"
+WARN[0000] /home/ubuntu/ricks-picks/docker-compose.yml: the attribute `version` is obsolete, it will be ignored, please remove it to avoid potential co
+nfusion 
+node:internal/process/promises:391
+    triggerUncaughtException(err, true /* fromPromise */);
+    ^
+
+Error: Transform failed with 1 error:
+/eval.ts:1:96: ERROR: Top-level await is currently not supported with the "cjs" output format
+    at failureErrorWithLog (/app/node_modules/tsx/node_modules/esbuild/lib/main.js:1476:15)
+    at /app/node_modules/tsx/node_modules/esbuild/lib/main.js:755:50
+    at responseCallbacks.<computed> (/app/node_modules/tsx/node_modules/esbuild/lib/main.js:622:9)
+    at handleIncomingPacket (/app/node_modules/tsx/node_modules/esbuild/lib/main.js:677:12)
+    at Socket.readFromStdout (/app/node_modules/tsx/node_modules/esbuild/lib/main.js:600:7)
+    at Socket.emit (node:events:524:28)
+    at addChunk (node:internal/streams/readable:561:12)
+    at readableAddChunkPushByteMode (node:internal/streams/readable:512:3)
+    at Readable.push (node:internal/streams/readable:392:5)
+    at Pipe.onStreamRead (node:internal/stream_base_commons:191:23) {
+  errors: [
+    {
+      detail: undefined,
+      id: '',
+      location: {
+        column: 96,
+        file: '/eval.ts',
+        length: 5,
+        line: 1,
+        lineText: "import { db } from './server/db.js'; import { games } from './shared/schema.js'; const result = await db.select().from(games).limit(
+5); console.log('Games found:', result.length); process.exit(0);",
+        namespace: '',
+        suggestion: ''
+      },
+      notes: [],
+      pluginName: '',
+      text: 'Top-level await is currently not supported with the "cjs" output format'
+    }
+  ],
+  warnings: []
+}
+
+Node.js v20.19.4
+ubuntu@ip-172-26-10-37:~/ricks-picks$ 
