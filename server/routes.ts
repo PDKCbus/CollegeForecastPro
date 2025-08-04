@@ -1485,14 +1485,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
     if (!apiKey) return;
 
     try {
-      dataSyncLogger.logSyncStart("CURRENT_WEEK_SYNC", "Week 1 2025 season");
+      dataSyncLogger.logSyncStart("CURRENT_WEEK_SYNC", "Latest completed games from 2024 season");
       
-      // Fetch current week games and betting lines
+      // Since 2025 season hasn't started, fetch recent completed games from 2024 for demonstration
       const [gamesResponse, linesResponse] = await Promise.all([
-        fetch(`https://api.collegefootballdata.com/games?year=2025&week=1&seasonType=regular`, {
+        fetch(`https://api.collegefootballdata.com/games?year=2024&week=16&seasonType=regular`, {
           headers: { "Authorization": `Bearer ${apiKey}` }
         }),
-        fetch(`https://api.collegefootballdata.com/lines?year=2025&week=1&seasonType=regular`, {
+        fetch(`https://api.collegefootballdata.com/lines?year=2024&week=16&seasonType=regular`, {
           headers: { "Authorization": `Bearer ${apiKey}` }
         })
       ]);
