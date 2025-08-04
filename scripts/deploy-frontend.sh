@@ -20,6 +20,7 @@ docker-compose --env-file .env.production exec app sh -c "
     echo '✅ Frontend deployed from dist'
   fi
 
+
   echo 'Frontend files deployed:'
   ls -la /app/server/public/
 "
