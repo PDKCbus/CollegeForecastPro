@@ -12,9 +12,9 @@ RUN npm install && npm cache clean --force
 # Copy source code
 COPY . .
 
-# Build both frontend and backend
+# Build frontend only
 ENV NODE_ENV=production
-RUN npx vite build && npx esbuild server/index.ts --platform=node --packages=external --bundle --format=esm --outdir=dist
+RUN npx vite build
 
 # Copy frontend build to server public directory
 RUN mkdir -p server/public
@@ -35,4 +35,4 @@ HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
   CMD curl -f http://localhost:5000/api/health || exit 1
 
 # Start the application
-CMD ["node", "dist/index.js"]
+CMD ["npx", "tsx", "server/index.ts"]
