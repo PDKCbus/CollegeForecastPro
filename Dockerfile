@@ -39,7 +39,7 @@ RUN adduser --system --uid 1001 nextjs
 # Copy built application and dependencies
 COPY --from=builder /app/dist ./dist
 COPY --from=builder /app/server/public ./server/public
-COPY --from=builder /app/node_modules ./node_modules
+COPY --from=deps /app/node_modules ./node_modules
 COPY --from=builder /app/package*.json ./
 
 # Set proper permissions
