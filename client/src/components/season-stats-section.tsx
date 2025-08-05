@@ -1,5 +1,5 @@
 import { Card, CardContent } from "@/components/ui/card";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery } from "@/lib/queryClient";
 import { TrendingUp, Target, Trophy, Zap, Star } from "lucide-react";
 
 interface RickRecord {
