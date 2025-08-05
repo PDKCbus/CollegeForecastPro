@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useMutation } from "@tanstack/react-query";
+import { useMutation } from "@/lib/queryClient";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -19,13 +19,7 @@ export function Contact() {
 
   const contactMutation = useMutation({
     mutationFn: async (data: typeof formData) => {
-      return apiRequest('/api/contact', {
-        method: 'POST',
-        body: JSON.stringify(data),
-        headers: {
-          'Content-Type': 'application/json'
-        }
-      });
+      return apiRequest('POST', '/api/contact', data);
     },
     onSuccess: () => {
       toast({
@@ -67,7 +61,7 @@ export function Contact() {
           <div className="text-center mb-8">
             <h1 className="text-4xl font-bold text-white mb-4">Contact Us</h1>
             <p className="text-white/70 text-lg">
-              Have questions about Rick's Picks or need help with our college football analytics? 
+              Have questions about Rick's Picks or need help with our college football analytics?
               We'd love to hear from you.
             </p>
           </div>
@@ -166,8 +160,8 @@ export function Contact() {
                   />
                 </div>
 
-                <Button 
-                  type="submit" 
+                <Button
+                  type="submit"
                   className="w-full"
                   disabled={contactMutation.isPending}
                 >

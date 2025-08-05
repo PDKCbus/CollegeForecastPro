@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery } from "@/lib/queryClient";
 import { useLocation } from "wouter";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -99,122 +99,12 @@ export default function GameAnalysis() {
     return specificGame;
   }, [upcomingGames, selectedGameId, specificGame]);
 
-  // Algorithm-based prediction system
+  // Use server-side algorithm prediction instead of hardcoded frontend logic
   const generateAnalytics = () => {
-    if (!selectedGame) return null;
+    if (!selectedGame || !gameAnalysis) return null;
 
-    // Extract team data for algorithm
-    const homeTeam = selectedGame.homeTeam;
-    const awayTeam = selectedGame.awayTeam;
-    const vegasSpread = selectedGame.spread || 0;
-    const vegasTotal = selectedGame.overUnder || 50;
-
-    // Algorithm: Home field advantage (3-7 points)
-    const homeFieldAdvantage = 4.5;
-    
-    // Algorithm: Conference strength factor (Big 12, SEC get bonuses)
-    const getConferenceStrength = (conf: string) => {
-      const strongConfs = ['SEC', 'Big Ten', 'Big 12', 'ACC'];
-      return strongConfs.includes(conf) ? 2 : 0;
-    };
-
-    // Algorithm: Ranking bonus (if ranked)
-    const getRankingBonus = (rank?: number) => {
-      if (!rank) return 0;
-      if (rank <= 5) return 5;
-      if (rank <= 15) return 3;
-      if (rank <= 25) return 1;
-      return 0;
-    };
-
-    const homeConfBonus = getConferenceStrength(homeTeam?.conference || '');
-    const awayConfBonus = getConferenceStrength(awayTeam?.conference || '');
-    const homeRankBonus = getRankingBonus(homeTeam?.rank || undefined);
-    const awayRankBonus = getRankingBonus(awayTeam?.rank || undefined);
-
-    // Calculate our spread prediction
-    const ourSpread = homeFieldAdvantage + homeConfBonus - awayConfBonus + homeRankBonus - awayRankBonus;
-    const finalSpread = Math.round(ourSpread * 2) / 2; // Round to nearest 0.5
-    
-
-
-    // Calculate our over/under prediction (base + offensive factors)
-    const offensiveFactor = (homeConfBonus + awayConfBonus) * 1.5; // Strong conferences = higher scoring
-    const ourTotal = 47 + offensiveFactor + (homeRankBonus + awayRankBonus) * 0.5;
-    const finalTotal = Math.round(ourTotal);
-
-    // Win probability based on spread differential
-    const spreadDiff = finalSpread - (vegasSpread || 0);
-    const baseProbability = 0.53; // Home team baseline
-    const probability = Math.min(0.85, Math.max(0.15, baseProbability + (spreadDiff * 0.02)));
-
-    // Confidence based on how much we differ from Vegas
-    const spreadConfidence = Math.abs(finalSpread - (vegasSpread || 0)) * 10;
-    const totalConfidence = Math.abs(finalTotal - vegasTotal) * 5;
-    const confidence = Math.min(95, Math.max(65, 75 + spreadConfidence + totalConfidence));
-
-    // Risk assessment
-    const getRiskLevel = (): 'Low' | 'Medium' | 'High' => {
-      if (confidence >= 85) return 'Low';
-      if (confidence >= 75) return 'Medium';
-      return 'High';
-    };
-
-    return {
-      predictiveMetrics: {
-        winProbability: Math.round(probability * 100),
-        confidence: Math.round(confidence),
-        spreadPrediction: finalSpread,
-        overUnderPrediction: finalTotal,
-        keyFactors: [
-          `Home field advantage (+${homeFieldAdvantage})`,
-          homeConfBonus > 0 ? `${homeTeam?.conference} conference strength` : null,
-          awayConfBonus > 0 ? `${awayTeam?.conference} conference strength` : null,
-          homeRankBonus > 0 ? `#${homeTeam?.rank} ranking bonus` : null,
-          awayRankBonus > 0 ? `#${awayTeam?.rank} ranking bonus` : null
-        ].filter(Boolean),
-        riskLevel: getRiskLevel(),
-        recommendation: `${Math.abs(finalSpread - (vegasSpread || 0)) > 2 ? 'Strong' : 'Moderate'} algorithmic edge detected`
-      },
-      homeTeamAnalytics: {
-        offensiveRating: Math.round(Math.random() * 40 + 60), // 60-100
-        defensiveRating: Math.round(Math.random() * 40 + 60),
-        strengthOfSchedule: Math.round(Math.random() * 30 + 70),
-        momentumScore: Math.round(Math.random() * 50 + 50),
-        homeFieldAdvantage: Math.round(Math.random() * 20 + 80),
-        injuryImpact: Math.round(Math.random() * 30 + 70),
-        weatherFactor: Math.round(Math.random() * 20 + 80),
-        coachingEdge: Math.round(Math.random() * 40 + 60)
-      },
-      awayTeamAnalytics: {
-        offensiveRating: Math.round(Math.random() * 40 + 60),
-        defensiveRating: Math.round(Math.random() * 40 + 60),
-        strengthOfSchedule: Math.round(Math.random() * 30 + 70),
-        momentumScore: Math.round(Math.random() * 50 + 50),
-        homeFieldAdvantage: Math.round(Math.random() * 20 + 30), // Lower for away team
-        injuryImpact: Math.round(Math.random() * 30 + 70),
-        weatherFactor: Math.round(Math.random() * 20 + 80),
-        coachingEdge: Math.round(Math.random() * 40 + 60)
-      },
-      homeTeamStats: {
-        totalYardsPerGame: Math.round(Math.random() * 200 + 300),
-        pointsPerGame: Math.round(Math.random() * 20 + 20),
-        turnoverRatio: Math.round((Math.random() - 0.5) * 2 * 10) / 10,
-        thirdDownConversion: Math.round(Math.random() * 30 + 35),
-        redZoneEfficiency: Math.round(Math.random() * 40 + 60),
-        timeOfPossession: Math.round(Math.random() * 6 + 27),
-        specialTeamsRating: Math.round(Math.random() * 30 + 70)
-      },
-      awayTeamStats: {
-        totalYardsPerGame: Math.round(Math.random() * 200 + 300),
-        pointsPerGame: Math.round(Math.random() * 20 + 20),
-        turnoverRatio: Math.round((Math.random() - 0.5) * 2 * 10) / 10,
-        thirdDownConversion: Math.round(Math.random() * 30 + 35),
-        redZoneEfficiency: Math.round(Math.random() * 40 + 60),
-        timeOfPossession: Math.round(Math.random() * 6 + 27),
-        specialTeamsRating: Math.round(Math.random() * 30 + 70)
-      }
-    };
+    // Use the server's authentic prediction data that includes neutral site detection
+    return gameAnalysis;
   };
 
   const algorithmData = generateAnalytics();
@@ -253,9 +143,9 @@ export default function GameAnalysis() {
                 {value}{unit}
               </p>
               {teamLogo && (
-                <img 
-                  src={teamLogo} 
-                  alt="Favored team" 
+                <img
+                  src={teamLogo}
+                  alt="Favored team"
                   className="w-8 h-8 object-contain"
                 />
               )}
@@ -264,9 +154,9 @@ export default function GameAnalysis() {
           <div className="flex items-center space-x-2">
             <Icon className="h-4 w-4 text-muted-foreground" />
             {trend && (
-              trend === 'up' ? 
+              trend === 'up' ?
                 <TrendingUp className="h-4 w-4 text-green-600" /> :
-              trend === 'down' ? 
+              trend === 'down' ?
                 <TrendingDown className="h-4 w-4 text-red-600" /> :
                 <Activity className="h-4 w-4 text-gray-600" />
             )}
@@ -314,7 +204,7 @@ export default function GameAnalysis() {
             </button>
           </Link>
         </div>
-        
+
         <div className="flex items-center space-x-4">
           <Select value={selectedGameId} onValueChange={setSelectedGameId}>
             <SelectTrigger className="w-full sm:w-80">
@@ -338,17 +228,17 @@ export default function GameAnalysis() {
           {/* Game Header */}
           <Card>
             <CardHeader>
-              <div className="flex items-center justify-between">
-                <div>
-                  <CardTitle className="text-2xl">
+              <div className="flex items-start justify-between gap-4">
+                <div className="flex-1 min-w-0">
+                  <CardTitle className="text-xl sm:text-2xl">
                     {selectedGame.awayTeam?.name} @ {selectedGame.homeTeam?.name}
                   </CardTitle>
                   <CardDescription>
                     Week {selectedGame.week} • {selectedGame.season} Season
                   </CardDescription>
                 </div>
-                <div className="text-right">
-                  <Badge className={getRiskColor(analysis.predictiveMetrics.riskLevel)}>
+                <div className="flex-shrink-0">
+                  <Badge className={`${getRiskColor(analysis.predictiveMetrics.riskLevel)} whitespace-nowrap px-3 py-1 text-sm`}>
                     {analysis.predictiveMetrics.riskLevel} Risk
                   </Badge>
                 </div>
@@ -360,11 +250,11 @@ export default function GameAnalysis() {
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
             <MetricCard
               title="Win Probability"
-              value={analysis.predictiveMetrics.winProbability}
+              value={analysis.predictiveMetrics.spreadPrediction > 0 ? analysis.predictiveMetrics.winProbability : 100 - analysis.predictiveMetrics.winProbability}
               unit="%"
               icon={Target}
               trend="up"
-              teamLogo={analysis.predictiveMetrics.winProbability > 50 ? selectedGame.homeTeam?.logoUrl || undefined : selectedGame.awayTeam?.logoUrl || undefined}
+              teamLogo={analysis.predictiveMetrics.spreadPrediction > 0 ? selectedGame.homeTeam?.logoUrl || undefined : selectedGame.awayTeam?.logoUrl || undefined}
             />
             <MetricCard
               title="Confidence"
@@ -374,8 +264,9 @@ export default function GameAnalysis() {
             />
             <MetricCard
               title="Spread Prediction"
-              value={analysis.predictiveMetrics.spreadPrediction > 0 ? `+${formatSpread(analysis.predictiveMetrics.spreadPrediction)}` : formatSpread(analysis.predictiveMetrics.spreadPrediction)}
+              value={analysis.predictiveMetrics.spreadPrediction > 0 ? `-${formatSpread(analysis.predictiveMetrics.spreadPrediction)}` : `+${formatSpread(Math.abs(analysis.predictiveMetrics.spreadPrediction))}`}
               icon={BarChart3}
+              teamLogo={analysis.predictiveMetrics.spreadPrediction > 0 ? selectedGame.homeTeam?.logoUrl || undefined : selectedGame.awayTeam?.logoUrl || undefined}
             />
             <MetricCard
               title="O/U Prediction"
@@ -404,35 +295,89 @@ export default function GameAnalysis() {
                     <div>
                       <div className="text-sm text-muted-foreground">Vegas Line</div>
                       <div className="font-medium">
-                        {selectedGame.homeTeam?.name} {selectedGame.spread ? (selectedGame.spread > 0 ? `+${formatSpread(selectedGame.spread)}` : formatSpread(selectedGame.spread)) : 'No line'}
+                        {selectedGame.spread ? (
+                          selectedGame.spread < 0
+                            ? `${selectedGame.homeTeam?.name} ${formatSpread(selectedGame.spread)}`
+                            : `${selectedGame.awayTeam?.name} -${formatSpread(selectedGame.spread)}`
+                        ) : 'No line'}
                       </div>
                     </div>
                     <div>
                       <div className="text-sm text-muted-foreground">Our Prediction</div>
                       <div className="font-medium">
-                        {selectedGame.homeTeam?.name} {analysis.predictiveMetrics.spreadPrediction > 0 ? `+${formatSpread(analysis.predictiveMetrics.spreadPrediction)}` : formatSpread(analysis.predictiveMetrics.spreadPrediction)}
+                        {analysis.predictiveMetrics.spreadPrediction > 0
+                          ? `${selectedGame.homeTeam?.name} -${formatSpread(analysis.predictiveMetrics.spreadPrediction)}`
+                          : `${selectedGame.awayTeam?.name} -${formatSpread(Math.abs(analysis.predictiveMetrics.spreadPrediction))}`
+                        }
                       </div>
                     </div>
                   </div>
                   {selectedGame.spread && (
                     <div className="flex justify-center">
-                      {Math.abs(analysis.predictiveMetrics.spreadPrediction - selectedGame.spread) >= 1.5 ? (
+                      {(() => {
+                        const vegasSpread = selectedGame.spread;
+                        const ourSpread = analysis.predictiveMetrics.spreadPrediction;
+
+                        // Check if teams are favored by different teams (major disagreement)
+                        // Database: spread=3.5 means away team (KSU) favored by 3.5
+                        // Algorithm: spread=1.75 means home team (ISU) favored by 1.75
+                        const vegasFavorsAway = vegasSpread > 0; // Positive spread = away team favored (KSU -3.5)
+                        const weFavorHome = ourSpread > 0; // Positive spread = home team favored (ISU -1.75)
+                        const differentTeamsFavored = vegasFavorsAway && weFavorHome; // One favors away, one favors home
+
+                        // Calculate total disagreement correctly
+                        const totalDisagreement = differentTeamsFavored
+                          ? Math.abs(vegasSpread) + Math.abs(ourSpread) // Different teams = add the spreads
+                          : Math.abs(vegasSpread - ourSpread); // Same team = difference in margin
+
+                        return totalDisagreement >= 2.0 || differentTeamsFavored;
+                      })() ? (
                         <Badge className={`${
                           analysis.predictiveMetrics.spreadPrediction > selectedGame.spread
                             ? 'bg-green-600 hover:bg-green-700'
                             : 'bg-blue-600 hover:bg-blue-700'
                         } text-white`}>
-                          {/* 
-                            If our prediction is HIGHER than Vegas (less negative), we think the favorite won't cover
-                            If our prediction is LOWER than Vegas (more negative), we think the favorite will cover more
-                          */}
-                          {analysis.predictiveMetrics.spreadPrediction > selectedGame.spread
-                            ? `Take ${selectedGame.awayTeam?.name} +${formatSpread(Math.abs(selectedGame.spread))}` // Take the underdog
-                            : `Take ${selectedGame.homeTeam?.name} ${formatSpread(selectedGame.spread)}` // Take the favorite
-                          }
+                          {(() => {
+                            const vegasSpread = selectedGame.spread;
+                            const ourSpread = analysis.predictiveMetrics.spreadPrediction;
+
+                            // Check if we disagree on the favorite
+                            const vegasFavorsAway = vegasSpread > 0; // Positive spread = away team favored (KSU -3.5)
+                            const weFavorHome = ourSpread > 0; // Positive spread = home team favored (ISU -1.75)
+                            const differentTeamsFavored = vegasFavorsAway && weFavorHome; // One favors away, one favors home
+
+                            // Calculate edge correctly
+                            const edge = differentTeamsFavored
+                              ? Math.abs(vegasSpread) + Math.abs(ourSpread) // Different teams = add spreads (e.g., 3.5 + 1.75 = 5.25)
+                              : Math.abs(vegasSpread - ourSpread); // Same team = difference in margin
+
+                            // Only recommend bets with significant edge (2+ points) or different teams favored
+                            if (edge >= 2.0 || differentTeamsFavored) {
+                              if (differentTeamsFavored) {
+                                // Complete disagreement: Vegas favors away team, we favor home team - major value
+                                const ourFavorite = selectedGame.homeTeam?.name; // We favor home team (ISU)
+                                const points = Math.abs(vegasSpread);
+                                return `Take ${ourFavorite} +${formatSpread(points)} - Major Value`;
+                              } else {
+                                // Same favorite, different margin
+                                if (Math.abs(ourSpread) < Math.abs(vegasSpread)) {
+                                  // Game will be closer - take underdog
+                                  const underdog = vegasSpread < 0 ? selectedGame.awayTeam?.name : selectedGame.homeTeam?.name;
+                                  const points = Math.abs(vegasSpread);
+                                  return `Take ${underdog} +${formatSpread(points)} - Game stays closer`;
+                                } else {
+                                  // Favorite covers bigger - lay the points
+                                  const favorite = vegasSpread < 0 ? selectedGame.homeTeam?.name : selectedGame.awayTeam?.name;
+                                  const points = Math.abs(vegasSpread);
+                                  return `Take ${favorite} -${formatSpread(points)} - Larger margin expected`;
+                                }
+                              }
+                            }
+                            return "No Strong Edge";
+                          })()}
                         </Badge>
                       ) : (
-                        <Badge variant="secondary">No Strong Edge</Badge>
+                        <Badge variant="secondary">No Strong Edge - Vegas Close to Our Prediction</Badge>
                       )}
                     </div>
                   )}
@@ -496,7 +441,7 @@ export default function GameAnalysis() {
                           </TooltipTrigger>
                           <TooltipContent className="max-w-sm">
                             <p>
-                              {selectedGame?.week === 1 
+                              {selectedGame?.week === 1
                                 ? "Week 1 predictions use preseason rankings, recruiting data, and returning player projections. Analytics become more accurate after games are played."
                                 : "Analytics based on current season performance, updated after each game with real statistics and momentum scoring."
                               }
@@ -519,7 +464,7 @@ export default function GameAnalysis() {
                       <h4 className="font-semibold text-red-600 text-sm sm:text-base">{selectedGame.awayTeam?.name} (Away)</h4>
                     </div>
                   </div>
-                  
+
                   {/* Analytics Bars */}
                   <div className="space-y-4">
                     <AnalyticsBar
@@ -691,7 +636,7 @@ export default function GameAnalysis() {
                       </div>
                       <p className="text-blue-700">{analysis.predictiveMetrics.recommendation}</p>
                     </div>
-                    
+
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                       <div className="text-center p-4 border rounded-lg">
                         <div className="text-2xl font-bold text-green-600">

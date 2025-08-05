@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery } from '@/lib/queryClient';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -15,12 +15,12 @@ interface PlayerInjuryPanelProps {
   awayTeamName: string;
 }
 
-export function PlayerInjuryPanel({ 
-  gameId, 
-  homeTeamId, 
-  awayTeamId, 
-  homeTeamName, 
-  awayTeamName 
+export function PlayerInjuryPanel({
+  gameId,
+  homeTeamId,
+  awayTeamId,
+  homeTeamName,
+  awayTeamName
 }: PlayerInjuryPanelProps) {
   const [activeTab, setActiveTab] = useState('injury-report');
 
@@ -118,11 +118,11 @@ export function PlayerInjuryPanel({
       </CardHeader>
       <CardContent>
         <Tabs value={activeTab} onValueChange={setActiveTab}>
-          <TabsList className="grid w-full grid-cols-4">
-            <TabsTrigger value="injury-report">Injury Report</TabsTrigger>
-            <TabsTrigger value="player-matchups">Key Matchups</TabsTrigger>
-            <TabsTrigger value="health-scores">Health Scores</TabsTrigger>
-            <TabsTrigger value="impact-analysis">Impact Analysis</TabsTrigger>
+          <TabsList className="grid w-full grid-cols-2 lg:grid-cols-4 h-auto">
+            <TabsTrigger value="injury-report" className="text-xs sm:text-sm px-2 py-1">Injury Report</TabsTrigger>
+            <TabsTrigger value="player-matchups" className="text-xs sm:text-sm px-2 py-1">Key Matchups</TabsTrigger>
+            <TabsTrigger value="health-scores" className="text-xs sm:text-sm px-2 py-1">Health Scores</TabsTrigger>
+            <TabsTrigger value="impact-analysis" className="text-xs sm:text-sm px-2 py-1">Impact Analysis</TabsTrigger>
           </TabsList>
 
           <TabsContent value="injury-report" className="space-y-4">
@@ -292,8 +292,8 @@ export function PlayerInjuryPanel({
                             {handicappingData.injuryImpact.home.healthScore}/10
                           </span>
                         </div>
-                        <Progress 
-                          value={handicappingData.injuryImpact.home.healthScore * 10} 
+                        <Progress
+                          value={handicappingData.injuryImpact.home.healthScore * 10}
                           className="h-2"
                         />
                       </div>
@@ -326,8 +326,8 @@ export function PlayerInjuryPanel({
                             {handicappingData.injuryImpact.away.healthScore}/10
                           </span>
                         </div>
-                        <Progress 
-                          value={handicappingData.injuryImpact.away.healthScore * 10} 
+                        <Progress
+                          value={handicappingData.injuryImpact.away.healthScore * 10}
                           className="h-2"
                         />
                       </div>
@@ -351,54 +351,71 @@ export function PlayerInjuryPanel({
           </TabsContent>
 
           <TabsContent value="impact-analysis" className="space-y-4">
-            {handicappingData && (
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2 text-sm">
-                    <AlertTriangle className="h-4 w-4" />
-                    Handicapping Edge Analysis
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2 text-sm">
+                  <AlertTriangle className="h-4 w-4" />
+                  Handicapping Edge Analysis
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                {handicappingData ? (
                   <div className="space-y-4">
                     <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
                       <span className="font-medium">Overall Handicapping Edge:</span>
-                      <Badge 
-                        variant={Math.abs(handicappingData.overallHandicappingEdge) >= 3 ? 'default' : 'secondary'}
+                      <Badge
+                        variant={Math.abs(handicappingData.overallHandicappingEdge || 0) >= 3 ? 'default' : 'secondary'}
                         className="text-sm"
                       >
-                        {handicappingData.overallHandicappingEdge > 0 ? '+' : ''}
-                        {handicappingData.overallHandicappingEdge.toFixed(1)}
+                        {(handicappingData.overallHandicappingEdge || 0) > 0 ? '+' : ''}
+                        {(handicappingData.overallHandicappingEdge || 0).toFixed(1)}
                       </Badge>
                     </div>
-                    
-                    <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+
+                    <div className="flex items-center justify-between p-4 bg-blue-50 rounded-lg">
                       <span className="font-medium">Confidence Level:</span>
                       <div className="flex items-center gap-2">
-                        <Progress value={handicappingData.confidenceLevel * 10} className="w-20 h-2" />
+                        <Progress
+                          value={(handicappingData.confidenceLevel || 0) * 10}
+                          className="w-20 h-3 bg-white"
+                        />
                         <span className="text-sm font-medium">
-                          {handicappingData.confidenceLevel}/10
+                          {(handicappingData.confidenceLevel || 0)}/10
                         </span>
                       </div>
                     </div>
 
-                    {handicappingData.keyFactors && handicappingData.keyFactors.length > 0 && (
+                    {handicappingData.keyFactors && handicappingData.keyFactors.length > 0 ? (
                       <div>
                         <h4 className="font-medium mb-2">Key Handicapping Factors:</h4>
                         <div className="space-y-2">
                           {handicappingData.keyFactors.map((factor: string, index: number) => (
-                            <div key={index} className="flex items-start gap-2 p-2 bg-yellow-50 rounded">
+                            <div key={index} className="flex items-start gap-2 p-3 bg-yellow-50 rounded-lg border">
                               <AlertTriangle className="h-4 w-4 text-yellow-600 mt-0.5" />
                               <span className="text-sm">{factor}</span>
                             </div>
                           ))}
                         </div>
                       </div>
+                    ) : (
+                      <div className="p-4 bg-green-50 rounded-lg border">
+                        <div className="flex items-center gap-2">
+                          <TrendingUp className="h-4 w-4 text-green-600" />
+                          <span className="text-sm font-medium">No significant handicapping factors identified</span>
+                        </div>
+                        <p className="text-xs text-green-600 mt-1">Both teams appear evenly matched based on current analysis</p>
+                      </div>
                     )}
                   </div>
-                </CardContent>
-              </Card>
-            )}
+                ) : (
+                  <div className="text-center py-8 text-gray-500">
+                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-2"></div>
+                    <p>Loading handicapping analysis...</p>
+                    <p className="text-sm">Analyzing player impact and injury data</p>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
           </TabsContent>
         </Tabs>
       </CardContent>

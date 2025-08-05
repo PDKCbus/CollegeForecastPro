@@ -1,4 +1,4 @@
-import { useQuery, useMutation } from "@tanstack/react-query";
+import { useQuery, useMutation } from "@/lib/queryClient";
 import { ImprovedHistoricalGameCard } from "@/components/improved-historical-game-card";
 import { FilterBar } from "@/components/filter-bar";
 import { useState, useEffect } from "react";
@@ -26,10 +26,10 @@ export default function Historical() {
         page: currentPage.toString(),
         limit: "20"
       });
-      
+
       params.append("season", selectedSeason);
       params.append("week", selectedWeek);
-      
+
       console.log(`Fetching historical games: ${params.toString()}`);
       const response = await fetch(`/api/games/historical?${params}`);
       if (!response.ok) throw new Error('Failed to fetch historical games');
@@ -62,7 +62,7 @@ export default function Historical() {
 
 
   const syncHistoricalMutation = useMutation({
-    mutationFn: () => 
+    mutationFn: () =>
       fetch("/api/sync-historical-data", { method: "POST" })
         .then(res => res.json()),
     onSuccess: () => {
@@ -137,7 +137,7 @@ export default function Historical() {
               </SelectContent>
             </Select>
           </div>
-          
+
           <div>
             <label className="block text-white/70 text-sm mb-2">Conference</label>
             <Select value={selectedConference} onValueChange={setSelectedConference}>
@@ -153,7 +153,7 @@ export default function Historical() {
               </SelectContent>
             </Select>
           </div>
-          
+
           <div>
             <label className="block text-white/70 text-sm mb-2">Week</label>
             <Select value={selectedWeek} onValueChange={(value) => { setSelectedWeek(value); setCurrentPage(0); }}>
@@ -169,7 +169,7 @@ export default function Historical() {
               </SelectContent>
             </Select>
           </div>
-          
+
           <div>
             <label className="block text-white/70 text-sm mb-2">Game Type</label>
             <Select value={selectedFilter} onValueChange={setSelectedFilter}>

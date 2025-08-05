@@ -1,15 +1,19 @@
 import { GameWithTeams } from "@/lib/types";
 import { SentimentDisplay } from "./sentiment-display";
 import { TeamPerformanceIndicators, TeamComparisonIndicator } from "./team-performance-indicators";
+import { FanSentiment } from "./fan-sentiment";
+import { SpreadExplainerTooltip } from "./spread-explainer-tooltip";
+import { SocialShare } from "./social-share";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
-import { Calendar, Clock, MapPin, MoreHorizontal, Twitter, TrendingUp, TrendingDown, BarChart3, Cloud, CloudRain, CloudSnow, Sun, Wind, Thermometer, Share2, Copy, Check } from "lucide-react";
-import { useQuery, useMutation } from "@tanstack/react-query";
+import { Calendar, Clock, MapPin, MoreHorizontal, Twitter, TrendingUp, TrendingDown, BarChart3, Cloud, CloudRain, CloudSnow, Sun, Wind, Thermometer, Share2, Copy, Check, Heart } from "lucide-react";
+import { useQuery, useMutation } from "@/lib/queryClient";
 import { useState } from "react";
 import { Link } from "wouter";
+import { useToast } from "@/hooks/use-toast";
 import type { SentimentAnalysis } from "@shared/schema";
 
 interface GameCardProps {
@@ -20,6 +24,7 @@ export function GameCard({ game }: GameCardProps) {
   const [sentimentDialogOpen, setSentimentDialogOpen] = useState(false);
   const [headToHeadDialogOpen, setHeadToHeadDialogOpen] = useState(false);
   const [linkCopied, setLinkCopied] = useState(false);
+  const { toast } = useToast();
 
   const formatDate = (dateString: Date) => {
     const date = new Date(dateString);
@@ -70,12 +75,19 @@ export function GameCard({ game }: GameCardProps) {
 
   const handleShareGame = async () => {
     const gameUrl = `${window.location.origin}/game-analysis?game=${game.id}`;
-    
+
     try {
       // Always copy to clipboard for consistent behavior
       await navigator.clipboard.writeText(gameUrl);
       setLinkCopied(true);
       setTimeout(() => setLinkCopied(false), 2000);
+
+      // Show success toast
+      toast({
+        title: "Link copied!",
+        description: "Game analysis link has been copied to your clipboard.",
+        duration: 3000,
+      });
     } catch (error) {
       // Fallback for browsers without clipboard API
       const textArea = document.createElement('textarea');
@@ -86,45 +98,21 @@ export function GameCard({ game }: GameCardProps) {
       document.body.removeChild(textArea);
       setLinkCopied(true);
       setTimeout(() => setLinkCopied(false), 2000);
+
+      // Show success toast
+      toast({
+        title: "Link copied!",
+        description: "Game analysis link has been copied to your clipboard.",
+        duration: 3000,
+      });
     }
   };
 
-  const getTwitterFavorite = () => {
-    if (!sentimentData || sentimentData.length === 0) {
-      return null;
-    }
-
-    const latestSentiment = sentimentData[0];
-    const sentimentScore = latestSentiment.sentimentScore;
-    
-    // Determine which team Twitter favors based on sentiment score
-    // Positive sentiment favors home team, negative favors away team
-    if (sentimentScore > 0.1) {
-      return {
-        team: game.homeTeam,
-        confidence: Math.min(Math.abs(sentimentScore) * 100, 85),
-        sentiment: 'positive'
-      };
-    } else if (sentimentScore < -0.1) {
-      return {
-        team: game.awayTeam,
-        confidence: Math.min(Math.abs(sentimentScore) * 100, 85),
-        sentiment: 'negative'
-      };
-    } else {
-      return {
-        team: null,
-        confidence: 50,
-        sentiment: 'neutral'
-      };
-    }
-  };
-
-  const twitterFavorite = getTwitterFavorite();
+  // Removed Twitter functionality due to API restrictions
 
   const getSpreadDisplay = () => {
     if (game.spread === null || game.spread === undefined) return "N/A";
-    
+
     const favoredTeam = game.spread > 0 ? game.awayTeam : game.homeTeam;
     return `${favoredTeam.abbreviation} -${formatSpread(Math.abs(game.spread))}`;
   };
@@ -165,7 +153,7 @@ export function GameCard({ game }: GameCardProps) {
     // Priority 1: Rick's personal picks (when available)
     if (predictionData?.ricksPick) {
       const pick = predictionData.ricksPick;
-      
+
       // Format Rick's spread pick
       if (pick.spreadPick && pick.spreadPick !== 'NO PLAY') {
         return {
@@ -175,7 +163,7 @@ export function GameCard({ game }: GameCardProps) {
           isRicksPick: true
         };
       }
-      
+
       // Format Rick's total pick if no spread pick
       if (pick.totalPick && pick.totalPick !== 'NO PLAY') {
         return {
@@ -186,69 +174,36 @@ export function GameCard({ game }: GameCardProps) {
         };
       }
     }
-    
-    // Priority 2: Basic algorithmic fallback (always available)
-    const homeFieldAdvantage = 4.5;
-    const conferenceBonus = {
-      'SEC': 2, 'Big Ten': 2, 'Big 12': 2, 'ACC': 2
-    };
-    
-    const homeRank = game.homeTeam.rank || 999;
-    const awayRank = game.awayTeam.rank || 999;
-    
-    const homeRankBonus = homeRank <= 5 ? 5 : homeRank <= 15 ? 3 : homeRank <= 25 ? 1 : 0;
-    const awayRankBonus = awayRank <= 5 ? 5 : awayRank <= 15 ? 3 : awayRank <= 25 ? 1 : 0;
-    
-    const homeConfBonus = conferenceBonus[game.homeTeam.conference as keyof typeof conferenceBonus] || 0;
-    const awayConfBonus = conferenceBonus[game.awayTeam.conference as keyof typeof conferenceBonus] || 0;
-    
-    const rickSpread = homeFieldAdvantage + homeRankBonus + homeConfBonus - awayRankBonus - awayConfBonus;
-    
-    // Determine algorithmic pick vs Vegas
-    if (game.spread && Math.abs(rickSpread - (-game.spread)) >= 1.5) {
-      const pointDifference = Math.abs(rickSpread - (-game.spread));
-      
-      // If Rick's spread is less than Vegas spread (game will be closer)
-      if (rickSpread > -game.spread) {
-        // Take the underdog getting points
-        const underdogTeam = game.spread < 0 ? game.awayTeam : game.homeTeam;
-        const points = formatSpread(Math.abs(game.spread));
+
+    // Priority 2: Use unified server prediction (algorithmic fallback)
+    const algorithmicPrediction = predictionData?.algorithmicPredictions?.[0];
+    if (algorithmicPrediction) {
+      // Check if prediction has a meaningful recommendation
+      if (algorithmicPrediction.spreadPick && algorithmicPrediction.spreadPick !== "No Strong Play") {
         return {
-          team: underdogTeam,
-          pick: `Take ${underdogTeam.abbreviation} +${points}`,
-          reason: `Algorithm thinks this will be closer than Vegas predicts`,
+          team: null, // Let the text describe the pick
+          pick: algorithmicPrediction.spreadPick,
+          reason: algorithmicPrediction.notes || "Data-driven algorithmic analysis",
           isRicksPick: false
         };
-      } else {
-        // Take the favorite laying points  
-        const favoriteTeam = game.spread < 0 ? game.homeTeam : game.awayTeam;
-        const points = formatSpread(Math.abs(game.spread));
+      }
+
+      // Handle "No Strong Play" case
+      if (algorithmicPrediction.notes && algorithmicPrediction.notes.includes("No Strong Play")) {
         return {
-          team: favoriteTeam,
-          pick: `Take ${favoriteTeam.abbreviation} -${points}`,
-          reason: `Algorithm thinks ${favoriteTeam.abbreviation} wins bigger than Vegas expects`,
+          team: null,
+          pick: "No Strong Play",
+          reason: "Algorithm assessment matches Vegas line - no significant edge",
           isRicksPick: false
         };
       }
     }
-    
-    // Over/Under pick
-    const totalPoints = 45 + (homeRankBonus + awayRankBonus) * 2;
-    if (game.overUnder && Math.abs(totalPoints - game.overUnder) >= 3) {
-      const pick = totalPoints > game.overUnder ? 'OVER' : 'UNDER';
-      return {
-        team: null,
-        pick: `${pick} ${game.overUnder.toFixed(1)}`,
-        reason: `Algorithm predicts ${totalPoints.toFixed(1)} total points`,
-        isRicksPick: false
-      };
-    }
-    
-    // Default fallback
+
+    // Final fallback if no server prediction available
     return {
-      team: game.homeTeam,
-      pick: `Take ${game.homeTeam.abbreviation} (Home field advantage)`,
-      reason: 'Home field advantage',
+      team: null,
+      pick: "Analysis Pending",
+      reason: "Algorithmic analysis in progress",
       isRicksPick: false
     };
   };
@@ -265,8 +220,8 @@ export function GameCard({ game }: GameCardProps) {
     }
 
     // Check if we have any actual weather data
-    const hasWeatherData = game.temperature !== null || 
-                          game.windSpeed !== null || 
+    const hasWeatherData = game.temperature !== null ||
+                          game.windSpeed !== null ||
                           game.weatherCondition !== null ||
                           game.precipitation !== null;
 
@@ -336,7 +291,7 @@ export function GameCard({ game }: GameCardProps) {
 
   return (
     <div className="game-card bg-gray-800/30 border border-gray-700/50 rounded-xl p-4 transition-all hover:bg-gray-800/40">
-      <div className="bg-surface rounded-xl overflow-hidden shadow-lg">
+      <div className="bg-surface rounded-xl overflow-hidden shadow-lg relative">
         <div className="p-5">
           <div className="text-sm text-white/70 mb-2 flex justify-between items-center">
           <div>{formatDate(game.startDate)}</div>
@@ -345,13 +300,57 @@ export function GameCard({ game }: GameCardProps) {
             <div>{formatTime(game.startDate)} ET</div>
           </div>
         </div>
-        
+
+        {/* Venue and Weather Info */}
+        <div className="text-center mb-3">
+          <div className="text-white/60 text-xs mb-1 flex items-center justify-center gap-1">
+            {(() => {
+              // Check for international venues
+              const stadium = game.stadium || '';
+              if (stadium === 'Aviva Stadium') {
+                return <span>🇮🇪</span>; // Ireland flag
+              } else if (stadium === 'Wembley Stadium' || stadium === 'Tottenham Hotspur Stadium') {
+                return <span>🏴󠁧󠁢󠁥󠁮󠁧󠁿</span>; // England flag
+              } else if (stadium === 'Allianz Arena') {
+                return <span>🇩🇪</span>; // Germany flag
+              } else if (stadium === 'Estadio Azteca') {
+                return <span>🇲🇽</span>; // Mexico flag
+              } else {
+                return <span>🏟️</span>; // Default stadium emoji
+              }
+            })()}
+            <span>{game.stadium || 'Stadium TBD'}</span>
+          </div>
+          {(() => {
+            // Show location information
+            const stadium = game.stadium || '';
+            const location = game.location || '';
+
+            // For international venues, show city and country
+            if (stadium === 'Aviva Stadium') {
+              return <div className="text-white/50 text-xs">Dublin, Ireland</div>;
+            } else if (stadium === 'Wembley Stadium' || stadium === 'Tottenham Hotspur Stadium') {
+              return <div className="text-white/50 text-xs">London, England</div>;
+            } else if (stadium === 'Allianz Arena') {
+              return <div className="text-white/50 text-xs">Munich, Germany</div>;
+            } else if (stadium === 'Estadio Azteca') {
+              return <div className="text-white/50 text-xs">Mexico City, Mexico</div>;
+            } else if (location && location !== stadium && location !== 'TBD') {
+              // Show location if it's different from stadium name and not TBD
+              return <div className="text-white/50 text-xs">{location}</div>;
+            } else if (game.isDome) {
+              return <div className="text-white/50 text-xs">Indoor • Climate Controlled</div>;
+            }
+            return null;
+          })()}
+        </div>
+
         <div className="flex justify-between items-center">
           <div className="flex items-center space-x-3">
-            <img 
-              src={game.awayTeam.logoUrl || ""} 
-              alt={game.awayTeam.name} 
-              className="team-logo w-[45px] h-[45px] object-contain" 
+            <img
+              src={game.awayTeam.logoUrl || ""}
+              alt={game.awayTeam.name}
+              className="team-logo w-[45px] h-[45px] object-contain"
             />
             <div className="flex-1">
               <div className="flex items-center gap-2">
@@ -367,13 +366,13 @@ export function GameCard({ game }: GameCardProps) {
           </div>
           <div className="font-bold text-xl">{formatTeamRecord(game.awayTeam.wins || 0, game.awayTeam.losses || 0)}</div>
         </div>
-        
+
         <div className="flex justify-between items-center mt-4">
           <div className="flex items-center space-x-3">
-            <img 
-              src={game.homeTeam.logoUrl || ""} 
-              alt={game.homeTeam.name} 
-              className="team-logo w-[45px] h-[45px] object-contain" 
+            <img
+              src={game.homeTeam.logoUrl || ""}
+              alt={game.homeTeam.name}
+              className="team-logo w-[45px] h-[45px] object-contain"
             />
             <div className="flex-1">
               <div className="flex items-center gap-2">
@@ -389,45 +388,58 @@ export function GameCard({ game }: GameCardProps) {
           </div>
           <div className="font-bold text-xl">{formatTeamRecord(game.homeTeam.wins || 0, game.homeTeam.losses || 0)}</div>
         </div>
-        
+
         <div className="mt-4 pt-3 border-t border-surface-light">
           {/* Team Comparison Indicator */}
           <div className="mb-3">
             <TeamComparisonIndicator homeTeam={game.homeTeam} awayTeam={game.awayTeam} />
           </div>
-          
+
           <div className="flex justify-between mb-3">
-            <div className="flex space-x-2">
-              {(() => {
-                const ricksPickData = getRicksPickData();
-                const spreadBgColor = ricksPickData.hasSpreadPick ? 'bg-blue-600' : 'bg-surface-light';
-                const totalBgColor = ricksPickData.hasTotalPick ? 'bg-blue-600' : 'bg-surface-light';
-                
-                return (
-                  <>
-                    <div className={`text-center px-4 py-3 ${spreadBgColor} rounded min-w-[110px]`}>
-                      <div className="text-white/60 text-xs">SPREAD</div>
-                      <div className="font-bold text-white text-base">{getSpreadDisplay()}</div>
-                      {ricksPickData.hasSpreadPick && (
-                        <div className="text-xs mt-1">
-                          <span className="text-blue-200">Rick:</span>
-                          <span className="text-white/90"> {ricksPickData.spreadPick}</span>
+            <div className="flex justify-center flex-1">
+              <div className="flex space-x-2">
+                {(() => {
+                  const ricksPickData = getRicksPickData();
+                  const spreadBgColor = ricksPickData.hasSpreadPick ? 'bg-blue-600' : 'bg-surface-light';
+                  const totalBgColor = ricksPickData.hasTotalPick ? 'bg-blue-600' : 'bg-surface-light';
+
+                  return (
+                    <>
+                      <div className={`text-center px-4 py-3 ${spreadBgColor} rounded min-w-[110px]`}>
+                        <div className="text-white/60 text-xs flex items-center justify-center gap-1">
+                          SPREAD
+                          <SpreadExplainerTooltip
+                            spread={game.spread}
+                            homeTeam={game.homeTeam.name}
+                            awayTeam={game.awayTeam.name}
+                            homeScore={game.homeTeamScore}
+                            awayScore={game.awayTeamScore}
+                            isCompleted={game.completed}
+                            className="ml-1"
+                          />
                         </div>
-                      )}
-                    </div>
-                    <div className={`text-center px-4 py-3 ${totalBgColor} rounded min-w-[110px]`}>
-                      <div className="text-white/60 text-xs">O/U</div>
-                      <div className="font-bold text-white text-base">{game.overUnder?.toFixed(1) || "N/A"}</div>
-                      {ricksPickData.hasTotalPick && (
-                        <div className="text-xs mt-1">
-                          <span className="text-blue-200">Rick:</span>
-                          <span className="text-white/90"> {ricksPickData.totalPick}</span>
-                        </div>
-                      )}
-                    </div>
-                  </>
-                );
-              })()}
+                        <div className="font-bold text-white text-base">{getSpreadDisplay()}</div>
+                        {ricksPickData.hasSpreadPick && (
+                          <div className="text-xs mt-1">
+                            <span className="text-blue-200">Rick:</span>
+                            <span className="text-white/90"> {ricksPickData.spreadPick}</span>
+                          </div>
+                        )}
+                      </div>
+                      <div className={`text-center px-4 py-3 ${totalBgColor} rounded min-w-[110px]`}>
+                        <div className="text-white/60 text-xs">O/U</div>
+                        <div className="font-bold text-white text-base">{game.overUnder?.toFixed(1) || "N/A"}</div>
+                        {ricksPickData.hasTotalPick && (
+                          <div className="text-xs mt-1">
+                            <span className="text-blue-200">Rick:</span>
+                            <span className="text-white/90"> {ricksPickData.totalPick}</span>
+                          </div>
+                        )}
+                      </div>
+                    </>
+                  );
+                })()}
+              </div>
             </div>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
@@ -436,26 +448,14 @@ export function GameCard({ game }: GameCardProps) {
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="bg-surface border-surface-light">
-                <DropdownMenuItem 
-                  onClick={() => {
-                    if (sentimentData.length === 0) {
-                      analyzeSentimentMutation.mutate();
-                    }
-                    setSentimentDialogOpen(true);
-                  }}
-                  className="text-white hover:bg-surface-light cursor-pointer"
-                >
-                  <Twitter className="mr-2 h-4 w-4" />
-                  See what Twitter/X thinks
-                </DropdownMenuItem>
-                <DropdownMenuItem 
+                <DropdownMenuItem
                   onClick={() => setHeadToHeadDialogOpen(true)}
                   className="text-white hover:bg-surface-light cursor-pointer"
                 >
                   <BarChart3 className="mr-2 h-4 w-4" />
                   View Head-to-Head History
                 </DropdownMenuItem>
-                <DropdownMenuItem 
+                <DropdownMenuItem
                   onClick={handleShareGame}
                   className="text-white hover:bg-surface-light cursor-pointer"
                 >
@@ -474,7 +474,17 @@ export function GameCard({ game }: GameCardProps) {
               </DropdownMenuContent>
             </DropdownMenu>
           </div>
-          
+
+          {/* Fan Sentiment Section - Currently hidden but code preserved for future use */}
+          {/* <div className="mb-3">
+            <FanSentiment
+              gameId={game.id}
+              homeTeam={game.homeTeam.abbreviation}
+              awayTeam={game.awayTeam.abbreviation}
+              compact={true}
+            />
+          </div> */}
+
           {/* Rick's Pick Section */}
           {(() => {
             const ricksPick = getRicksPick();
@@ -483,7 +493,7 @@ export function GameCard({ game }: GameCardProps) {
               const headerText = isRicksPick ? "🏈 RICK'S PICK" : "🤓 ANALYSIS PICK";
               const bgColor = isRicksPick ? "bg-blue-600 border-blue-500" : "bg-slate-600 border-slate-500";
               const textColor = isRicksPick ? "text-blue-100" : "text-slate-100";
-              
+
               return (
                 <div className={`${bgColor} border rounded-lg p-3 mb-3`}>
                   <div className="text-center">
@@ -504,14 +514,36 @@ export function GameCard({ game }: GameCardProps) {
             return null;
           })()}
 
-          {/* Full Analysis Button */}
-          <div className="mt-3">
-            <Link href={`/game-analysis?game=${game.id}`}>
+          {/* Action Buttons */}
+          <div className="mt-3 flex gap-2">
+            <Link href={`/game-analysis?game=${game.id}`} className="flex-1">
               <Button className="w-full bg-accent hover:bg-accent/90 text-black font-medium">
                 <BarChart3 className="mr-2 h-4 w-4" />
                 Full Analysis
               </Button>
             </Link>
+            <div className="flex-1">
+              <SocialShare
+                game={game}
+                prediction={(() => {
+                  // Use the same algorithm as game analysis page for consistency
+                  const ricksPick = getRicksPick();
+                  if (ricksPick && !ricksPick.isRicksPick) {
+                    // Convert algorithmic pick to SocialShare format
+                    return {
+                      spreadPick: ricksPick.pick,
+                      overUnderPick: undefined, // Will be added when we have O/U logic
+                      confidence: 0.70 // Default algorithmic confidence
+                    };
+                  }
+                  return undefined;
+                })()}
+                ricksPick={predictionData?.ricksPick ? {
+                  spreadPick: predictionData.ricksPick.spreadPick,
+                  overUnderPick: predictionData.ricksPick.overUnderPick
+                } : undefined}
+              />
+            </div>
           </div>
         </div>
       </div>
@@ -526,7 +558,7 @@ export function GameCard({ game }: GameCardProps) {
               What Twitter/X Thinks
             </DialogTitle>
           </DialogHeader>
-          
+
           <div className="space-y-4">
             {analyzeSentimentMutation.isPending ? (
               <div className="text-center py-6">
@@ -537,7 +569,7 @@ export function GameCard({ game }: GameCardProps) {
               <div className="text-center py-6">
                 <Twitter className="h-12 w-12 text-white/40 mx-auto mb-3" />
                 <div className="text-white/70 mb-4">No sentiment data available yet</div>
-                <Button 
+                <Button
                   onClick={() => analyzeSentimentMutation.mutate()}
                   className="bg-blue-500 hover:bg-blue-600"
                 >
@@ -545,90 +577,18 @@ export function GameCard({ game }: GameCardProps) {
                   Analyze Twitter Sentiment
                 </Button>
               </div>
-            ) : twitterFavorite ? (
+            ) : (
               <div className="space-y-4">
-                {/* Game Matchup */}
-                <div className="text-center">
-                  <div className="text-sm text-white/70 mb-2">
-                    {game.awayTeam.abbreviation} @ {game.homeTeam.abbreviation}
-                  </div>
-                  <div className="text-xs text-white/50">
-                    {formatDate(game.startDate)} • {formatTime(game.startDate)} ET
+                {/* Twitter/X API is no longer accessible - show message */}
+                <div className="text-center py-6">
+                  <Twitter className="h-12 w-12 text-white/40 mx-auto mb-3" />
+                  <div className="text-white/70 mb-2">Twitter/X API Access Restricted</div>
+                  <div className="text-sm text-white/50">
+                    Social media sentiment analysis is temporarily unavailable due to API restrictions.
                   </div>
                 </div>
-
-                {/* Twitter Favorite */}
-                {twitterFavorite.sentiment === 'neutral' ? (
-                  <div className="text-center py-4">
-                    <div className="w-16 h-16 bg-surface-light rounded-full flex items-center justify-center mx-auto mb-3">
-                      <span className="text-2xl">🤷</span>
-                    </div>
-                    <div className="font-semibold text-lg">Too Close to Call</div>
-                    <div className="text-white/70 text-sm">
-                      Twitter sentiment is evenly split
-                    </div>
-                  </div>
-                ) : (
-                  <div className="text-center py-4">
-                    <div className="flex items-center justify-center mb-3">
-                      <img 
-                        src={twitterFavorite.team?.logoUrl || ""} 
-                        alt={twitterFavorite.team?.name}
-                        className="w-16 h-16 object-contain"
-                      />
-                    </div>
-                    <div className="font-semibold text-lg mb-1">
-                      Twitter Favors {twitterFavorite.team?.name}
-                    </div>
-                    <div className="flex items-center justify-center gap-1 mb-2">
-                      {twitterFavorite.sentiment === 'positive' ? (
-                        <TrendingUp className="h-4 w-4 text-green-400" />
-                      ) : (
-                        <TrendingDown className="h-4 w-4 text-red-400" />
-                      )}
-                      <span className="text-white/70 text-sm">
-                        {Math.round(twitterFavorite.confidence)}% confidence
-                      </span>
-                    </div>
-                    <div className="text-xs text-white/50">
-                      Based on recent Twitter activity and sentiment analysis
-                    </div>
-                  </div>
-                )}
-
-                {/* Sentiment Stats */}
-                {sentimentData[0] && (
-                  <div className="bg-surface-light rounded-lg p-3">
-                    <div className="text-sm font-medium mb-2">Sentiment Breakdown</div>
-                    <div className="grid grid-cols-3 gap-2 text-xs">
-                      <div className="text-center">
-                        <div className="text-green-400 font-medium">
-                          {sentimentData[0].positiveCount}
-                        </div>
-                        <div className="text-white/60">Positive</div>
-                      </div>
-                      <div className="text-center">
-                        <div className="text-white/70 font-medium">
-                          {sentimentData[0].neutralCount}
-                        </div>
-                        <div className="text-white/60">Neutral</div>
-                      </div>
-                      <div className="text-center">
-                        <div className="text-red-400 font-medium">
-                          {sentimentData[0].negativeCount}
-                        </div>
-                        <div className="text-white/60">Negative</div>
-                      </div>
-                    </div>
-                    <div className="mt-2 pt-2 border-t border-surface text-center">
-                      <div className="text-xs text-white/50">
-                        {sentimentData[0].totalTweets} tweets analyzed
-                      </div>
-                    </div>
-                  </div>
-                )}
               </div>
-            ) : null}
+            )}
           </div>
         </DialogContent>
       </Dialog>
@@ -642,14 +602,14 @@ export function GameCard({ game }: GameCardProps) {
               Head-to-Head History
             </DialogTitle>
           </DialogHeader>
-          
+
           <div className="space-y-4">
             {isHeadToHeadLoading ? (
               <div className="text-center py-6">
                 <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-accent mx-auto mb-2"></div>
                 <div className="text-white/70">Loading historical matchups...</div>
               </div>
-            ) : headToHeadData && headToHeadData.games?.length > 0 ? (
+            ) : headToHeadData && Array.isArray(headToHeadData.games) && headToHeadData.games.length > 0 ? (
               <>
                 {/* Series Summary */}
                 <div className="bg-surface-light rounded-lg p-4">
@@ -658,31 +618,31 @@ export function GameCard({ game }: GameCardProps) {
                       {game.awayTeam.name} vs {game.homeTeam.name}
                     </div>
                     <div className="text-sm text-white/70">
-                      All-Time Series • {headToHeadData.totalGames} games since 2009
+                      All-Time Series • {headToHeadData.totalGames || 0} games since 2009
                     </div>
                   </div>
-                  
+
                   <div className="grid grid-cols-2 gap-4">
                     <div className="text-center">
                       <div className="flex items-center justify-center mb-2">
-                        <img 
-                          src={game.awayTeam.logoUrl || ""} 
+                        <img
+                          src={game.awayTeam.logoUrl || ""}
                           alt={game.awayTeam.name}
                           className="w-12 h-12 object-contain"
                         />
                       </div>
-                      <div className="font-bold text-xl">{headToHeadData.awayTeamWins}</div>
+                      <div className="font-bold text-xl">{headToHeadData.awayTeamWins || 0}</div>
                       <div className="text-xs text-white/60">Wins</div>
                     </div>
                     <div className="text-center">
                       <div className="flex items-center justify-center mb-2">
-                        <img 
-                          src={game.homeTeam.logoUrl || ""} 
+                        <img
+                          src={game.homeTeam.logoUrl || ""}
                           alt={game.homeTeam.name}
                           className="w-12 h-12 object-contain"
                         />
                       </div>
-                      <div className="font-bold text-xl">{headToHeadData.homeTeamWins}</div>
+                      <div className="font-bold text-xl">{headToHeadData.homeTeamWins || 0}</div>
                       <div className="text-xs text-white/60">Wins</div>
                     </div>
                   </div>
@@ -690,9 +650,9 @@ export function GameCard({ game }: GameCardProps) {
 
                 {/* Recent Games */}
                 <div>
-                  <div className="text-sm font-medium mb-3">Recent Matchups ({Math.min(headToHeadData.games.length, 10)} games)</div>
+                  <div className="text-sm font-medium mb-3">Recent Matchups ({Math.min(headToHeadData.games?.length || 0, 10)} games)</div>
                   <div className="space-y-2 max-h-64 overflow-y-auto">
-                    {headToHeadData.games.slice(0, 10).map((historicalGame: any, index: number) => (
+                    {(headToHeadData.games || []).slice(0, 10).map((historicalGame: any, index: number) => (
                       <div key={index} className="bg-surface-light rounded-lg p-3">
                         <div className="flex justify-between items-center">
                           <div className="text-sm text-white/70">
@@ -702,7 +662,7 @@ export function GameCard({ game }: GameCardProps) {
                             {historicalGame.venue || 'N/A'}
                           </div>
                         </div>
-                        
+
                         <div className="flex justify-between items-center mt-2">
                           <div className="flex items-center gap-2">
                             <span className="text-sm">{historicalGame.awayTeamName}</span>
@@ -717,17 +677,36 @@ export function GameCard({ game }: GameCardProps) {
                             <span className="text-sm">{historicalGame.homeTeamName}</span>
                           </div>
                         </div>
-                        
+
                         {historicalGame.spread && (
                           <div className="text-xs text-white/60 mt-1 text-center">
-                            Spread: {Math.abs(historicalGame.spread)} 
+                            <div className="flex items-center justify-center gap-1">
+                              Spread: {Math.abs(historicalGame.spread)}
+                              <SpreadExplainerTooltip
+                                spread={historicalGame.spread}
+                                homeTeam={historicalGame.homeTeamName}
+                                awayTeam={historicalGame.awayTeamName}
+                                homeScore={historicalGame.homeTeamScore}
+                                awayScore={historicalGame.awayTeamScore}
+                                isCompleted={true}
+                                className="ml-1"
+                              />
+                            </div>
                             {historicalGame.spreadResult && (
-                              <span className={`ml-2 px-1 rounded ${
-                                historicalGame.spreadResult === 'covered' ? 'bg-green-600' : 
-                                historicalGame.spreadResult === 'push' ? 'bg-yellow-600' : 'bg-red-600'
-                              }`}>
-                                {historicalGame.spreadResult}
-                              </span>
+                              <div className="mt-1">
+                                <span className={`px-1 rounded ${
+                                  historicalGame.spreadResult === 'covered' ? 'bg-green-600' :
+                                  historicalGame.spreadResult === 'push' ? 'bg-yellow-600' : 'bg-red-600'
+                                }`}>
+                                  {historicalGame.spreadResult === 'push' ? 'PUSH' :
+                                   historicalGame.spreadResult === 'covered' ? 'COVERED' : 'NOT COVERED'}
+                                  {historicalGame.favoriteTeam && historicalGame.spreadResult !== 'push' && (
+                                    <span className="ml-1 text-xs opacity-75">
+                                      ({historicalGame.favoriteTeam === 'home' ? historicalGame.homeTeamName : historicalGame.awayTeamName} favored)
+                                    </span>
+                                  )}
+                                </span>
+                              </div>
                             )}
                           </div>
                         )}
