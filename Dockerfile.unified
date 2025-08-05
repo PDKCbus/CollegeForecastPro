@@ -11,11 +11,18 @@ WORKDIR /app
 # Copy package files first for better caching
 COPY package*.json ./
 
-# Copy source code
+# Install ALL dependencies including devDependencies for proper bundling
+ENV NODE_ENV=development
+RUN npm install --legacy-peer-deps && npm cache clean --force
+
+# Copy all source code
 COPY . .
 
-# Make build script executable and run unified build
-RUN chmod +x scripts/build-production.sh && ./scripts/build-production.sh
+# Switch to production mode and build
+ENV NODE_ENV=production
+RUN echo "🚀 Starting unified production build..." && \
+    npm run build && \
+    echo "✅ Production build completed!"
 
 # Verify build output exists
 RUN ls -la dist/ || (echo "Build failed - no dist directory" && exit 1)
