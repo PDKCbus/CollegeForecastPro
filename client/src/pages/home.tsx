@@ -32,7 +32,7 @@ export default function Home() {
 
   // Load games for current page
   const { data: gamesResponse, isLoading, error } = useQuery({
-    queryKey: ["/api/games/upcoming", weekNumber, currentPage],
+    queryKey: ["/api/games/upcoming", weekNumber, currentPage, gamesPerPage],
     queryFn: async () => {
       const offset = (currentPage - 1) * gamesPerPage;
       const url = weekNumber && weekNumber !== "all"
@@ -80,40 +80,47 @@ export default function Home() {
   }, [weekNumber]);
 
   // Filter games based on active filter, conference, and team search (week filtering now done in API)
-  const upcomingGames = Array.isArray(gamesResponse?.games) ? gamesResponse.games.filter((game: GameWithTeams) => {
-    // Week filtering is now handled by the API, so we skip it here
+  const upcomingGames = Array.isArray(gamesResponse?.games) ?
+    // First deduplicate by game ID to prevent any duplicate rendering
+    gamesResponse.games.reduce((unique: GameWithTeams[], game: GameWithTeams) => {
+      if (!unique.find(g => g.id === game.id)) {
+        unique.push(game);
+      }
+      return unique;
+    }, []).filter((game: GameWithTeams) => {
+      // Week filtering is now handled by the API, so we skip it here
 
-    // Apply category filter
-    let categoryMatch = true;
-    if (activeFilter === "top25") {
-      // Check if either team has a ranking <= 25
-      const homeRanked = !!(game.homeTeam?.rank && game.homeTeam.rank <= 25);
-      const awayRanked = !!(game.awayTeam?.rank && game.awayTeam.rank <= 25);
-      categoryMatch = homeRanked || awayRanked;
-    }
+      // Apply category filter
+      let categoryMatch = true;
+      if (activeFilter === "top25") {
+        // Check if either team has a ranking <= 25
+        const homeRanked = !!(game.homeTeam?.rank && game.homeTeam.rank <= 25);
+        const awayRanked = !!(game.awayTeam?.rank && game.awayTeam.rank <= 25);
+        categoryMatch = homeRanked || awayRanked;
+      }
 
-    // Apply conference filter
-    let conferenceMatch = true;
-    if (selectedConference) {
-      conferenceMatch = game.homeTeam?.conference === selectedConference ||
-                       game.awayTeam?.conference === selectedConference;
-    }
+      // Apply conference filter
+      let conferenceMatch = true;
+      if (selectedConference) {
+        conferenceMatch = game.homeTeam?.conference === selectedConference ||
+                         game.awayTeam?.conference === selectedConference;
+      }
 
-    // Apply team name filter
-    let teamMatch = true;
-    if (teamFilter.trim()) {
-      const searchTerm = teamFilter.toLowerCase().trim();
-      teamMatch = game.homeTeam?.name.toLowerCase().includes(searchTerm) ||
-                  game.awayTeam?.name.toLowerCase().includes(searchTerm);
-    }
+      // Apply team name filter
+      let teamMatch = true;
+      if (teamFilter.trim()) {
+        const searchTerm = teamFilter.toLowerCase().trim();
+        teamMatch = game.homeTeam?.name.toLowerCase().includes(searchTerm) ||
+                    game.awayTeam?.name.toLowerCase().includes(searchTerm);
+      }
 
-    return categoryMatch && conferenceMatch && teamMatch;
-  }).sort((a: GameWithTeams, b: GameWithTeams) => {
-    // Sort by highest ranking (lowest number = higher rank)
-    const aHighestRank = Math.min(a.homeTeam?.rank || 999, a.awayTeam?.rank || 999);
-    const bHighestRank = Math.min(b.homeTeam?.rank || 999, b.awayTeam?.rank || 999);
-    return aHighestRank - bHighestRank;
-  }) : [];
+      return categoryMatch && conferenceMatch && teamMatch;
+    }).sort((a: GameWithTeams, b: GameWithTeams) => {
+      // Sort by highest ranking (lowest number = higher rank)
+      const aHighestRank = Math.min(a.homeTeam?.rank || 999, a.awayTeam?.rank || 999);
+      const bHighestRank = Math.min(b.homeTeam?.rank || 999, b.awayTeam?.rank || 999);
+      return aHighestRank - bHighestRank;
+    }) : [];
 
   const { data: featuredGame, isLoading: isFeaturedLoading } = useQuery<GameWithTeams>({
     queryKey: ["/api/games/featured"],

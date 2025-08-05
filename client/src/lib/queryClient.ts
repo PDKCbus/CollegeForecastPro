@@ -1,7 +1,13 @@
-import { QueryClient, QueryFunction } from "@tanstack/react-query";
+// Import everything needed from React Query to force bundling
+import {
+  useQuery,
+  useMutation,
+  QueryClient,
+  QueryFunction
+} from "@tanstack/react-query";
 
-// Force explicit import to ensure bundling
-export { useQuery, useMutation } from "@tanstack/react-query";
+// Re-export to ensure bundling in production builds
+export { useQuery, useMutation, QueryClient };
 
 async function throwIfResNotOk(res: Response) {
   if (!res.ok) {
