@@ -1,5 +1,4 @@
 // ULTRA NUCLEAR option - force React Query inclusion
-import * as ReactQuery from "@tanstack/react-query";
 import {
   useQuery,
   useMutation,

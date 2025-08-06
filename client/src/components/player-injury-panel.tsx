@@ -1,11 +1,13 @@
 import React, { useState } from 'react';
-import { useQuery } from "@/lib/queryClient";
+import * as ReactQueryDebug from "@/lib/queryClient";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Progress } from '@/components/ui/progress';
 import { Heart, Activity, TrendingUp, AlertTriangle, User, Shield } from 'lucide-react';
+
+console.log("ReactQueryDebug:", ReactQueryDebug);
 
 interface PlayerInjuryPanelProps {
   gameId: number;
