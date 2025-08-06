@@ -1,23 +1,22 @@
-// NUCLEAR option - directly import and immediately use to prevent tree-shaking
+// NUCLEAR option - directly import and re-export to prevent tree-shaking
 import {
-  useQuery as reactQueryUseQuery,
-  useMutation as reactQueryUseMutation,
-  QueryClient as ReactQueryClient
+  useQuery,
+  useMutation,
+  QueryClient,
+  type QueryFunction
 } from "@tanstack/react-query";
 
 // Force the bundler to include these by referencing them
 if (typeof window !== 'undefined') {
   (window as any).__REACT_QUERY_BUNDLED__ = {
-    useQuery: reactQueryUseQuery,
-    useMutation: reactQueryUseMutation,
-    QueryClient: ReactQueryClient
+    useQuery,
+    useMutation,
+    QueryClient
   };
 }
 
-// Export with different names to ensure they're not tree-shaken
-export const useQuery = reactQueryUseQuery;
-export const useMutation = reactQueryUseMutation;
-export const QueryClient = ReactQueryClient;
+// Re-export for use throughout the app
+export { useQuery, useMutation, QueryClient };
 
 async function throwIfResNotOk(res: Response) {
   if (!res.ok) {
@@ -47,7 +46,7 @@ export const getQueryFn: <T>(options: {
   on401: UnauthorizedBehavior;
 }) => QueryFunction<T> =
   ({ on401: unauthorizedBehavior }) =>
-  async ({ queryKey }) => {
+  async ({ queryKey }: { queryKey: any }) => {
     const res = await fetch(queryKey[0] as string, {
       credentials: "include",
     });
