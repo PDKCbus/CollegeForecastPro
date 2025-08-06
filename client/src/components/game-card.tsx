@@ -9,7 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
-import { Calendar, Clock, MapPin, MoreHorizontal, Twitter, TrendingUp, TrendingDown, BarChart3, Cloud, CloudRain, CloudSnow, Sun, Wind, Thermometer, Share2, Copy, Check, Heart } from "lucide-react";
+import { Calendar, Clock, MapPin, MoreHorizontal, Twitter, TrendingUp, TrendingDown, BarChart3, Cloud, CloudRain, CloudSnow, Sun, Wind, Thermometer, Share2, Copy, Check, Heart, Shield } from "lucide-react";
 import { useQuery, useMutation } from "@/lib/queryClient";
 import { useState } from "react";
 import { Link } from "wouter";
@@ -65,57 +65,14 @@ export function GameCard({ game }: GameCardProps) {
     return `${wins}-${losses}`;
   };
 
-  // Get team logo with football helmet fallback
+  // Get team logo with shield fallback for football teams
   const getTeamLogo = (team: any) => {
     // Use team's stored logoUrl if available and not the default
     if (team.logoUrl && team.logoUrl !== 'https://a.espncdn.com/i/teamlogos/ncaa/500/default.png') {
       return team.logoUrl;
     }
-    // Create authentic American football helmet SVG fallback to avoid 400 errors
-    return `data:image/svg+xml;base64,${btoa(`<svg width="45" height="45" viewBox="0 0 45 45" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <defs>
-        <linearGradient id="helmet-gradient-${team.id}" x1="0%" y1="0%" x2="100%" y2="100%">
-          <stop offset="0%" style="stop-color:#1e40af;stop-opacity:1" />
-          <stop offset="100%" style="stop-color:#1e3a8a;stop-opacity:1" />
-        </linearGradient>
-      </defs>
-      <!-- Modern Football Helmet Shell - Authentic shape -->
-      <path d="M8 22.5 C8 15 13.5 8.5 22.5 8.5 C31.5 8.5 37 15 37 22.5 C37 27 35.5 31 33 34 L33 37.5 C33 39 31.8 40 30.5 40 L14.5 40 C13.2 40 12 39 12 37.5 L12 34 C9.5 31 8 27 8 22.5 Z" fill="url(#helmet-gradient-${team.id})" stroke="#0f172a" stroke-width="1"/>
-      
-      <!-- Helmet ear holes for authenticity -->
-      <ellipse cx="10.5" cy="22.5" rx="1.8" ry="2.5" fill="#0a0a0a" opacity="0.7"/>
-      <ellipse cx="34.5" cy="22.5" rx="1.8" ry="2.5" fill="#0a0a0a" opacity="0.7"/>
-      
-      <!-- Professional Football Face Mask/Cage - Realistic design -->
-      <g stroke="#2a2a2a" stroke-width="1.8" fill="none" stroke-linecap="round" stroke-linejoin="round">
-        <!-- Main horizontal support bars -->
-        <path d="M12 26.5 Q15.5 25 22.5 25 Q29.5 25 33 26.5"/>
-        <path d="M13 30 Q16.5 28.5 22.5 28.5 Q28.5 28.5 32 30"/>
-        <path d="M14.5 33 Q18 32 22.5 32 Q27 32 30.5 33"/>
-        
-        <!-- Vertical cage bars for protection -->
-        <path d="M12 26.5 L13 30 L14.5 33"/>
-        <path d="M15.5 25.5 L16.5 29 L17.5 32.5"/>
-        <path d="M19.5 25.2 L20 29 L20.8 32.2"/>
-        <path d="M22.5 25 L22.5 28.5 L22.5 32"/>
-        <path d="M25.5 25.2 L25 29 L24.2 32.2"/>
-        <path d="M29.5 25.5 L28.5 29 L27.5 32.5"/>
-        <path d="M33 26.5 L32 30 L30.5 33"/>
-        
-        <!-- Diagonal reinforcement bars -->
-        <path d="M15.5 25.5 L19.5 25.2"/>
-        <path d="M25.5 25.2 L29.5 25.5"/>
-        <path d="M16.5 29 L20 29"/>
-        <path d="M25 29 L28.5 29"/>
-      </g>
-      
-      <!-- Helmet chin strap attachment points -->
-      <circle cx="12.5" cy="35" r="1" fill="#333" opacity="0.6"/>
-      <circle cx="32.5" cy="35" r="1" fill="#333" opacity="0.6"/>
-      
-      <!-- Team abbreviation on helmet -->
-      <text x="22.5" y="17.5" font-family="Arial, sans-serif" font-size="6.5" font-weight="bold" fill="white" text-anchor="middle" stroke="#0f172a" stroke-width="0.3">${team.abbreviation?.substring(0, 3) || team.name?.substring(0, 3) || 'CFB'}</text>
-    </svg>`)}`;
+    // Return null to trigger Shield icon component fallback
+    return null;
   };
 
   // Helper function to format spreads properly for football (whole numbers or .5 only)
@@ -400,14 +357,20 @@ export function GameCard({ game }: GameCardProps) {
         
         <div className="flex justify-between items-center">
           <div className="flex items-center space-x-3">
-            <img 
-              src={getTeamLogo(game.awayTeam)} 
-              alt={game.awayTeam.name} 
-              className="team-logo w-[45px] h-[45px] object-contain"
-              onError={(e) => {
-                e.currentTarget.src = getTeamLogo(game.awayTeam);
-              }}
-            />
+            {getTeamLogo(game.awayTeam) ? (
+              <img 
+                src={getTeamLogo(game.awayTeam)} 
+                alt={game.awayTeam.name} 
+                className="team-logo w-[45px] h-[45px] object-contain"
+                onError={(e) => {
+                  e.currentTarget.style.display = 'none';
+                  e.currentTarget.nextElementSibling.style.display = 'flex';
+                }}
+              />
+            ) : null}
+            <div className={`w-[45px] h-[45px] bg-blue-600 rounded-lg flex items-center justify-center ${getTeamLogo(game.awayTeam) ? 'hidden' : 'flex'}`}>
+              <Shield className="w-6 h-6 text-white" />
+            </div>
             <div className="flex-1">
               <div className="flex items-center gap-2">
                 <span className="font-semibold">{game.awayTeam.name}</span>
@@ -425,14 +388,20 @@ export function GameCard({ game }: GameCardProps) {
         
         <div className="flex justify-between items-center mt-4">
           <div className="flex items-center space-x-3">
-            <img 
-              src={getTeamLogo(game.homeTeam)} 
-              alt={game.homeTeam.name} 
-              className="team-logo w-[45px] h-[45px] object-contain"
-              onError={(e) => {
-                e.currentTarget.src = getTeamLogo(game.homeTeam);
-              }}
-            />
+            {getTeamLogo(game.homeTeam) ? (
+              <img 
+                src={getTeamLogo(game.homeTeam)} 
+                alt={game.homeTeam.name} 
+                className="team-logo w-[45px] h-[45px] object-contain"
+                onError={(e) => {
+                  e.currentTarget.style.display = 'none';
+                  e.currentTarget.nextElementSibling.style.display = 'flex';
+                }}
+              />
+            ) : null}
+            <div className={`w-[45px] h-[45px] bg-blue-600 rounded-lg flex items-center justify-center ${getTeamLogo(game.homeTeam) ? 'hidden' : 'flex'}`}>
+              <Shield className="w-6 h-6 text-white" />
+            </div>
             <div className="flex-1">
               <div className="flex items-center gap-2">
                 <span className="font-semibold">{game.homeTeam.name}</span>

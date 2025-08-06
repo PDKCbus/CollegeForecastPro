@@ -2,7 +2,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { TeamPerformanceIndicators } from "./team-performance-indicators";
 import { format } from "date-fns";
-import { Clock, Trophy, TrendingUp, Target, Calendar } from "lucide-react";
+import { Clock, Trophy, TrendingUp, Target, Calendar, Shield } from "lucide-react";
 
 interface HistoricalGameCardProps {
   game: {
@@ -62,56 +62,14 @@ export function ImprovedHistoricalGameCard({ game }: HistoricalGameCardProps) {
   const awayWon = awayScore > homeScore;
   const isTie = homeScore === awayScore;
 
-  // Get team logo with fallback - prevent 400 errors from missing ESPN logos
+  // Get team logo with shield fallback for football teams
   const getTeamLogo = (team: any) => {
     // Use team's stored logoUrl if available and not the default
     if (team.logoUrl && team.logoUrl !== 'https://a.espncdn.com/i/teamlogos/ncaa/500/default.png') {
       return team.logoUrl;
     }
-    // Create authentic American football helmet SVG fallback to avoid 400 errors
-    return `data:image/svg+xml;base64,${btoa(`<svg width="40" height="40" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <defs>
-        <linearGradient id="helmet-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
-          <stop offset="0%" style="stop-color:#1e40af;stop-opacity:1" />
-          <stop offset="100%" style="stop-color:#1e3a8a;stop-opacity:1" />
-        </linearGradient>
-      </defs>
-      <!-- Modern Football Helmet Shell - Authentic shape -->
-      <path d="M7 20 C7 13.5 12 7.5 20 7.5 C28 7.5 33 13.5 33 20 C33 24 31.8 27.5 29.5 30.5 L29.5 33.5 C29.5 34.8 28.5 35.8 27.5 35.8 L12.5 35.8 C11.5 35.8 10.5 34.8 10.5 33.5 L10.5 30.5 C8.2 27.5 7 24 7 20 Z" fill="url(#helmet-gradient)" stroke="#0f172a" stroke-width="1"/>
-      
-      <!-- Helmet ear holes for authenticity -->
-      <ellipse cx="9" cy="20" rx="1.6" ry="2.2" fill="#0a0a0a" opacity="0.7"/>
-      <ellipse cx="31" cy="20" rx="1.6" ry="2.2" fill="#0a0a0a" opacity="0.7"/>
-      
-      <!-- Professional Football Face Mask/Cage - Realistic design -->
-      <g stroke="#2a2a2a" stroke-width="1.6" fill="none" stroke-linecap="round" stroke-linejoin="round">
-        <!-- Main horizontal support bars -->
-        <path d="M10.5 23.5 Q13.5 22.2 20 22.2 Q26.5 22.2 29.5 23.5"/>
-        <path d="M11.5 26.5 Q14.5 25.2 20 25.2 Q25.5 25.2 28.5 26.5"/>
-        <path d="M12.5 29 Q15.5 28 20 28 Q24.5 28 27.5 29"/>
-        
-        <!-- Vertical cage bars for protection -->
-        <path d="M10.5 23.5 L11.5 26.5 L12.5 29"/>
-        <path d="M14 22.8 L14.8 26 L15.5 28.8"/>
-        <path d="M17.5 22.4 L17.8 25.5 L18.2 28.2"/>
-        <path d="M20 22.2 L20 25.2 L20 28"/>
-        <path d="M22.5 22.4 L22.2 25.5 L21.8 28.2"/>
-        <path d="M26 22.8 L25.2 26 L24.5 28.8"/>
-        <path d="M29.5 23.5 L28.5 26.5 L27.5 29"/>
-        
-        <!-- Diagonal reinforcement bars -->
-        <path d="M14 22.8 L17.5 22.4"/>
-        <path d="M22.5 22.4 L26 22.8"/>
-        <path d="M14.8 26 L17.8 25.5"/>
-        <path d="M22.2 25.5 L25.2 26"/>
-      </g>
-      
-      <!-- Helmet chin strap attachment points -->
-      <circle cx="11" cy="31" r="0.8" fill="#333" opacity="0.6"/>
-      <circle cx="29" cy="31" r="0.8" fill="#333" opacity="0.6"/>
-      
-      <text x="20" y="15.5" font-family="Arial, sans-serif" font-size="5.8" font-weight="bold" fill="white" text-anchor="middle" stroke="#0f172a" stroke-width="0.3">${team.abbreviation?.substring(0, 3) || team.name?.substring(0, 3) || 'CFB'}</text>
-    </svg>`)}`;
+    // Return null to trigger Shield icon component fallback
+    return null;
   };
 
   // Weather display function for historical games
@@ -242,14 +200,20 @@ export function ImprovedHistoricalGameCard({ game }: HistoricalGameCardProps) {
             {/* Away Team */}
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 flex-shrink-0">
-                <img 
-                  src={getTeamLogo(game.awayTeam)} 
-                  alt={game.awayTeam.name}
-                  className="w-full h-full object-contain"
-                  onError={(e) => {
-                    e.currentTarget.src = getTeamLogo(game.awayTeam);
-                  }}
-                />
+                {getTeamLogo(game.awayTeam) ? (
+                  <img 
+                    src={getTeamLogo(game.awayTeam)} 
+                    alt={game.awayTeam.name}
+                    className="w-full h-full object-contain"
+                    onError={(e) => {
+                      e.currentTarget.style.display = 'none';
+                      e.currentTarget.nextElementSibling.style.display = 'flex';
+                    }}
+                  />
+                ) : null}
+                <div className={`w-full h-full bg-blue-600 rounded-lg flex items-center justify-center ${getTeamLogo(game.awayTeam) ? 'hidden' : 'flex'}`}>
+                  <Shield className="w-5 h-5 text-white" />
+                </div>
               </div>
               <div className="min-w-0 flex-1">
                 <div className="flex items-center gap-2">
@@ -298,14 +262,20 @@ export function ImprovedHistoricalGameCard({ game }: HistoricalGameCardProps) {
                 </div>
               </div>
               <div className="w-10 h-10 flex-shrink-0">
-                <img 
-                  src={getTeamLogo(game.homeTeam)} 
-                  alt={game.homeTeam.name}
-                  className="w-full h-full object-contain"
-                  onError={(e) => {
-                    e.currentTarget.src = `https://a.espncdn.com/i/teamlogos/ncaa/500/default.png`;
-                  }}
-                />
+                {getTeamLogo(game.homeTeam) ? (
+                  <img 
+                    src={getTeamLogo(game.homeTeam)} 
+                    alt={game.homeTeam.name}
+                    className="w-full h-full object-contain"
+                    onError={(e) => {
+                      e.currentTarget.style.display = 'none';
+                      e.currentTarget.nextElementSibling.style.display = 'flex';
+                    }}
+                  />
+                ) : null}
+                <div className={`w-full h-full bg-blue-600 rounded-lg flex items-center justify-center ${getTeamLogo(game.homeTeam) ? 'hidden' : 'flex'}`}>
+                  <Shield className="w-5 h-5 text-white" />
+                </div>
               </div>
             </div>
           </div>
