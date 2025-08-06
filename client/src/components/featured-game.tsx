@@ -1,6 +1,6 @@
 import { GameWithTeams } from "@/lib/types";
 import { Link } from "wouter";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery } from "@/lib/queryClient";
 import { SocialShare } from "./social-share";
 import { Button } from "@/components/ui/button";
 import { BarChart3 } from "lucide-react";

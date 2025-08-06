@@ -3,6 +3,7 @@ import {
   useQuery, 
   useMutation,
   QueryClient,
+  QueryClientProvider,
   type QueryFunction
 } from "@tanstack/react-query";
 
@@ -11,12 +12,13 @@ if (typeof window !== 'undefined') {
   (window as any).__REACT_QUERY_BUNDLED__ = {
     useQuery,
     useMutation,
-    QueryClient
+    QueryClient,
+    QueryClientProvider
   };
 }
 
 // Re-export for use throughout the app
-export { useQuery, useMutation, QueryClient };
+export { useQuery, useMutation, QueryClient, QueryClientProvider };
 
 async function throwIfResNotOk(res: Response) {
   if (!res.ok) {
