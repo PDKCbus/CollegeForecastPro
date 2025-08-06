@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useQuery, useMutation } from "@tanstack/react-query";
+import { useQuery, useMutation } from "@/lib/queryClient";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -54,7 +54,7 @@ export default function SentimentPage() {
   return (
     <div className="min-h-screen bg-dark text-white">
       <Header />
-      
+
       <main className="container mx-auto px-4 py-8">
         <div className="mb-8">
           <h1 className="text-3xl font-bold mb-2">Twitter Sentiment Analysis</h1>
@@ -189,8 +189,8 @@ export default function SentimentPage() {
                     {teams.slice(0, 5).map((team) => (
                       <div key={team.id} className="flex items-center justify-between p-3 bg-surface-light rounded">
                         <div className="flex items-center gap-3">
-                          <img 
-                            src={team.logoUrl || ""} 
+                          <img
+                            src={team.logoUrl || ""}
                             alt={team.name}
                             className="w-8 h-8 object-contain"
                           />
@@ -229,8 +229,8 @@ export default function SentimentPage() {
                   <CardContent>
                     <div className="flex items-center justify-between mb-4">
                       <div className="flex items-center gap-2">
-                        <img 
-                          src={game.awayTeam.logoUrl || ""} 
+                        <img
+                          src={game.awayTeam.logoUrl || ""}
                           alt={game.awayTeam.name}
                           className="w-6 h-6 object-contain"
                         />
@@ -239,8 +239,8 @@ export default function SentimentPage() {
                       <span className="text-white/60">vs</span>
                       <div className="flex items-center gap-2">
                         <span className="text-sm">{game.homeTeam.name}</span>
-                        <img 
-                          src={game.homeTeam.logoUrl || ""} 
+                        <img
+                          src={game.homeTeam.logoUrl || ""}
                           alt={game.homeTeam.name}
                           className="w-6 h-6 object-contain"
                         />
@@ -259,8 +259,8 @@ export default function SentimentPage() {
                 <Card key={team.id} className="bg-surface border-surface-light">
                   <CardHeader className="pb-4">
                     <CardTitle className="flex items-center gap-3">
-                      <img 
-                        src={team.logoUrl || ""} 
+                      <img
+                        src={team.logoUrl || ""}
                         alt={team.name}
                         className="w-8 h-8 object-contain"
                       />

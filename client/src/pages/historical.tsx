@@ -1,4 +1,4 @@
-import { useQuery, useMutation } from "@tanstack/react-query";
+import { useQuery, useMutation } from "@/lib/queryClient";
 import { ImprovedHistoricalGameCard } from "@/components/improved-historical-game-card";
 import { FilterBar } from "@/components/filter-bar";
 import { useState, useEffect } from "react";

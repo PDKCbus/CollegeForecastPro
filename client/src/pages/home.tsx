@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery } from "@/lib/queryClient";
 import { Hero } from "@/components/hero";
 import { FilterBar } from "@/components/filter-bar-alt";
 import { FeaturedGame } from "@/components/featured-game";

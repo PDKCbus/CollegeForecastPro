@@ -1,6 +1,25 @@
-import { QueryClient, type QueryFunction } from "@tanstack/react-query";
+// NUCLEAR option - directly import and re-export to prevent tree-shaking
+import {
+  useQuery,
+  useMutation,
+  QueryClient,
+  QueryClientProvider,
+  type QueryFunction
+} from "@tanstack/react-query";
 
-// Helper to throw an error if the response is not OK
+// Force the bundler to include these by referencing them
+if (typeof window !== 'undefined') {
+  (window as any).__REACT_QUERY_BUNDLED__ = {
+    useQuery,
+    useMutation,
+    QueryClient,
+    QueryClientProvider
+  };
+}
+
+// Re-export for use throughout the app
+export { useQuery, useMutation, QueryClient, QueryClientProvider };
+
 async function throwIfResNotOk(res: Response) {
   if (!res.ok) {
     const text = (await res.text()) || res.statusText;
@@ -8,11 +27,10 @@ async function throwIfResNotOk(res: Response) {
   }
 }
 
-// Generic API request helper
 export async function apiRequest(
   method: string,
   url: string,
-  data?: unknown
+  data?: unknown | undefined,
 ): Promise<Response> {
   const res = await fetch(url, {
     method,
@@ -26,28 +44,23 @@ export async function apiRequest(
 }
 
 type UnauthorizedBehavior = "returnNull" | "throw";
-
-// Factory for query functions used in React Query
-export const getQueryFn = <T>({
-  on401,
-}: {
+export const getQueryFn: <T>(options: {
   on401: UnauthorizedBehavior;
-}): QueryFunction<T> => {
-  return async ({ queryKey }: { queryKey: any }) => {
+}) => QueryFunction<T> =
+  ({ on401: unauthorizedBehavior }) =>
+  async ({ queryKey }: { queryKey: any }) => {
     const res = await fetch(queryKey[0] as string, {
       credentials: "include",
     });
 
-    if (on401 === "returnNull" && res.status === 401) {
-      return null as T;
+    if (unauthorizedBehavior === "returnNull" && res.status === 401) {
+      return null;
     }
 
     await throwIfResNotOk(res);
-    return res.json();
+    return await res.json();
   };
-};
 
-// Shared instance of QueryClient for your app
 export const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
