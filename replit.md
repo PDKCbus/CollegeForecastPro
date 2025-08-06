@@ -46,6 +46,7 @@ Key tables include `Teams`, `Games`, `Predictions`, `Sentiment Analysis`, `Users
 - **Unified Prediction System**: Centralized prediction logic using `ricksPicksEngine` for platform-wide consistency, moving calculations server-side.
 - **Neutral Site & International Game Detection**: Algorithm to identify and correctly handle neutral site games, including international venues, in prediction calculations.
 - **Reddit Sentiment Integration**: Replaced Twitter API with Reddit r/CFB community integration for sentiment analysis, utilizing weighted scoring based on upvotes and post scores.
+- **Admin Security System**: Comprehensive authentication middleware protecting all administrative endpoints (data sync, team updates, historical collection) with Bearer token authentication.
 
 ## External Dependencies
 
