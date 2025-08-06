@@ -1,48 +1,47 @@
-# Simple unified Dockerfile
+# BULLETPROOF Dockerfile - Forces ALL dependencies to bundle
 FROM node:20-alpine
 
-# Install curl for health checks
-RUN apk add --no-cache curl
+# Install everything we might need
+RUN apk add --no-cache curl git
 
 WORKDIR /app
 
 # Copy package files
 COPY package*.json ./
 
-# Install EVERYTHING - no tricks, no games
+# FORCE install ALL dependencies - production AND dev
+ENV NODE_ENV=development
 RUN npm install --include=dev --legacy-peer-deps
+
+# Ensure React Query is definitely installed
+RUN npm ls @tanstack/react-query || npm install @tanstack/react-query --save
 
 # Copy source code
 COPY . .
 
-# Build frontend
+# Build with all deps available but in production mode
 ENV NODE_ENV=production
 RUN npm run build
 
-# Debug: Show what Vite actually built
-RUN echo "=== BUILD OUTPUT DEBUG ===" && \
-    find . -name "*.html" -type f && \
-    echo "=== DIST DIRECTORY CONTENTS ===" && \
-    ls -la dist/ 2>/dev/null || echo "No dist/ found" && \
-    ls -la dist/public/ 2>/dev/null || echo "No dist/public/ found"
+# Verify React Query is in the bundle
+RUN echo "=== CHECKING FOR REACT QUERY IN BUILD ===" && \
+    find dist/ -name "*.js" -exec grep -l "useQuery\|useMutation\|QueryClient" {} \; || echo "⚠️  React Query not found in bundle"
 
-# Copy build to server public directory
+# Copy build output to server/public
 RUN mkdir -p server/public && \
     if [ -d "dist/public" ]; then \
-      echo "✅ Copying from dist/public/" && cp -r dist/public/* server/public/; \
+      cp -r dist/public/* server/public/; \
     elif [ -d "dist" ]; then \
-      echo "✅ Copying from dist/" && cp -r dist/* server/public/; \
+      cp -r dist/* server/public/; \
     else \
-      echo "❌ No build output found!" && exit 1; \
+      echo "❌ Build failed"; exit 1; \
     fi
 
-# Final verification
-RUN echo "=== FINAL SERVER PUBLIC CONTENTS ===" && \
-    ls -la server/public/ && \
-    test -f server/public/index.html && echo "✅ index.html found" || (echo "❌ index.html missing" && exit 1)
+# Verify final setup
+RUN test -f server/public/index.html || (echo "❌ Frontend missing"; exit 1)
 
-# Expose port
+# Force NODE_ENV back to production for runtime
+ENV NODE_ENV=production
+
 EXPOSE 5000
-
-# Start server
 CMD ["npx", "tsx", "server/index.ts"]
