@@ -3,6 +3,7 @@ import { TeamPerformanceIndicators } from "./team-performance-indicators";
 import { Link } from "wouter";
 import { Button } from "@/components/ui/button";
 import { BarChart3 } from "lucide-react";
+import { SocialShare } from "./social-share";
 
 interface FeaturedGameProps {
   game: GameWithTeams;
