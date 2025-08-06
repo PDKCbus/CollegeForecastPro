@@ -1,13 +1,14 @@
-// Import everything needed from React Query to force bundling
-import {
-  useQuery,
-  useMutation,
-  QueryClient,
-  QueryFunction
-} from "@tanstack/react-query";
+// FORCE React Query to be bundled - import EVERYTHING
+import * as ReactQuery from "@tanstack/react-query";
 
-// Re-export to ensure bundling in production builds
+// Explicit destructuring to force bundling
+const { useQuery, useMutation, QueryClient } = ReactQuery;
+
+// Re-export with explicit references
 export { useQuery, useMutation, QueryClient };
+
+// Force TypeScript to include the types
+export type QueryFunction<T = unknown> = ReactQuery.QueryFunction<T>;
 
 async function throwIfResNotOk(res: Response) {
   if (!res.ok) {
