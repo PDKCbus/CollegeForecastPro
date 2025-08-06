@@ -62,9 +62,15 @@ export function ImprovedHistoricalGameCard({ game }: HistoricalGameCardProps) {
   const awayWon = awayScore > homeScore;
   const isTie = homeScore === awayScore;
 
-  // Get team logo with fallback
+  // Get team logo with fallback - prevent 400 errors from missing ESPN logos
   const getTeamLogo = (team: any) => {
-    return team.logoUrl || team.logo || `https://a.espncdn.com/i/teamlogos/ncaa/500/default.png`;
+    // Use team's stored logoUrl if available and not the default
+    if (team.logoUrl && team.logoUrl !== 'https://a.espncdn.com/i/teamlogos/ncaa/500/default.png') {
+      return team.logoUrl;
+    }
+    // Create SVG placeholder with team abbreviation to avoid 400 errors
+    const abbrev = team.abbreviation?.substring(0, 2) || team.name?.substring(0, 2) || 'CFB';
+    return `data:image/svg+xml;base64,${btoa(`<svg width="40" height="40" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg"><rect width="40" height="40" rx="4" fill="#3373dc"/><text x="20" y="26" font-family="Arial, sans-serif" font-size="14" font-weight="bold" fill="white" text-anchor="middle">${abbrev}</text></svg>`)}`;
   };
 
   // Weather display function for historical games
@@ -200,7 +206,8 @@ export function ImprovedHistoricalGameCard({ game }: HistoricalGameCardProps) {
                   alt={game.awayTeam.name}
                   className="w-full h-full object-contain"
                   onError={(e) => {
-                    e.currentTarget.src = `https://a.espncdn.com/i/teamlogos/ncaa/500/default.png`;
+                    const abbrev = game.awayTeam.abbreviation?.substring(0, 2) || game.awayTeam.name?.substring(0, 2) || 'CFB';
+                    e.currentTarget.src = `data:image/svg+xml;base64,${btoa(`<svg width="40" height="40" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg"><rect width="40" height="40" rx="4" fill="#dc3545"/><text x="20" y="26" font-family="Arial, sans-serif" font-size="14" font-weight="bold" fill="white" text-anchor="middle">${abbrev}</text></svg>`)}`;
                   }}
                 />
               </div>
