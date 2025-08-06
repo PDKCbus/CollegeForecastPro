@@ -1,7 +1,22 @@
-import type { Express } from "express";
+import type { Express, Request, Response, NextFunction } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { db } from "./db";
+
+// Admin authentication middleware
+const requireAdminAuth = (req: Request, res: Response, next: NextFunction) => {
+  const authHeader = req.headers.authorization;
+  const expectedToken = process.env.ADMIN_API_KEY || "secure-admin-key-2025";
+  
+  if (!authHeader || authHeader !== `Bearer ${expectedToken}`) {
+    return res.status(401).json({ 
+      error: "Unauthorized", 
+      message: "Admin API key required for this endpoint" 
+    });
+  }
+  
+  next();
+};
 import { games, teams, ricksPicks } from "@shared/schema";
 import { eq, and, desc, lt, or, gte, sql, isNotNull } from "drizzle-orm";
 import { sentimentService } from "./sentiment";
@@ -263,7 +278,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Working Historical Sync - Get REAL completed games with scores
-  app.post("/api/sync/working-historical", async (req, res) => {
+  app.post("/api/sync/working-historical", requireAdminAuth, async (req, res) => {
     try {
       const { runWorkingHistoricalSync } = await import('./working-historical-sync');
       console.log('🚀 Starting working historical sync for recent seasons...');
@@ -570,7 +585,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post('/api/players/collect-roster/:teamName', async (req, res) => {
+  app.post('/api/players/collect-roster/:teamName', requireAdminAuth, async (req, res) => {
     try {
       const teamName = req.params.teamName;
       const season = req.body.season || 2025;
@@ -643,7 +658,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
 
   // Utility function to update team rankings (can be called weekly)
-  app.post("/api/teams/update-rankings", async (req, res) => {
+  app.post("/api/teams/update-rankings", requireAdminAuth, async (req, res) => {
     try {
       // Current preseason top 25 rankings for 2025 season
       const currentRankings = {
@@ -968,7 +983,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Fetch historical games for Rick's record tracking
-  app.post("/api/sync-historical-data", async (req, res) => {
+  app.post("/api/sync-historical-data", requireAdminAuth, async (req, res) => {
     try {
       const apiKey = process.env.CFBD_API_KEY;
       if (!apiKey) {
@@ -1118,7 +1133,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Fetch real college football data with betting lines and Rick's picks
-  app.post("/api/sync-cfb-data", async (req, res) => {
+  app.post("/api/sync-cfb-data", requireAdminAuth, async (req, res) => {
     try {
       const apiKey = process.env.CFBD_API_KEY;
       if (!apiKey) {
@@ -1775,7 +1790,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post("/api/comprehensive/sync-season/:year", async (req, res) => {
+  app.post("/api/comprehensive/sync-season/:year", requireAdminAuth, async (req, res) => {
     try {
       const year = parseInt(req.params.year);
       if (isNaN(year) || year < 2000 || year > 2025) {
@@ -1805,7 +1820,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Full 15-year comprehensive sync (2009-2024)
-  app.post('/api/comprehensive/sync-all', async (_req: Request, res: Response) => {
+  app.post('/api/comprehensive/sync-all', requireAdminAuth, async (_req: Request, res: Response) => {
     try {
       setImmediate(async () => {
         try {
@@ -1829,7 +1844,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Sync only missing years (2018, 2019, 2021-2023)
-  app.post('/api/comprehensive/sync-missing', async (_req: Request, res: Response) => {
+  app.post('/api/comprehensive/sync-missing', requireAdminAuth, async (_req: Request, res: Response) => {
     try {
       const missingYears = [2018, 2019, 2021, 2022, 2023];
       
@@ -2240,7 +2255,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   }, 10000); // Start after 10 seconds to allow server to fully initialize
 
   // Fill missing scores for existing games
-  app.post('/api/historical/fill-scores', async (req, res) => {
+  app.post('/api/historical/fill-scores', requireAdminAuth, async (req, res) => {
     try {
       const { scoreFiller } = await import('./fill-scores');
       
@@ -2262,7 +2277,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Fill scores for specific season
-  app.post('/api/historical/fill-scores/:season', async (req, res) => {
+  app.post('/api/historical/fill-scores/:season', requireAdminAuth, async (req, res) => {
     try {
       const { scoreFiller } = await import('./fill-scores');
       const season = parseInt(req.params.season);
