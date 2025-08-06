@@ -47,6 +47,7 @@ Key tables include `Teams`, `Games`, `Predictions`, `Sentiment Analysis`, `Users
 - **Neutral Site & International Game Detection**: Algorithm to identify and correctly handle neutral site games, including international venues, in prediction calculations.
 - **Reddit Sentiment Integration**: Replaced Twitter API with Reddit r/CFB community integration for sentiment analysis, utilizing weighted scoring based on upvotes and post scores.
 - **Admin Security System**: Comprehensive authentication middleware protecting all administrative endpoints (data sync, team updates, historical collection) with Bearer token authentication.
+- **Team Logo Fallback System**: Professional American football helmet SVG graphics with team abbreviations automatically replace broken ESPN CDN logos to eliminate 400 errors and maintain visual consistency.
 
 ## External Dependencies
 

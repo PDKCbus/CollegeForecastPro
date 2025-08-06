@@ -72,19 +72,21 @@ export function ImprovedHistoricalGameCard({ game }: HistoricalGameCardProps) {
     return `data:image/svg+xml;base64,${btoa(`<svg width="40" height="40" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
       <defs>
         <linearGradient id="helmet-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
-          <stop offset="0%" style="stop-color:#4a5568;stop-opacity:1" />
-          <stop offset="100%" style="stop-color:#2d3748;stop-opacity:1" />
+          <stop offset="0%" style="stop-color:#1e40af;stop-opacity:1" />
+          <stop offset="100%" style="stop-color:#1e3a8a;stop-opacity:1" />
         </linearGradient>
       </defs>
-      <!-- Helmet Shell -->
-      <path d="M20 5c-8.5 0-15 6.5-15 14.5 0 4 1.5 7.5 4 10.5l2 2.5c1 1.5 2.5 2.5 4.5 2.5h9c2 0 3.5-1 4.5-2.5l2-2.5c2.5-3 4-6.5 4-10.5C35 11.5 28.5 5 20 5z" fill="url(#helmet-gradient)" stroke="#1a202c" stroke-width="1"/>
-      <!-- Face Mask -->
-      <path d="M12 22c0-2 2-4 4-4h8c2 0 4 2 4 4v3c0 1-1 2-2 2h-12c-1 0-2-1-2-2v-3z" fill="none" stroke="#e2e8f0" stroke-width="2"/>
-      <line x1="14" y1="20" x2="14" y2="25" stroke="#e2e8f0" stroke-width="1.5"/>
-      <line x1="26" y1="20" x2="26" y2="25" stroke="#e2e8f0" stroke-width="1.5"/>
-      <line x1="20" y1="19" x2="20" y2="26" stroke="#e2e8f0" stroke-width="1.5"/>
-      <!-- Team abbreviation -->
-      <text x="20" y="13" font-family="Arial, sans-serif" font-size="8" font-weight="bold" fill="white" text-anchor="middle">${team.abbreviation?.substring(0, 3) || team.name?.substring(0, 3) || 'CFB'}</text>
+      <!-- American Football Helmet Shell -->
+      <path d="M20 4c-9 0-16 7-16 16 0 2 0.5 4 1 6l1 3c0.5 2 2 4 4 5l2 1c1 0.5 2 0.5 3 0.5h10c1 0 2 0 3-0.5l2-1c2-1 3.5-3 4-5l1-3c0.5-2 1-4 1-6 0-9-7-16-16-16z" fill="url(#helmet-gradient)" stroke="#1a202c" stroke-width="1.5"/>
+      <!-- Face Guard/Cage -->
+      <g stroke="#e5e7eb" stroke-width="1.5" fill="none">
+        <path d="M12 23 L28 23 M12 25 L28 25 M12 27 L28 27"/>
+        <path d="M14 21 L14 29 M17 21 L17 29 M20 21 L20 29 M23 21 L23 29 M26 21 L26 29"/>
+      </g>
+      <!-- Helmet Ridge -->
+      <path d="M20 4 L20 15" stroke="#1a202c" stroke-width="1" fill="none"/>
+      <!-- Team abbreviation on helmet -->
+      <text x="20" y="14" font-family="Arial, sans-serif" font-size="7" font-weight="bold" fill="white" text-anchor="middle">${team.abbreviation?.substring(0, 3) || team.name?.substring(0, 3) || 'CFB'}</text>
     </svg>`)}`;
   };
 
