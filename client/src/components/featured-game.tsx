@@ -1,6 +1,7 @@
 import { GameWithTeams } from "@/lib/types";
 import { TeamPerformanceIndicators } from "./team-performance-indicators";
 import { Link } from "wouter";
+import { Button } from "@/components/ui/button";
 
 interface FeaturedGameProps {
   game: GameWithTeams;
