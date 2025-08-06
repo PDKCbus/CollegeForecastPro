@@ -1,12 +1,30 @@
 import { createRoot } from "react-dom/client";
-// FORCE React Query imports at entry point to prevent tree-shaking
-import { useQuery, useMutation, QueryClient } from "@tanstack/react-query";
+// ULTRA NUCLEAR: Import entire React Query at entry point
+import * as TanstackQuery from "@tanstack/react-query";
+import { useQuery, useMutation, QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import App from "./App";
 import "./index.css";
 
-// Force React Query to be included in bundle by referencing directly
+// CRITICAL: Multiple forced references to prevent tree-shaking
+const REACT_QUERY_REFS = {
+  namespace: TanstackQuery,
+  hooks: { useQuery, useMutation },
+  client: QueryClient,
+  provider: QueryClientProvider,
+  // Force instantiation
+  testClient: new QueryClient({ defaultOptions: { queries: { enabled: false } } }),
+  // Force hook calls
+  testHook: () => useQuery({ queryKey: ['__bundle_test__'], enabled: false })
+};
+
+// Triple window assignment for maximum bundling protection
 if (typeof window !== 'undefined') {
-  (window as any).__REACT_QUERY_FORCED__ = { useQuery, useMutation, QueryClient };
+  (window as any).__REACT_QUERY_ENTRY__ = REACT_QUERY_REFS;
+  (window as any).__TANSTACK_ENTRY__ = TanstackQuery;
+  Object.assign(window, { useQuery, useMutation, QueryClient, QueryClientProvider });
+  
+  // Log to force evaluation
+  console.log('🚀 Entry point React Query forced:', Object.keys(REACT_QUERY_REFS));
 }
 
 // Add global styles for dark mode

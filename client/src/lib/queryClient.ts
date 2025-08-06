@@ -1,4 +1,5 @@
-// NUCLEAR option - directly import and re-export to prevent tree-shaking
+// ULTRA NUCLEAR option - force React Query inclusion
+import * as ReactQuery from "@tanstack/react-query";
 import { 
   useQuery, 
   useMutation,
@@ -7,15 +8,33 @@ import {
   type QueryFunction
 } from "@tanstack/react-query";
 
-// Force the bundler to include these by referencing them
+// CRITICAL: Force bundler to include React Query by multiple methods
+const FORCE_INCLUDE = {
+  // Method 1: Direct references
+  useQuery,
+  useMutation,
+  QueryClient,
+  QueryClientProvider,
+  // Method 2: Namespace import
+  ReactQuery,
+  // Method 3: Function calls to prevent tree-shaking
+  testQuery: () => useQuery({ queryKey: ['test'], enabled: false }),
+  testMutation: () => useMutation({ mutationFn: async () => {} }),
+  testClient: () => new QueryClient()
+};
+
+// Method 4: Global window references (multiple assignments)
 if (typeof window !== 'undefined') {
-  (window as any).__REACT_QUERY_BUNDLED__ = {
-    useQuery,
-    useMutation,
-    QueryClient,
-    QueryClientProvider
-  };
+  (window as any).__REACT_QUERY_FORCED__ = FORCE_INCLUDE;
+  (window as any).__TANSTACK_QUERY__ = ReactQuery;
+  (window as any).__USE_QUERY__ = useQuery;
+  (window as any).__USE_MUTATION__ = useMutation;
+  (window as any).__QUERY_CLIENT__ = QueryClient;
+  (window as any).__QUERY_CLIENT_PROVIDER__ = QueryClientProvider;
 }
+
+// Method 5: Force evaluation to prevent dead code elimination
+console.log('🔥 React Query forced into bundle:', typeof useQuery, typeof useMutation);
 
 // Re-export for use throughout the app
 export { useQuery, useMutation, QueryClient, QueryClientProvider };

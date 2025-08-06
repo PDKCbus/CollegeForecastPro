@@ -5,7 +5,7 @@
 
 set -e  # Exit on any error
 
-echo "🚀 Starting production deployment..."
+echo "🚀 Starting production deployment with ULTRA NUCLEAR React Query bundling..."
 
 # Pull latest changes
 echo "📥 Pulling latest code..."
@@ -31,5 +31,6 @@ docker-compose -f docker-compose.unified.yml --env-file .env.production up -d
 echo "📋 Showing application logs..."
 docker-compose -f docker-compose.unified.yml --env-file .env.production logs app
 
-echo "✅ Deployment complete!"
-echo "🌐 Check your site to verify React Query is working"
+echo "✅ Deployment complete with ultra nuclear React Query protection!"
+echo "🌐 Check your site - React Query is now FORCE BUNDLED and should survive production tree-shaking"
+echo "🔥 The race condition should be eliminated with multiple forced references"

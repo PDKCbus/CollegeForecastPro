@@ -20,8 +20,10 @@ RUN npm ls @tanstack/react-query || npm install @tanstack/react-query --save
 COPY . .
 
 # Build with all deps available but in production mode
+# Copy production vite config that prevents React Query tree-shaking
+COPY vite.config.production.ts .
 ENV NODE_ENV=production
-RUN npm run build
+RUN npx vite build --config vite.config.production.ts && npx esbuild server/index.ts --platform=node --packages=external --bundle --format=esm --outdir=dist
 
 # Verify React Query is in the bundle
 RUN echo "=== CHECKING FOR REACT QUERY IN BUILD ===" && \
