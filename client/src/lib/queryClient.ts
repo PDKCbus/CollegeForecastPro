@@ -1,23 +1,6 @@
-// NUCLEAR option - directly import and re-export to prevent tree-shaking
-import {
-  useQuery,
-  useMutation,
-  QueryClient,
-  type QueryFunction
-} from "@tanstack/react-query";
+import { QueryClient, type QueryFunction } from "@tanstack/react-query";
 
-// Force the bundler to include these by referencing them
-if (typeof window !== 'undefined') {
-  (window as any).__REACT_QUERY_BUNDLED__ = {
-    useQuery,
-    useMutation,
-    QueryClient
-  };
-}
-
-// Re-export for use throughout the app
-export { useQuery, useMutation, QueryClient };
-
+// Helper to throw an error if the response is not OK
 async function throwIfResNotOk(res: Response) {
   if (!res.ok) {
     const text = (await res.text()) || res.statusText;
@@ -25,10 +8,11 @@ async function throwIfResNotOk(res: Response) {
   }
 }
 
+// Generic API request helper
 export async function apiRequest(
   method: string,
   url: string,
-  data?: unknown | undefined,
+  data?: unknown
 ): Promise<Response> {
   const res = await fetch(url, {
     method,
@@ -42,23 +26,28 @@ export async function apiRequest(
 }
 
 type UnauthorizedBehavior = "returnNull" | "throw";
-export const getQueryFn: <T>(options: {
+
+// Factory for query functions used in React Query
+export const getQueryFn = <T>({
+  on401,
+}: {
   on401: UnauthorizedBehavior;
-}) => QueryFunction<T> =
-  ({ on401: unauthorizedBehavior }) =>
-  async ({ queryKey }: { queryKey: any }) => {
+}): QueryFunction<T> => {
+  return async ({ queryKey }: { queryKey: any }) => {
     const res = await fetch(queryKey[0] as string, {
       credentials: "include",
     });
 
-    if (unauthorizedBehavior === "returnNull" && res.status === 401) {
-      return null;
+    if (on401 === "returnNull" && res.status === 401) {
+      return null as T;
     }
 
     await throwIfResNotOk(res);
-    return await res.json();
+    return res.json();
   };
+};
 
+// Shared instance of QueryClient for your app
 export const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
