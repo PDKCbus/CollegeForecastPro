@@ -1,7 +1,7 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery } from "@/lib/queryClient";
 import { Trophy, TrendingUp, Target, TrendingDown, DollarSign, Star, Award, BarChart3, Zap, Shield } from "lucide-react";
 
 interface RickSeasonStats {
