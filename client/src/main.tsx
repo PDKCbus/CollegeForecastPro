@@ -23,8 +23,17 @@ if (typeof window !== 'undefined') {
   (window as any).__TANSTACK_ENTRY__ = TanstackQuery;
   Object.assign(window, { useQuery, useMutation, QueryClient, QueryClientProvider });
   
+  // CRITICAL: Runtime backup for imports that might fail
+  (window as any).ReactQueryBackup = {
+    useQuery,
+    useMutation,
+    QueryClient,
+    QueryClientProvider
+  };
+  
   // Log to force evaluation
   console.log('🚀 Entry point React Query forced:', Object.keys(REACT_QUERY_REFS));
+  console.log('🔧 Runtime backup installed:', typeof (window as any).ReactQueryBackup.useQuery);
 }
 
 // Add global styles for dark mode
