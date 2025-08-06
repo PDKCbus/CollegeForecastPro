@@ -1,0 +1,29 @@
+Node.js v20.19.4
+ubuntu@ip-172-26-10-37:~/ricks-picks$ docker cp import-production-data.ts $(docker-compose --env-file .env.production ps -q app):/app/
+WARN[0000] /home/ubuntu/ricks-picks/docker-compose.yml: the attribute `version` is obsolete, it will be ignored, please remove it to avoid potential co
+nfusion 
+Successfully copied 5.12kB to 9da433f295951676cf5e7d0b48bb44f6fa05a2143dacbabff00d073604a69c6c:/app/
+ubuntu@ip-172-26-10-37:~/ricks-picks$ docker cp production-data-export-2025-08-04.json $(docker-compose --env-file .env.production ps -q app):/app/
+WARN[0000] /home/ubuntu/ricks-picks/docker-compose.yml: the attribute `version` is obsolete, it will be ignored, please remove it to avoid potential co
+nfusion 
+Successfully copied 2.35MB to 9da433f295951676cf5e7d0b48bb44f6fa05a2143dacbabff00d073604a69c6c:/app/
+ubuntu@ip-172-26-10-37:~/ricks-picks$ docker-compose --env-file .env.production exec app npx tsx import-production-data.ts production-data-export-2025-
+08-04.json
+WARN[0000] /home/ubuntu/ricks-picks/docker-compose.yml: the attribute `version` is obsolete, it will be ignored, please remove it to avoid potential co
+nfusion 
+ Starting production data import from production-data-export-2025-08-04.json...
+ Import data from 2025-08-04T23:23:38.058Z
+ Total records to import: 3306
+ Importing teams...
+❌ Import failed: TypeError: value.toISOString is not a function
+    at PgTimestamp.mapToDriverValue (/app/node_modules/src/pg-core/columns/timestamp.ts:66:16)
+    at <anonymous> (/app/node_modules/src/sql/sql.ts:223:69)
+    at Array.map (<anonymous>)
+    at SQL.buildQueryFromSourceParams (/app/node_modules/src/sql/sql.ts:148:30)
+    at <anonymous> (/app/node_modules/src/sql/sql.ts:170:17)
+    at Array.map (<anonymous>)
+    at SQL.buildQueryFromSourceParams (/app/node_modules/src/sql/sql.ts:148:30)
+    at <anonymous> (/app/node_modules/src/sql/sql.ts:174:17)
+    at Array.map (<anonymous>)
+    at SQL.buildQueryFromSourceParams (/app/node_modules/src/sql/sql.ts:148:30)
+ubuntu@ip-172-26-10-37:~/ricks-picks$ 
