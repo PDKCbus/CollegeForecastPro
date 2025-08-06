@@ -6,7 +6,7 @@ import { FeatureHighlights } from "@/components/feature-highlights";
 import { CTASection } from "@/components/cta-section";
 import { SeasonStatsSection } from "@/components/season-stats-section";
 import { HeaderAd, InContentAd } from "@/components/google-ads";
-import { useQuery } from "@/lib/queryClient";
+import { useQuery } from "@lib/queryClient";
 import { useState, useEffect } from "react";
 import { FilterOption, GameWithTeams } from "@/lib/types";
 
