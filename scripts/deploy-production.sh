@@ -7,10 +7,6 @@ set -e  # Exit on any error
 
 echo "🚀 Starting production deployment..."
 
-# Pull latest changes
-echo "📥 Pulling latest code..."
-git pull origin more-august-5th
-
 # Stop containers
 echo "⏹️  Stopping containers..."
 docker-compose -f docker-compose.unified.yml --env-file .env.production down
