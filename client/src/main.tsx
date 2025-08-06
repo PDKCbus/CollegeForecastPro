@@ -1,6 +1,6 @@
 import { createRoot } from "react-dom/client";
 // FORCE React Query imports at entry point to prevent tree-shaking
-import { useQuery, useMutation, QueryClient } from "@tanstack/react-query";
+import { useQuery, useMutation, QueryClient } from "@/lib/queryClient";
 import App from "./App";
 import "./index.css";
 
