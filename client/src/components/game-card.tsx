@@ -9,7 +9,8 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
-import { Calendar, Clock, MapPin, MoreHorizontal, Twitter, TrendingUp, TrendingDown, BarChart3, Cloud, CloudRain, CloudSnow, Sun, Wind, Thermometer, Share2, Copy, Check, Heart, Shield } from "lucide-react";
+import { Calendar, Clock, MapPin, MoreHorizontal, Twitter, TrendingUp, TrendingDown, BarChart3, Cloud, CloudRain, CloudSnow, Sun, Wind, Thermometer, Share2, Copy, Check, Heart } from "lucide-react";
+import { GiAmericanFootballHelmet } from "react-icons/gi";
 import { useQuery, useMutation } from "@/lib/queryClient";
 import { useState } from "react";
 import { Link } from "wouter";
@@ -369,7 +370,7 @@ export function GameCard({ game }: GameCardProps) {
               />
             ) : null}
             <div className={`w-[45px] h-[45px] bg-blue-600 rounded-lg flex items-center justify-center ${getTeamLogo(game.awayTeam) ? 'hidden' : 'flex'}`}>
-              <Shield className="w-6 h-6 text-white" />
+              <GiAmericanFootballHelmet className="w-6 h-6 text-white" />
             </div>
             <div className="flex-1">
               <div className="flex items-center gap-2">
@@ -400,7 +401,7 @@ export function GameCard({ game }: GameCardProps) {
               />
             ) : null}
             <div className={`w-[45px] h-[45px] bg-blue-600 rounded-lg flex items-center justify-center ${getTeamLogo(game.homeTeam) ? 'hidden' : 'flex'}`}>
-              <Shield className="w-6 h-6 text-white" />
+              <GiAmericanFootballHelmet className="w-6 h-6 text-white" />
             </div>
             <div className="flex-1">
               <div className="flex items-center gap-2">

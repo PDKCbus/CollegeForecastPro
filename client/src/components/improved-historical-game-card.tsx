@@ -2,7 +2,8 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { TeamPerformanceIndicators } from "./team-performance-indicators";
 import { format } from "date-fns";
-import { Clock, Trophy, TrendingUp, Target, Calendar, Shield } from "lucide-react";
+import { Clock, Trophy, TrendingUp, Target, Calendar } from "lucide-react";
+import { GiAmericanFootballHelmet } from "react-icons/gi";
 
 interface HistoricalGameCardProps {
   game: {
@@ -212,7 +213,7 @@ export function ImprovedHistoricalGameCard({ game }: HistoricalGameCardProps) {
                   />
                 ) : null}
                 <div className={`w-full h-full bg-blue-600 rounded-lg flex items-center justify-center ${getTeamLogo(game.awayTeam) ? 'hidden' : 'flex'}`}>
-                  <Shield className="w-5 h-5 text-white" />
+                  <GiAmericanFootballHelmet className="w-5 h-5 text-white" />
                 </div>
               </div>
               <div className="min-w-0 flex-1">
@@ -274,7 +275,7 @@ export function ImprovedHistoricalGameCard({ game }: HistoricalGameCardProps) {
                   />
                 ) : null}
                 <div className={`w-full h-full bg-blue-600 rounded-lg flex items-center justify-center ${getTeamLogo(game.homeTeam) ? 'hidden' : 'flex'}`}>
-                  <Shield className="w-5 h-5 text-white" />
+                  <GiAmericanFootballHelmet className="w-5 h-5 text-white" />
                 </div>
               </div>
             </div>
