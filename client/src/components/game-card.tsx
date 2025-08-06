@@ -71,7 +71,7 @@ export function GameCard({ game }: GameCardProps) {
     if (team.logoUrl && team.logoUrl !== 'https://a.espncdn.com/i/teamlogos/ncaa/500/default.png') {
       return team.logoUrl;
     }
-    // Create football helmet SVG fallback to avoid 400 errors
+    // Create authentic American football helmet SVG fallback to avoid 400 errors
     return `data:image/svg+xml;base64,${btoa(`<svg width="45" height="45" viewBox="0 0 45 45" fill="none" xmlns="http://www.w3.org/2000/svg">
       <defs>
         <linearGradient id="helmet-gradient-${team.id}" x1="0%" y1="0%" x2="100%" y2="100%">
@@ -79,17 +79,42 @@ export function GameCard({ game }: GameCardProps) {
           <stop offset="100%" style="stop-color:#1e3a8a;stop-opacity:1" />
         </linearGradient>
       </defs>
-      <!-- American Football Helmet Shell -->
-      <path d="M22.5 4.5c-10 0-18 8-18 18 0 2.5 0.5 5 1 7l1 3.5c0.5 2.5 2.5 4.5 4.5 5.5l2.5 1c1 0.5 2.5 0.5 3.5 0.5h11c1 0 2.5 0 3.5-0.5l2.5-1c2-1 4-3 4.5-5.5l1-3.5c0.5-2 1-4.5 1-7 0-10-8-18-18-18z" fill="url(#helmet-gradient-${team.id})" stroke="#1a202c" stroke-width="1.5"/>
-      <!-- Face Guard/Cage -->
-      <g stroke="#e5e7eb" stroke-width="1.5" fill="none">
-        <path d="M13.5 26 L31.5 26 M13.5 28 L31.5 28 M13.5 30 L31.5 30"/>
-        <path d="M16 24 L16 32 M19 24 L19 32 M22.5 24 L22.5 32 M26 24 L26 32 M29 24 L29 32"/>
+      <!-- Modern Football Helmet Shell - Authentic shape -->
+      <path d="M8 22.5 C8 15 13.5 8.5 22.5 8.5 C31.5 8.5 37 15 37 22.5 C37 27 35.5 31 33 34 L33 37.5 C33 39 31.8 40 30.5 40 L14.5 40 C13.2 40 12 39 12 37.5 L12 34 C9.5 31 8 27 8 22.5 Z" fill="url(#helmet-gradient-${team.id})" stroke="#0f172a" stroke-width="1"/>
+      
+      <!-- Helmet ear holes for authenticity -->
+      <ellipse cx="10.5" cy="22.5" rx="1.8" ry="2.5" fill="#0a0a0a" opacity="0.7"/>
+      <ellipse cx="34.5" cy="22.5" rx="1.8" ry="2.5" fill="#0a0a0a" opacity="0.7"/>
+      
+      <!-- Professional Football Face Mask/Cage - Realistic design -->
+      <g stroke="#2a2a2a" stroke-width="1.8" fill="none" stroke-linecap="round" stroke-linejoin="round">
+        <!-- Main horizontal support bars -->
+        <path d="M12 26.5 Q15.5 25 22.5 25 Q29.5 25 33 26.5"/>
+        <path d="M13 30 Q16.5 28.5 22.5 28.5 Q28.5 28.5 32 30"/>
+        <path d="M14.5 33 Q18 32 22.5 32 Q27 32 30.5 33"/>
+        
+        <!-- Vertical cage bars for protection -->
+        <path d="M12 26.5 L13 30 L14.5 33"/>
+        <path d="M15.5 25.5 L16.5 29 L17.5 32.5"/>
+        <path d="M19.5 25.2 L20 29 L20.8 32.2"/>
+        <path d="M22.5 25 L22.5 28.5 L22.5 32"/>
+        <path d="M25.5 25.2 L25 29 L24.2 32.2"/>
+        <path d="M29.5 25.5 L28.5 29 L27.5 32.5"/>
+        <path d="M33 26.5 L32 30 L30.5 33"/>
+        
+        <!-- Diagonal reinforcement bars -->
+        <path d="M15.5 25.5 L19.5 25.2"/>
+        <path d="M25.5 25.2 L29.5 25.5"/>
+        <path d="M16.5 29 L20 29"/>
+        <path d="M25 29 L28.5 29"/>
       </g>
-      <!-- Helmet Ridge -->
-      <path d="M22.5 4.5 L22.5 17" stroke="#1a202c" stroke-width="1" fill="none"/>
+      
+      <!-- Helmet chin strap attachment points -->
+      <circle cx="12.5" cy="35" r="1" fill="#333" opacity="0.6"/>
+      <circle cx="32.5" cy="35" r="1" fill="#333" opacity="0.6"/>
+      
       <!-- Team abbreviation on helmet -->
-      <text x="22.5" y="16" font-family="Arial, sans-serif" font-size="8" font-weight="bold" fill="white" text-anchor="middle">${team.abbreviation?.substring(0, 3) || team.name?.substring(0, 3) || 'CFB'}</text>
+      <text x="22.5" y="17.5" font-family="Arial, sans-serif" font-size="6.5" font-weight="bold" fill="white" text-anchor="middle" stroke="#0f172a" stroke-width="0.3">${team.abbreviation?.substring(0, 3) || team.name?.substring(0, 3) || 'CFB'}</text>
     </svg>`)}`;
   };
 
@@ -443,12 +468,12 @@ export function GameCard({ game }: GameCardProps) {
                         <div className="text-white/60 text-xs flex items-center justify-center gap-1">
                           SPREAD
                           <SpreadExplainerTooltip 
-                            spread={game.spread}
+                            spread={game.spread ?? undefined}
                             homeTeam={game.homeTeam.name}
                             awayTeam={game.awayTeam.name}
-                            homeScore={game.homeTeamScore}
-                            awayScore={game.awayTeamScore}
-                            isCompleted={game.completed}
+                            homeScore={game.homeTeamScore ?? undefined}
+                            awayScore={game.awayTeamScore ?? undefined}
+                            isCompleted={game.completed ?? undefined}
                             className="ml-1"
                           />
                         </div>
@@ -643,7 +668,7 @@ export function GameCard({ game }: GameCardProps) {
                 <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-accent mx-auto mb-2"></div>
                 <div className="text-white/70">Loading historical matchups...</div>
               </div>
-            ) : headToHeadData && Array.isArray(headToHeadData.games) && headToHeadData.games.length > 0 ? (
+            ) : headToHeadData && Array.isArray((headToHeadData as any).games) && (headToHeadData as any).games.length > 0 ? (
               <>
                 {/* Series Summary */}
                 <div className="bg-surface-light rounded-lg p-4">
@@ -652,7 +677,7 @@ export function GameCard({ game }: GameCardProps) {
                       {game.awayTeam.name} vs {game.homeTeam.name}
                     </div>
                     <div className="text-sm text-white/70">
-                      All-Time Series • {headToHeadData.totalGames || 0} games since 2009
+                      All-Time Series • {(headToHeadData as any).totalGames || 0} games since 2009
                     </div>
                   </div>
                   
@@ -665,7 +690,7 @@ export function GameCard({ game }: GameCardProps) {
                           className="w-12 h-12 object-contain"
                         />
                       </div>
-                      <div className="font-bold text-xl">{headToHeadData.awayTeamWins || 0}</div>
+                      <div className="font-bold text-xl">{(headToHeadData as any).awayTeamWins || 0}</div>
                       <div className="text-xs text-white/60">Wins</div>
                     </div>
                     <div className="text-center">
@@ -676,7 +701,7 @@ export function GameCard({ game }: GameCardProps) {
                           className="w-12 h-12 object-contain"
                         />
                       </div>
-                      <div className="font-bold text-xl">{headToHeadData.homeTeamWins || 0}</div>
+                      <div className="font-bold text-xl">{(headToHeadData as any).homeTeamWins || 0}</div>
                       <div className="text-xs text-white/60">Wins</div>
                     </div>
                   </div>
@@ -684,9 +709,9 @@ export function GameCard({ game }: GameCardProps) {
 
                 {/* Recent Games */}
                 <div>
-                  <div className="text-sm font-medium mb-3">Recent Matchups ({Math.min(headToHeadData.games?.length || 0, 10)} games)</div>
+                  <div className="text-sm font-medium mb-3">Recent Matchups ({Math.min((headToHeadData as any).games?.length || 0, 10)} games)</div>
                   <div className="space-y-2 max-h-64 overflow-y-auto">
-                    {(headToHeadData.games || []).slice(0, 10).map((historicalGame: any, index: number) => (
+                    {((headToHeadData as any).games || []).slice(0, 10).map((historicalGame: any, index: number) => (
                       <div key={index} className="bg-surface-light rounded-lg p-3">
                         <div className="flex justify-between items-center">
                           <div className="text-sm text-white/70">

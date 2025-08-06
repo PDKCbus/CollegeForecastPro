@@ -68,7 +68,7 @@ export function ImprovedHistoricalGameCard({ game }: HistoricalGameCardProps) {
     if (team.logoUrl && team.logoUrl !== 'https://a.espncdn.com/i/teamlogos/ncaa/500/default.png') {
       return team.logoUrl;
     }
-    // Create football helmet SVG fallback to avoid 400 errors
+    // Create authentic American football helmet SVG fallback to avoid 400 errors
     return `data:image/svg+xml;base64,${btoa(`<svg width="40" height="40" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
       <defs>
         <linearGradient id="helmet-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
@@ -76,17 +76,41 @@ export function ImprovedHistoricalGameCard({ game }: HistoricalGameCardProps) {
           <stop offset="100%" style="stop-color:#1e3a8a;stop-opacity:1" />
         </linearGradient>
       </defs>
-      <!-- American Football Helmet Shell -->
-      <path d="M20 4c-9 0-16 7-16 16 0 2 0.5 4 1 6l1 3c0.5 2 2 4 4 5l2 1c1 0.5 2 0.5 3 0.5h10c1 0 2 0 3-0.5l2-1c2-1 3.5-3 4-5l1-3c0.5-2 1-4 1-6 0-9-7-16-16-16z" fill="url(#helmet-gradient)" stroke="#1a202c" stroke-width="1.5"/>
-      <!-- Face Guard/Cage -->
-      <g stroke="#e5e7eb" stroke-width="1.5" fill="none">
-        <path d="M12 23 L28 23 M12 25 L28 25 M12 27 L28 27"/>
-        <path d="M14 21 L14 29 M17 21 L17 29 M20 21 L20 29 M23 21 L23 29 M26 21 L26 29"/>
+      <!-- Modern Football Helmet Shell - Authentic shape -->
+      <path d="M7 20 C7 13.5 12 7.5 20 7.5 C28 7.5 33 13.5 33 20 C33 24 31.8 27.5 29.5 30.5 L29.5 33.5 C29.5 34.8 28.5 35.8 27.5 35.8 L12.5 35.8 C11.5 35.8 10.5 34.8 10.5 33.5 L10.5 30.5 C8.2 27.5 7 24 7 20 Z" fill="url(#helmet-gradient)" stroke="#0f172a" stroke-width="1"/>
+      
+      <!-- Helmet ear holes for authenticity -->
+      <ellipse cx="9" cy="20" rx="1.6" ry="2.2" fill="#0a0a0a" opacity="0.7"/>
+      <ellipse cx="31" cy="20" rx="1.6" ry="2.2" fill="#0a0a0a" opacity="0.7"/>
+      
+      <!-- Professional Football Face Mask/Cage - Realistic design -->
+      <g stroke="#2a2a2a" stroke-width="1.6" fill="none" stroke-linecap="round" stroke-linejoin="round">
+        <!-- Main horizontal support bars -->
+        <path d="M10.5 23.5 Q13.5 22.2 20 22.2 Q26.5 22.2 29.5 23.5"/>
+        <path d="M11.5 26.5 Q14.5 25.2 20 25.2 Q25.5 25.2 28.5 26.5"/>
+        <path d="M12.5 29 Q15.5 28 20 28 Q24.5 28 27.5 29"/>
+        
+        <!-- Vertical cage bars for protection -->
+        <path d="M10.5 23.5 L11.5 26.5 L12.5 29"/>
+        <path d="M14 22.8 L14.8 26 L15.5 28.8"/>
+        <path d="M17.5 22.4 L17.8 25.5 L18.2 28.2"/>
+        <path d="M20 22.2 L20 25.2 L20 28"/>
+        <path d="M22.5 22.4 L22.2 25.5 L21.8 28.2"/>
+        <path d="M26 22.8 L25.2 26 L24.5 28.8"/>
+        <path d="M29.5 23.5 L28.5 26.5 L27.5 29"/>
+        
+        <!-- Diagonal reinforcement bars -->
+        <path d="M14 22.8 L17.5 22.4"/>
+        <path d="M22.5 22.4 L26 22.8"/>
+        <path d="M14.8 26 L17.8 25.5"/>
+        <path d="M22.2 25.5 L25.2 26"/>
       </g>
-      <!-- Helmet Ridge -->
-      <path d="M20 4 L20 15" stroke="#1a202c" stroke-width="1" fill="none"/>
-      <!-- Team abbreviation on helmet -->
-      <text x="20" y="14" font-family="Arial, sans-serif" font-size="7" font-weight="bold" fill="white" text-anchor="middle">${team.abbreviation?.substring(0, 3) || team.name?.substring(0, 3) || 'CFB'}</text>
+      
+      <!-- Helmet chin strap attachment points -->
+      <circle cx="11" cy="31" r="0.8" fill="#333" opacity="0.6"/>
+      <circle cx="29" cy="31" r="0.8" fill="#333" opacity="0.6"/>
+      
+      <text x="20" y="15.5" font-family="Arial, sans-serif" font-size="5.8" font-weight="bold" fill="white" text-anchor="middle" stroke="#0f172a" stroke-width="0.3">${team.abbreviation?.substring(0, 3) || team.name?.substring(0, 3) || 'CFB'}</text>
     </svg>`)}`;
   };
 
