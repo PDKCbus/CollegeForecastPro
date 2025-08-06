@@ -1,56 +1,43 @@
-# Unified production Dockerfile that forces bundling of all dependencies
-FROM node:20-alpine AS base
+# Simple unified Dockerfile
+FROM node:20-alpine
 
 # Install curl for health checks
 RUN apk add --no-cache curl
 
-# Production build stage
-FROM base AS production
 WORKDIR /app
 
-# Copy package files first for better caching
+# Copy package files
 COPY package*.json ./
 
-# Install ALL dependencies including devDependencies for proper bundling
-ENV NODE_ENV=development
-RUN npm install --legacy-peer-deps && npm cache clean --force
+# Install EVERYTHING - no tricks, no games
+RUN npm install --include=dev --legacy-peer-deps
 
-# Copy all source code
+# Copy source code
 COPY . .
 
-# Switch to production mode and build
+# Build frontend
 ENV NODE_ENV=production
-RUN echo "🚀 Starting unified production build..." && \
-    npm run build && \
-    echo "✅ Production build completed!"
+RUN npm run build
 
-# Verify build output exists
-RUN ls -la dist/ || (echo "Build failed - no dist directory" && exit 1)
+# Debug: Check what was built
+RUN ls -la dist/ || echo "No dist directory found"
+RUN ls -la dist/public/ || echo "No dist/public directory found"
 
-# Copy frontend build to server public directory
+# Copy build to server public (handle both possible output locations)
 RUN mkdir -p server/public
-RUN cp -r dist/* server/public/
+RUN if [ -d "dist/public" ]; then \
+      cp -r dist/public/* server/public/; \
+    elif [ -d "dist" ]; then \
+      cp -r dist/* server/public/; \
+    else \
+      echo "Build failed - no output found"; exit 1; \
+    fi
 
-# Create logs directory and set permissions
-RUN mkdir -p logs && chmod 755 logs
-
-# Create a non-root user
-RUN addgroup --system --gid 1001 nodejs
-RUN adduser --system --uid 1001 nextjs
-
-# Change ownership of the app directory to the nextjs user
-RUN chown -R nextjs:nodejs /app
-
-# Set proper permissions
-USER nextjs
+# Verify files were copied
+RUN ls -la server/public/ && ls -la server/public/index.html
 
 # Expose port
 EXPOSE 5000
 
-# Health check
-HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
-  CMD curl -f http://localhost:5000/api/health || exit 1
-
-# Start the application with production environment
-ENV NODE_ENV=production
+# Start server
 CMD ["npx", "tsx", "server/index.ts"]
