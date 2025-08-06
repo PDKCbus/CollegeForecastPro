@@ -75,13 +75,13 @@ export function GameCard({ game }: GameCardProps) {
 
   const handleShareGame = async () => {
     const gameUrl = `${window.location.origin}/game-analysis?game=${game.id}`;
-    
+
     try {
       // Always copy to clipboard for consistent behavior
       await navigator.clipboard.writeText(gameUrl);
       setLinkCopied(true);
       setTimeout(() => setLinkCopied(false), 2000);
-      
+
       // Show success toast
       toast({
         title: "Link copied!",
@@ -98,7 +98,7 @@ export function GameCard({ game }: GameCardProps) {
       document.body.removeChild(textArea);
       setLinkCopied(true);
       setTimeout(() => setLinkCopied(false), 2000);
-      
+
       // Show success toast
       toast({
         title: "Link copied!",
@@ -112,7 +112,7 @@ export function GameCard({ game }: GameCardProps) {
 
   const getSpreadDisplay = () => {
     if (game.spread === null || game.spread === undefined) return "N/A";
-    
+
     const favoredTeam = game.spread > 0 ? game.awayTeam : game.homeTeam;
     return `${favoredTeam.abbreviation} -${formatSpread(Math.abs(game.spread))}`;
   };
@@ -153,7 +153,7 @@ export function GameCard({ game }: GameCardProps) {
     // Priority 1: Rick's personal picks (when available)
     if (predictionData?.ricksPick) {
       const pick = predictionData.ricksPick;
-      
+
       // Format Rick's spread pick
       if (pick.spreadPick && pick.spreadPick !== 'NO PLAY') {
         return {
@@ -163,7 +163,7 @@ export function GameCard({ game }: GameCardProps) {
           isRicksPick: true
         };
       }
-      
+
       // Format Rick's total pick if no spread pick
       if (pick.totalPick && pick.totalPick !== 'NO PLAY') {
         return {
@@ -174,7 +174,7 @@ export function GameCard({ game }: GameCardProps) {
         };
       }
     }
-    
+
     // Priority 2: Use unified server prediction (algorithmic fallback)
     const algorithmicPrediction = predictionData?.algorithmicPredictions?.[0];
     if (algorithmicPrediction) {
@@ -187,7 +187,7 @@ export function GameCard({ game }: GameCardProps) {
           isRicksPick: false
         };
       }
-      
+
       // Handle "No Strong Play" case
       if (algorithmicPrediction.notes && algorithmicPrediction.notes.includes("No Strong Play")) {
         return {
@@ -198,7 +198,7 @@ export function GameCard({ game }: GameCardProps) {
         };
       }
     }
-    
+
     // Final fallback if no server prediction available
     return {
       team: null,
@@ -220,8 +220,8 @@ export function GameCard({ game }: GameCardProps) {
     }
 
     // Check if we have any actual weather data
-    const hasWeatherData = game.temperature !== null || 
-                          game.windSpeed !== null || 
+    const hasWeatherData = game.temperature !== null ||
+                          game.windSpeed !== null ||
                           game.weatherCondition !== null ||
                           game.precipitation !== null;
 
@@ -300,7 +300,7 @@ export function GameCard({ game }: GameCardProps) {
             <div>{formatTime(game.startDate)} ET</div>
           </div>
         </div>
-        
+
         {/* Venue and Weather Info */}
         <div className="text-center mb-3">
           <div className="text-white/60 text-xs mb-1 flex items-center justify-center gap-1">
@@ -325,7 +325,7 @@ export function GameCard({ game }: GameCardProps) {
             // Show location information
             const stadium = game.stadium || '';
             const location = game.location || '';
-            
+
             // For international venues, show city and country
             if (stadium === 'Aviva Stadium') {
               return <div className="text-white/50 text-xs">Dublin, Ireland</div>;
@@ -344,13 +344,13 @@ export function GameCard({ game }: GameCardProps) {
             return null;
           })()}
         </div>
-        
+
         <div className="flex justify-between items-center">
           <div className="flex items-center space-x-3">
-            <img 
-              src={game.awayTeam.logoUrl || ""} 
-              alt={game.awayTeam.name} 
-              className="team-logo w-[45px] h-[45px] object-contain" 
+            <img
+              src={game.awayTeam.logoUrl || ""}
+              alt={game.awayTeam.name}
+              className="team-logo w-[45px] h-[45px] object-contain"
             />
             <div className="flex-1">
               <div className="flex items-center gap-2">
@@ -366,13 +366,13 @@ export function GameCard({ game }: GameCardProps) {
           </div>
           <div className="font-bold text-xl">{formatTeamRecord(game.awayTeam.wins || 0, game.awayTeam.losses || 0)}</div>
         </div>
-        
+
         <div className="flex justify-between items-center mt-4">
           <div className="flex items-center space-x-3">
-            <img 
-              src={game.homeTeam.logoUrl || ""} 
-              alt={game.homeTeam.name} 
-              className="team-logo w-[45px] h-[45px] object-contain" 
+            <img
+              src={game.homeTeam.logoUrl || ""}
+              alt={game.homeTeam.name}
+              className="team-logo w-[45px] h-[45px] object-contain"
             />
             <div className="flex-1">
               <div className="flex items-center gap-2">
@@ -388,13 +388,13 @@ export function GameCard({ game }: GameCardProps) {
           </div>
           <div className="font-bold text-xl">{formatTeamRecord(game.homeTeam.wins || 0, game.homeTeam.losses || 0)}</div>
         </div>
-        
+
         <div className="mt-4 pt-3 border-t border-surface-light">
           {/* Team Comparison Indicator */}
           <div className="mb-3">
             <TeamComparisonIndicator homeTeam={game.homeTeam} awayTeam={game.awayTeam} />
           </div>
-          
+
           <div className="flex justify-between mb-3">
             <div className="flex justify-center flex-1">
               <div className="flex space-x-2">
@@ -402,13 +402,13 @@ export function GameCard({ game }: GameCardProps) {
                   const ricksPickData = getRicksPickData();
                   const spreadBgColor = ricksPickData.hasSpreadPick ? 'bg-blue-600' : 'bg-surface-light';
                   const totalBgColor = ricksPickData.hasTotalPick ? 'bg-blue-600' : 'bg-surface-light';
-                  
+
                   return (
                     <>
                       <div className={`text-center px-4 py-3 ${spreadBgColor} rounded min-w-[110px]`}>
                         <div className="text-white/60 text-xs flex items-center justify-center gap-1">
                           SPREAD
-                          <SpreadExplainerTooltip 
+                          <SpreadExplainerTooltip
                             spread={game.spread}
                             homeTeam={game.homeTeam.name}
                             awayTeam={game.awayTeam.name}
@@ -448,14 +448,14 @@ export function GameCard({ game }: GameCardProps) {
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="bg-surface border-surface-light">
-                <DropdownMenuItem 
+                <DropdownMenuItem
                   onClick={() => setHeadToHeadDialogOpen(true)}
                   className="text-white hover:bg-surface-light cursor-pointer"
                 >
                   <BarChart3 className="mr-2 h-4 w-4" />
                   View Head-to-Head History
                 </DropdownMenuItem>
-                <DropdownMenuItem 
+                <DropdownMenuItem
                   onClick={handleShareGame}
                   className="text-white hover:bg-surface-light cursor-pointer"
                 >
@@ -474,14 +474,14 @@ export function GameCard({ game }: GameCardProps) {
               </DropdownMenuContent>
             </DropdownMenu>
           </div>
-          
+
           {/* Fan Sentiment Section - Currently hidden but code preserved for future use */}
           {/* <div className="mb-3">
-            <FanSentiment 
-              gameId={game.id} 
-              homeTeam={game.homeTeam.abbreviation} 
-              awayTeam={game.awayTeam.abbreviation} 
-              compact={true} 
+            <FanSentiment
+              gameId={game.id}
+              homeTeam={game.homeTeam.abbreviation}
+              awayTeam={game.awayTeam.abbreviation}
+              compact={true}
             />
           </div> */}
 
@@ -493,7 +493,7 @@ export function GameCard({ game }: GameCardProps) {
               const headerText = isRicksPick ? "🏈 RICK'S PICK" : "🤓 ANALYSIS PICK";
               const bgColor = isRicksPick ? "bg-blue-600 border-blue-500" : "bg-slate-600 border-slate-500";
               const textColor = isRicksPick ? "text-blue-100" : "text-slate-100";
-              
+
               return (
                 <div className={`${bgColor} border rounded-lg p-3 mb-3`}>
                   <div className="text-center">
@@ -523,7 +523,7 @@ export function GameCard({ game }: GameCardProps) {
               </Button>
             </Link>
             <div className="flex-1">
-              <SocialShare 
+              <SocialShare
                 game={game}
                 prediction={(() => {
                   // Use the same algorithm as game analysis page for consistency
@@ -558,7 +558,7 @@ export function GameCard({ game }: GameCardProps) {
               What Twitter/X Thinks
             </DialogTitle>
           </DialogHeader>
-          
+
           <div className="space-y-4">
             {analyzeSentimentMutation.isPending ? (
               <div className="text-center py-6">
@@ -569,7 +569,7 @@ export function GameCard({ game }: GameCardProps) {
               <div className="text-center py-6">
                 <Twitter className="h-12 w-12 text-white/40 mx-auto mb-3" />
                 <div className="text-white/70 mb-4">No sentiment data available yet</div>
-                <Button 
+                <Button
                   onClick={() => analyzeSentimentMutation.mutate()}
                   className="bg-blue-500 hover:bg-blue-600"
                 >
@@ -602,7 +602,7 @@ export function GameCard({ game }: GameCardProps) {
               Head-to-Head History
             </DialogTitle>
           </DialogHeader>
-          
+
           <div className="space-y-4">
             {isHeadToHeadLoading ? (
               <div className="text-center py-6">
@@ -621,12 +621,12 @@ export function GameCard({ game }: GameCardProps) {
                       All-Time Series • {headToHeadData.totalGames || 0} games since 2009
                     </div>
                   </div>
-                  
+
                   <div className="grid grid-cols-2 gap-4">
                     <div className="text-center">
                       <div className="flex items-center justify-center mb-2">
-                        <img 
-                          src={game.awayTeam.logoUrl || ""} 
+                        <img
+                          src={game.awayTeam.logoUrl || ""}
                           alt={game.awayTeam.name}
                           className="w-12 h-12 object-contain"
                         />
@@ -636,8 +636,8 @@ export function GameCard({ game }: GameCardProps) {
                     </div>
                     <div className="text-center">
                       <div className="flex items-center justify-center mb-2">
-                        <img 
-                          src={game.homeTeam.logoUrl || ""} 
+                        <img
+                          src={game.homeTeam.logoUrl || ""}
                           alt={game.homeTeam.name}
                           className="w-12 h-12 object-contain"
                         />
@@ -662,7 +662,7 @@ export function GameCard({ game }: GameCardProps) {
                             {historicalGame.venue || 'N/A'}
                           </div>
                         </div>
-                        
+
                         <div className="flex justify-between items-center mt-2">
                           <div className="flex items-center gap-2">
                             <span className="text-sm">{historicalGame.awayTeamName}</span>
@@ -677,12 +677,12 @@ export function GameCard({ game }: GameCardProps) {
                             <span className="text-sm">{historicalGame.homeTeamName}</span>
                           </div>
                         </div>
-                        
+
                         {historicalGame.spread && (
                           <div className="text-xs text-white/60 mt-1 text-center">
                             <div className="flex items-center justify-center gap-1">
                               Spread: {Math.abs(historicalGame.spread)}
-                              <SpreadExplainerTooltip 
+                              <SpreadExplainerTooltip
                                 spread={historicalGame.spread}
                                 homeTeam={historicalGame.homeTeamName}
                                 awayTeam={historicalGame.awayTeamName}
@@ -695,10 +695,10 @@ export function GameCard({ game }: GameCardProps) {
                             {historicalGame.spreadResult && (
                               <div className="mt-1">
                                 <span className={`px-1 rounded ${
-                                  historicalGame.spreadResult === 'covered' ? 'bg-green-600' : 
+                                  historicalGame.spreadResult === 'covered' ? 'bg-green-600' :
                                   historicalGame.spreadResult === 'push' ? 'bg-yellow-600' : 'bg-red-600'
                                 }`}>
-                                  {historicalGame.spreadResult === 'push' ? 'PUSH' : 
+                                  {historicalGame.spreadResult === 'push' ? 'PUSH' :
                                    historicalGame.spreadResult === 'covered' ? 'COVERED' : 'NOT COVERED'}
                                   {historicalGame.favoriteTeam && historicalGame.spreadResult !== 'push' && (
                                     <span className="ml-1 text-xs opacity-75">

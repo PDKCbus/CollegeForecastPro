@@ -143,9 +143,9 @@ export default function GameAnalysis() {
                 {value}{unit}
               </p>
               {teamLogo && (
-                <img 
-                  src={teamLogo} 
-                  alt="Favored team" 
+                <img
+                  src={teamLogo}
+                  alt="Favored team"
                   className="w-8 h-8 object-contain"
                 />
               )}
@@ -154,9 +154,9 @@ export default function GameAnalysis() {
           <div className="flex items-center space-x-2">
             <Icon className="h-4 w-4 text-muted-foreground" />
             {trend && (
-              trend === 'up' ? 
+              trend === 'up' ?
                 <TrendingUp className="h-4 w-4 text-green-600" /> :
-              trend === 'down' ? 
+              trend === 'down' ?
                 <TrendingDown className="h-4 w-4 text-red-600" /> :
                 <Activity className="h-4 w-4 text-gray-600" />
             )}
@@ -204,7 +204,7 @@ export default function GameAnalysis() {
             </button>
           </Link>
         </div>
-        
+
         <div className="flex items-center space-x-4">
           <Select value={selectedGameId} onValueChange={setSelectedGameId}>
             <SelectTrigger className="w-full sm:w-80">
@@ -296,7 +296,7 @@ export default function GameAnalysis() {
                       <div className="text-sm text-muted-foreground">Vegas Line</div>
                       <div className="font-medium">
                         {selectedGame.spread ? (
-                          selectedGame.spread < 0 
+                          selectedGame.spread < 0
                             ? `${selectedGame.homeTeam?.name} ${formatSpread(selectedGame.spread)}`
                             : `${selectedGame.awayTeam?.name} -${formatSpread(selectedGame.spread)}`
                         ) : 'No line'}
@@ -305,7 +305,7 @@ export default function GameAnalysis() {
                     <div>
                       <div className="text-sm text-muted-foreground">Our Prediction</div>
                       <div className="font-medium">
-                        {analysis.predictiveMetrics.spreadPrediction > 0 
+                        {analysis.predictiveMetrics.spreadPrediction > 0
                           ? `${selectedGame.homeTeam?.name} -${formatSpread(analysis.predictiveMetrics.spreadPrediction)}`
                           : `${selectedGame.awayTeam?.name} -${formatSpread(Math.abs(analysis.predictiveMetrics.spreadPrediction))}`
                         }
@@ -317,19 +317,19 @@ export default function GameAnalysis() {
                       {(() => {
                         const vegasSpread = selectedGame.spread;
                         const ourSpread = analysis.predictiveMetrics.spreadPrediction;
-                        
+
                         // Check if teams are favored by different teams (major disagreement)
                         // Database: spread=3.5 means away team (KSU) favored by 3.5
                         // Algorithm: spread=1.75 means home team (ISU) favored by 1.75
                         const vegasFavorsAway = vegasSpread > 0; // Positive spread = away team favored (KSU -3.5)
                         const weFavorHome = ourSpread > 0; // Positive spread = home team favored (ISU -1.75)
                         const differentTeamsFavored = vegasFavorsAway && weFavorHome; // One favors away, one favors home
-                        
+
                         // Calculate total disagreement correctly
-                        const totalDisagreement = differentTeamsFavored 
+                        const totalDisagreement = differentTeamsFavored
                           ? Math.abs(vegasSpread) + Math.abs(ourSpread) // Different teams = add the spreads
                           : Math.abs(vegasSpread - ourSpread); // Same team = difference in margin
-                          
+
                         return totalDisagreement >= 2.0 || differentTeamsFavored;
                       })() ? (
                         <Badge className={`${
@@ -340,17 +340,17 @@ export default function GameAnalysis() {
                           {(() => {
                             const vegasSpread = selectedGame.spread;
                             const ourSpread = analysis.predictiveMetrics.spreadPrediction;
-                            
+
                             // Check if we disagree on the favorite
                             const vegasFavorsAway = vegasSpread > 0; // Positive spread = away team favored (KSU -3.5)
                             const weFavorHome = ourSpread > 0; // Positive spread = home team favored (ISU -1.75)
                             const differentTeamsFavored = vegasFavorsAway && weFavorHome; // One favors away, one favors home
-                            
+
                             // Calculate edge correctly
-                            const edge = differentTeamsFavored 
+                            const edge = differentTeamsFavored
                               ? Math.abs(vegasSpread) + Math.abs(ourSpread) // Different teams = add spreads (e.g., 3.5 + 1.75 = 5.25)
                               : Math.abs(vegasSpread - ourSpread); // Same team = difference in margin
-                            
+
                             // Only recommend bets with significant edge (2+ points) or different teams favored
                             if (edge >= 2.0 || differentTeamsFavored) {
                               if (differentTeamsFavored) {
@@ -441,7 +441,7 @@ export default function GameAnalysis() {
                           </TooltipTrigger>
                           <TooltipContent className="max-w-sm">
                             <p>
-                              {selectedGame?.week === 1 
+                              {selectedGame?.week === 1
                                 ? "Week 1 predictions use preseason rankings, recruiting data, and returning player projections. Analytics become more accurate after games are played."
                                 : "Analytics based on current season performance, updated after each game with real statistics and momentum scoring."
                               }
@@ -464,7 +464,7 @@ export default function GameAnalysis() {
                       <h4 className="font-semibold text-red-600 text-sm sm:text-base">{selectedGame.awayTeam?.name} (Away)</h4>
                     </div>
                   </div>
-                  
+
                   {/* Analytics Bars */}
                   <div className="space-y-4">
                     <AnalyticsBar
@@ -636,7 +636,7 @@ export default function GameAnalysis() {
                       </div>
                       <p className="text-blue-700">{analysis.predictiveMetrics.recommendation}</p>
                     </div>
-                    
+
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                       <div className="text-center p-4 border rounded-lg">
                         <div className="text-2xl font-bold text-green-600">

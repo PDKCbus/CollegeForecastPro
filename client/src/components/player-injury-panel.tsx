@@ -15,12 +15,12 @@ interface PlayerInjuryPanelProps {
   awayTeamName: string;
 }
 
-export function PlayerInjuryPanel({ 
-  gameId, 
-  homeTeamId, 
-  awayTeamId, 
-  homeTeamName, 
-  awayTeamName 
+export function PlayerInjuryPanel({
+  gameId,
+  homeTeamId,
+  awayTeamId,
+  homeTeamName,
+  awayTeamName
 }: PlayerInjuryPanelProps) {
   const [activeTab, setActiveTab] = useState('injury-report');
 
@@ -292,8 +292,8 @@ export function PlayerInjuryPanel({
                             {handicappingData.injuryImpact.home.healthScore}/10
                           </span>
                         </div>
-                        <Progress 
-                          value={handicappingData.injuryImpact.home.healthScore * 10} 
+                        <Progress
+                          value={handicappingData.injuryImpact.home.healthScore * 10}
                           className="h-2"
                         />
                       </div>
@@ -326,8 +326,8 @@ export function PlayerInjuryPanel({
                             {handicappingData.injuryImpact.away.healthScore}/10
                           </span>
                         </div>
-                        <Progress 
-                          value={handicappingData.injuryImpact.away.healthScore * 10} 
+                        <Progress
+                          value={handicappingData.injuryImpact.away.healthScore * 10}
                           className="h-2"
                         />
                       </div>
@@ -363,7 +363,7 @@ export function PlayerInjuryPanel({
                   <div className="space-y-4">
                     <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
                       <span className="font-medium">Overall Handicapping Edge:</span>
-                      <Badge 
+                      <Badge
                         variant={Math.abs(handicappingData.overallHandicappingEdge || 0) >= 3 ? 'default' : 'secondary'}
                         className="text-sm"
                       >
@@ -371,12 +371,12 @@ export function PlayerInjuryPanel({
                         {(handicappingData.overallHandicappingEdge || 0).toFixed(1)}
                       </Badge>
                     </div>
-                    
+
                     <div className="flex items-center justify-between p-4 bg-blue-50 rounded-lg">
                       <span className="font-medium">Confidence Level:</span>
                       <div className="flex items-center gap-2">
-                        <Progress 
-                          value={(handicappingData.confidenceLevel || 0) * 10} 
+                        <Progress
+                          value={(handicappingData.confidenceLevel || 0) * 10}
                           className="w-20 h-3 bg-white"
                         />
                         <span className="text-sm font-medium">

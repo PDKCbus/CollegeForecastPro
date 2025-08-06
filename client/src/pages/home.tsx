@@ -18,24 +18,24 @@ export default function Home() {
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const gamesPerPage = 12;
-  
+
   // Show all weeks that have authentic 2025 data
   const weeks = ["Week 1", "Week 2", "Week 3", "Week 4", "Week 5", "Week 6", "Week 7", "Week 8", "Week 9", "Week 10", "Week 11", "Week 12", "Week 13", "Week 14", "Week 15"];
-  
+
   const filterOptions: FilterOption[] = [
     { label: "All Games", value: "all", isActive: activeFilter === "all" },
     { label: "Top 25", value: "top25", isActive: activeFilter === "top25" }
   ];
-  
+
   // Extract week number from selectedWeek (e.g., "Week 2" -> "2")
   const weekNumber = selectedWeek.replace("Week ", "");
-  
+
   // Load games for current page
   const { data: gamesResponse, isLoading, error } = useQuery({
     queryKey: ["/api/games/upcoming", weekNumber, currentPage, gamesPerPage],
     queryFn: async () => {
       const offset = (currentPage - 1) * gamesPerPage;
-      const url = weekNumber && weekNumber !== "all" 
+      const url = weekNumber && weekNumber !== "all"
         ? `/api/games/upcoming?limit=${gamesPerPage}&offset=${offset}&week=${weekNumber}`
         : `/api/games/upcoming?limit=${gamesPerPage}&offset=${offset}`;
       console.log('🔍 Fetching games:', url);
@@ -80,7 +80,7 @@ export default function Home() {
   }, [weekNumber]);
 
   // Filter games based on active filter, conference, and team search (week filtering now done in API)
-  const upcomingGames = Array.isArray(gamesResponse?.games) ? 
+  const upcomingGames = Array.isArray(gamesResponse?.games) ?
     // First deduplicate by game ID to prevent any duplicate rendering
     gamesResponse.games.reduce((unique: GameWithTeams[], game: GameWithTeams) => {
       if (!unique.find(g => g.id === game.id)) {
@@ -89,7 +89,7 @@ export default function Home() {
       return unique;
     }, []).filter((game: GameWithTeams) => {
       // Week filtering is now handled by the API, so we skip it here
-      
+
       // Apply category filter
       let categoryMatch = true;
       if (activeFilter === "top25") {
@@ -98,14 +98,14 @@ export default function Home() {
         const awayRanked = !!(game.awayTeam?.rank && game.awayTeam.rank <= 25);
         categoryMatch = homeRanked || awayRanked;
       }
-      
+
       // Apply conference filter
       let conferenceMatch = true;
       if (selectedConference) {
-        conferenceMatch = game.homeTeam?.conference === selectedConference || 
+        conferenceMatch = game.homeTeam?.conference === selectedConference ||
                          game.awayTeam?.conference === selectedConference;
       }
-      
+
       // Apply team name filter
       let teamMatch = true;
       if (teamFilter.trim()) {
@@ -113,7 +113,7 @@ export default function Home() {
         teamMatch = game.homeTeam?.name.toLowerCase().includes(searchTerm) ||
                     game.awayTeam?.name.toLowerCase().includes(searchTerm);
       }
-      
+
       return categoryMatch && conferenceMatch && teamMatch;
     }).sort((a: GameWithTeams, b: GameWithTeams) => {
       // Sort by highest ranking (lowest number = higher rank)
@@ -121,7 +121,7 @@ export default function Home() {
       const bHighestRank = Math.min(b.homeTeam?.rank || 999, b.awayTeam?.rank || 999);
       return aHighestRank - bHighestRank;
     }) : [];
-  
+
   const { data: featuredGame, isLoading: isFeaturedLoading } = useQuery<GameWithTeams>({
     queryKey: ["/api/games/featured"],
     queryFn: async () => {
@@ -132,12 +132,12 @@ export default function Home() {
   });
 
 
-  
+
   const handleWeekChange = (week: string) => {
     console.log('Week changed to:', week);
     setSelectedWeek(week);
   };
-  
+
   const handleFilterChange = (filter: string) => {
     setActiveFilter(filter);
   };
@@ -149,19 +149,19 @@ export default function Home() {
   const handleConferenceFilter = (conference: string) => {
     setSelectedConference(conference);
   };
-  
+
   return (
     <>
       <Hero />
-      
+
       {/* Header Ad - Top of page after hero */}
       <div className="container mx-auto px-4 pt-8">
         <HeaderAd />
       </div>
-      
+
       <main className="container mx-auto px-4 py-8 md:py-12">
-        <FilterBar 
-          weeks={weeks} 
+        <FilterBar
+          weeks={weeks}
           selectedWeek={selectedWeek}
           onWeekChange={handleWeekChange}
           filterOptions={filterOptions}
@@ -170,7 +170,7 @@ export default function Home() {
           selectedConference={selectedConference}
           onConferenceFilter={handleConferenceFilter}
         />
-        
+
         {/* Game of the Week Section */}
         <section id="featured-games" className="mb-8 md:mb-12 text-center mt-8 md:mt-12">
           <h2 className="text-3xl font-bold bg-gradient-to-r from-accent to-primary bg-clip-text text-transparent flex items-center justify-center gap-3 mb-6">
@@ -199,15 +199,15 @@ export default function Home() {
             </div>
           )}
         </section>
-        
+
         {/* In-Content Ad - Between featured game and game list */}
         <InContentAd />
-        
+
         {/* Today's Top Picks Section */}
         <section className="mb-8 md:mb-12 text-center">
           <h2 className="text-3xl font-bold text-white mb-8">Today's Top Picks</h2>
         </section>
-        
+
         {isLoading ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {[...Array(6)].map((_, index) => (
@@ -217,7 +217,7 @@ export default function Home() {
         ) : error ? (
           <div className="text-center py-12">
             <p className="text-red-400 mb-4">Error loading games: {error.message}</p>
-            <button 
+            <button
               onClick={() => window.location.reload()}
               className="bg-accent hover:bg-accent/80 text-white px-6 py-3 rounded-lg font-medium transition-colors"
             >
@@ -306,12 +306,12 @@ export default function Home() {
           </div>
         )}
       </main>
-      
+
       {/* Rick's Season Performance Section - positioned after game cards */}
       <section className="container mx-auto px-4 py-4 md:py-8">
         <SeasonStatsSection />
       </section>
-      
+
       <FeatureHighlights />
       <CTASection />
     </>

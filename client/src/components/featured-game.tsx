@@ -1,9 +1,6 @@
 import { GameWithTeams } from "@/lib/types";
+import { TeamPerformanceIndicators } from "./team-performance-indicators";
 import { Link } from "wouter";
-import { useQuery } from "@tanstack/react-query";
-import { SocialShare } from "./social-share";
-import { Button } from "@/components/ui/button";
-import { BarChart3 } from "lucide-react";
 
 interface FeaturedGameProps {
   game: GameWithTeams;
@@ -57,25 +54,58 @@ export function FeaturedGame({ game }: FeaturedGameProps) {
       </div>
       
       <div className="p-6">
-        {/* Game Date/Time */}
-        <div className="text-center mb-4">
-          <div className="text-white/60 text-sm">
-            {formatDate(game.startDate)} • {formatTime(game.startDate)}
-          </div>
-        </div>
-
-        {/* Teams */}
-        <div className="flex items-center justify-between mb-6">
-          <div className="flex flex-col items-center flex-1">
-            <img 
-              src={game.awayTeam.logoUrl || ""}
-              alt={game.awayTeam.name} 
-              className="team-logo mb-2 w-[45px] h-[45px] object-contain" 
-            />
-            <div className="text-center">
-              <div className="font-bold text-lg">{game.awayTeam.name}</div>
+        <div className="flex flex-col md:flex-row justify-between items-center mb-4">
+          <div className="flex items-center space-x-4 mb-4 md:mb-0">
+            <div className="flex flex-col items-center">
+              <img 
+                src={game.awayTeam.logoUrl || ""}
+                alt={game.awayTeam.name} 
+                className="team-logo mb-2 w-[45px] h-[45px] object-contain" 
+              />
+              <div className="flex items-center gap-2">
+                <span className="font-bold text-lg">{game.awayTeam.name}</span>
+                <TeamPerformanceIndicators team={game.awayTeam} variant="compact" />
+              </div>
               {game.awayTeam.rank ? (
-                <div className="text-accent font-bold text-sm">#{game.awayTeam.rank}</div>
+                <div className="text-accent font-bold">#{game.awayTeam.rank}</div>
+              ) : (
+                <div className="text-white/50 text-xs">Unranked</div>
+              )}
+            </div>
+            
+            <div className="flex flex-col items-center px-4">
+              <div className="text-lg font-medium mb-1">@</div>
+              <div className="text-xs text-white/60 mb-2">
+                {formatDate(game.startDate)}, {formatTime(game.startDate)}
+              </div>
+              {/* Weather Icon for Game of the Week */}
+              <div className="flex items-center text-xs">
+                {game.isDome ? (
+                  <>
+                    <span className="text-sm">🏟️</span>
+                    <span className="ml-1 text-white/60">Dome</span>
+                  </>
+                ) : game.temperature !== null ? (
+                  <>
+                    <span className="text-sm">☀️</span>
+                    <span className="ml-1 text-yellow-400">{Math.round(game.temperature)}°F</span>
+                  </>
+                ) : null}
+              </div>
+            </div>
+            
+            <div className="flex flex-col items-center">
+              <img 
+                src={game.homeTeam.logoUrl || ""}
+                alt={game.homeTeam.name} 
+                className="team-logo mb-2 w-[45px] h-[45px] object-contain" 
+              />
+              <div className="flex items-center gap-2">
+                <span className="font-bold text-lg">{game.homeTeam.name}</span>
+                <TeamPerformanceIndicators team={game.homeTeam} variant="compact" />
+              </div>
+              {game.homeTeam.rank ? (
+                <div className="text-accent font-bold">#{game.homeTeam.rank}</div>
               ) : (
                 <div className="text-white/50 text-xs">Unranked</div>
               )}
@@ -117,17 +147,14 @@ export function FeaturedGame({ game }: FeaturedGameProps) {
                 </div>
               </div>
             )}
-            {algorithmicPredictions?.algorithmicPredictions?.[0] && (
-              <div className="text-center p-3 bg-surface-light rounded-lg">
-                <div className="text-xs text-white/60 mb-1">🤓 ANALYSIS PICK</div>
-                <div className="font-bold">
-                  {algorithmicPredictions.algorithmicPredictions[0].predictedWinnerId === game.homeTeam.id 
-                    ? game.homeTeam.name
-                    : game.awayTeam.name
-                  }
-                </div>
-              </div>
-            )}
+            <div className="text-center p-3 bg-surface-light rounded-lg">
+              <div className="text-xs text-white/60 mb-1">SPREAD</div>
+              <div className="font-bold">{getSpreadDisplay()}</div>
+            </div>
+            <div className="text-center p-3 bg-surface-light rounded-lg">
+              <div className="text-xs text-white/60 mb-1">O/U</div>
+              <div className="font-bold">{game.overUnder ? formatSpread(game.overUnder) : "N/A"}</div>
+            </div>
           </div>
         </div>
 
@@ -231,6 +258,15 @@ export function FeaturedGame({ game }: FeaturedGameProps) {
               } : undefined}
             />
           </div>
+          <Link href={`/game-analysis?game=${game.id}`}>
+            <button className="text-accent hover:text-accent/80 font-medium flex items-center space-x-1">
+              <span>Full Analysis</span>
+              <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-arrow-right">
+                <path d="M5 12h14" />
+                <path d="m12 5 7 7-7 7" />
+              </svg>
+            </button>
+          </Link>
         </div>
       </div>
     </div>

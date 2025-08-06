@@ -1,6 +1,6 @@
 // Import everything needed from React Query to force bundling
-import { 
-  useQuery, 
+import {
+  useQuery,
   useMutation,
   QueryClient,
   QueryFunction

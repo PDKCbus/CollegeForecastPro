@@ -129,9 +129,9 @@ export function Footer() {
               &copy; {new Date().getFullYear()} Rick's Picks. All rights reserved.
             </div>
             <div className="flex space-x-6">
-              <Link href="/privacy-policy" onClick={() => window.scrollTo(0, 0)} className="text-white/60 hover:text-white text-sm transition-colors">Privacy Policy</Link>
-              <Link href="/terms-of-service" onClick={() => window.scrollTo(0, 0)} className="text-white/60 hover:text-white text-sm transition-colors">Terms of Service</Link>
-              <Link href="/cookie-policy" onClick={() => window.scrollTo(0, 0)} className="text-white/60 hover:text-white text-sm transition-colors">Cookie Policy</Link>
+              <a href="#" className="text-white/60 hover:text-white text-sm transition-colors">Privacy Policy</a>
+              <a href="#" className="text-white/60 hover:text-white text-sm transition-colors">Terms of Service</a>
+              <a href="#" className="text-white/60 hover:text-white text-sm transition-colors">Cookie Policy</a>
             </div>
           </div>
         </div>

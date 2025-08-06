@@ -1,29 +1,56 @@
-# Simple unified Dockerfile
-FROM node:20-alpine
+# Unified production Dockerfile that forces bundling of all dependencies
+FROM node:20-alpine AS base
 
 # Install curl for health checks
 RUN apk add --no-cache curl
 
+# Production build stage
+FROM base AS production
 WORKDIR /app
 
-# Copy package files
+# Copy package files first for better caching
 COPY package*.json ./
 
-# Install EVERYTHING - no tricks, no games
-RUN npm install --include=dev --legacy-peer-deps
+# Install ALL dependencies including devDependencies for proper bundling
+ENV NODE_ENV=development
+RUN npm install --legacy-peer-deps && npm cache clean --force
 
-# Copy source code
+# Copy all source code
 COPY . .
 
-# Build frontend
+# Switch to production mode and build
 ENV NODE_ENV=production
-RUN npm run build
+RUN echo "🚀 Starting unified production build..." && \
+    npm run build && \
+    echo "✅ Production build completed!"
 
-# Copy build to server public
-RUN mkdir -p server/public && cp -r dist/public/* server/public/
+# Verify build output exists
+RUN ls -la dist/ || (echo "Build failed - no dist directory" && exit 1)
+
+# Copy frontend build to server public directory
+RUN mkdir -p server/public
+RUN cp -r dist/* server/public/
+
+# Create logs directory and set permissions
+RUN mkdir -p logs && chmod 755 logs
+
+# Create a non-root user
+RUN addgroup --system --gid 1001 nodejs
+RUN adduser --system --uid 1001 nextjs
+
+# Change ownership of the app directory to the nextjs user
+RUN chown -R nextjs:nodejs /app
+
+# Set proper permissions
+USER nextjs
 
 # Expose port
 EXPOSE 5000
 
-# Start server
+# Health check
+HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
+  CMD curl -f http://localhost:5000/api/health || exit 1
+
+# Start the application with production environment
+ENV NODE_ENV=production
 CMD ["npx", "tsx", "server/index.ts"]
