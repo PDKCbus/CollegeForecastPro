@@ -19,8 +19,22 @@ COPY . .
 ENV NODE_ENV=production
 RUN npm run build
 
-# Copy build to server public
-RUN mkdir -p server/public && cp -r dist/public/* server/public/
+# Debug: Check what was built
+RUN ls -la dist/ || echo "No dist directory found"
+RUN ls -la dist/public/ || echo "No dist/public directory found"
+
+# Copy build to server public (handle both possible output locations)
+RUN mkdir -p server/public
+RUN if [ -d "dist/public" ]; then \
+      cp -r dist/public/* server/public/; \
+    elif [ -d "dist" ]; then \
+      cp -r dist/* server/public/; \
+    else \
+      echo "Build failed - no output found"; exit 1; \
+    fi
+
+# Verify files were copied
+RUN ls -la server/public/ && ls -la server/public/index.html
 
 # Expose port
 EXPOSE 5000
