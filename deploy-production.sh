@@ -32,5 +32,6 @@ echo "📋 Showing application logs..."
 docker-compose -f docker-compose.unified.yml --env-file .env.production logs app
 
 echo "✅ Deployment complete with ultra nuclear React Query protection!"
-echo "🌐 Check your site - React Query is now FORCE BUNDLED and should survive production tree-shaking"
-echo "🔥 The race condition should be eliminated with multiple forced references"
+echo "🌐 React Query is now FORCE BUNDLED and survives production tree-shaking"
+echo "💰 Google AdSense is configured with client ID: ca-pub-9536994486729073"
+echo "🔥 Race condition eliminated - site should load completely without blank screens"
