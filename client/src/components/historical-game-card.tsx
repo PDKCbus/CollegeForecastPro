@@ -324,3 +324,5 @@ export function HistoricalGameCard({ game }: HistoricalGameCardProps) {
     </div>
   );
 }
+
+export default HistoricalGameCard;
