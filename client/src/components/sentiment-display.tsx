@@ -15,7 +15,7 @@ interface SentimentDisplayProps {
 export function SentimentDisplay({ gameId, teamId, title }: SentimentDisplayProps) {
   const endpoint = gameId ? `/api/sentiment/game/${gameId}` : `/api/sentiment/team/${teamId}`;
   const analyzeEndpoint = gameId ? `/api/sentiment/analyze-game/${gameId}` : `/api/sentiment/analyze-team/${teamId}`;
-  
+
   const { data: sentiments, isLoading } = useQuery<SentimentAnalysis[]>({
     queryKey: ['sentiment', gameId ? 'game' : 'team', gameId || teamId],
     queryFn: async () => {
@@ -33,8 +33,8 @@ export function SentimentDisplay({ gameId, teamId, title }: SentimentDisplayProp
       return response.json();
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ 
-        queryKey: ['sentiment', gameId ? 'game' : 'team', gameId || teamId] 
+      queryClient.invalidateQueries({
+        queryKey: ['sentiment', gameId ? 'game' : 'team', gameId || teamId]
       });
     },
   });
@@ -66,7 +66,7 @@ export function SentimentDisplay({ gameId, teamId, title }: SentimentDisplayProp
     const updated = new Date(date);
     const diff = now.getTime() - updated.getTime();
     const minutes = Math.floor(diff / 60000);
-    
+
     if (minutes < 1) return "Just now";
     if (minutes < 60) return `${minutes}m ago`;
     const hours = Math.floor(minutes / 60);
@@ -173,15 +173,15 @@ export function SentimentDisplay({ gameId, teamId, title }: SentimentDisplayProp
           </div>
           <div className="w-full bg-surface-light rounded-full h-2 overflow-hidden">
             <div className="h-full flex">
-              <div 
+              <div
                 className="bg-green-500 transition-all duration-300"
                 style={{ width: `${totalPosts > 0 ? (sentiment.positiveCount / totalPosts) * 100 : 0}%` }}
               />
-              <div 
+              <div
                 className="bg-yellow-500 transition-all duration-300"
                 style={{ width: `${totalPosts > 0 ? (sentiment.neutralCount / totalPosts) * 100 : 0}%` }}
               />
-              <div 
+              <div
                 className="bg-red-500 transition-all duration-300"
                 style={{ width: `${totalPosts > 0 ? (sentiment.negativeCount / totalPosts) * 100 : 0}%` }}
               />

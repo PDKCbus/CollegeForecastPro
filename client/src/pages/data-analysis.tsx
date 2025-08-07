@@ -3,13 +3,13 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
-import { 
-  BarChart, 
-  Bar, 
-  XAxis, 
-  YAxis, 
-  CartesianGrid, 
-  Tooltip, 
+import {
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
   ResponsiveContainer,
   LineChart,
   Line,
@@ -42,7 +42,7 @@ export default function DataAnalysis() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ startYear: 2009, endYear: 2024 })
       });
-      
+
       if (response.ok) {
         const result = await response.json();
         console.log('Historical sync started:', result);
@@ -60,7 +60,7 @@ export default function DataAnalysis() {
       const response = await fetch('/api/historical/sync-teams', {
         method: 'POST',
       });
-      
+
       if (response.ok) {
         refetchProgress();
       }
@@ -70,17 +70,17 @@ export default function DataAnalysis() {
   };
 
   // Transform data for charts
-  const seasonData = progress?.gamesBySeason ? 
+  const seasonData = progress?.gamesBySeason ?
     Object.entries(progress.gamesBySeason)
-      .map(([year, games]) => ({ 
-        year: parseInt(year), 
-        games: games as number 
+      .map(([year, games]) => ({
+        year: parseInt(year),
+        games: games as number
       }))
       .sort((a, b) => a.year - b.year)
     : [];
 
   const totalExpectedGames = 16 * 800; // 16 seasons * ~800 games per season
-  const progressPercentage = progress?.totalGames ? 
+  const progressPercentage = progress?.totalGames ?
     Math.min((progress.totalGames / totalExpectedGames) * 100, 100) : 0;
 
   const seasonsWithData = seasonData.filter(s => s.games > 0).length;
@@ -106,9 +106,9 @@ export default function DataAnalysis() {
           </p>
         </div>
         <div className="flex gap-2">
-          <Button 
-            onClick={refetchProgress} 
-            variant="outline" 
+          <Button
+            onClick={refetchProgress}
+            variant="outline"
             size="sm"
           >
             <RefreshCw className="w-4 h-4 mr-2" />
@@ -187,10 +187,10 @@ export default function DataAnalysis() {
             </div>
             <Progress value={progressPercentage} className="w-full" />
           </div>
-          
+
           <div className="flex gap-2">
-            <Button 
-              onClick={startHistoricalSync} 
+            <Button
+              onClick={startHistoricalSync}
               disabled={isHistoricalSyncRunning}
               className="flex-1"
             >
@@ -201,9 +201,9 @@ export default function DataAnalysis() {
               )}
               {isHistoricalSyncRunning ? 'Syncing...' : 'Start 15-Year Sync (2009-2024)'}
             </Button>
-            
-            <Button 
-              onClick={syncAllTeams} 
+
+            <Button
+              onClick={syncAllTeams}
               variant="outline"
             >
               <Download className="w-4 h-4 mr-2" />
@@ -245,10 +245,10 @@ export default function DataAnalysis() {
                 <XAxis dataKey="year" />
                 <YAxis />
                 <Tooltip />
-                <Line 
-                  type="monotone" 
-                  dataKey="games" 
-                  stroke="#8884d8" 
+                <Line
+                  type="monotone"
+                  dataKey="games"
+                  stroke="#8884d8"
                   strokeWidth={2}
                   dot={{ fill: '#8884d8' }}
                 />

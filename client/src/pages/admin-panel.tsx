@@ -301,11 +301,6 @@ export default function AdminPanel() {
                 {isLoading ? 'Logging in...' : 'Login'}
               </Button>
             </form>
-            <div className="mt-4 p-3 bg-slate-100 rounded-lg text-sm text-slate-600">
-              <strong>Default credentials:</strong><br />
-              Username: rick<br />
-              Password: RicksPicks2025!
-            </div>
           </CardContent>
         </Card>
       </div>

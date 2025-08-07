@@ -378,7 +378,7 @@ export default function GameAnalysis() {
                         </TooltipTrigger>
                         <TooltipContent className="max-w-sm">
                           <p>
-                            {selectedGame?.week === 1 
+                            {selectedGame?.week === 1
                               ? "Week 1 predictions use preseason rankings, recruiting data, and returning player projections. Analytics become more accurate after games are played."
                               : "Analytics based on current season performance, updated after each game with real statistics and momentum scoring."
                             }

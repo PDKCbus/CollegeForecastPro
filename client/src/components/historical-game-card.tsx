@@ -94,7 +94,7 @@ export function HistoricalGameCard({ game }: HistoricalGameCardProps) {
 
     // Only show weather if we have actual data
     const hasWeatherData = temp !== null || windSpeed !== null || weatherCondition !== null || precipitation !== null;
-    
+
     if (!hasWeatherData) {
       return null;
     }
@@ -138,7 +138,7 @@ export function HistoricalGameCard({ game }: HistoricalGameCardProps) {
 
   const getSpreadBadge = () => {
     if (spread === 0) return null;
-    
+
     if (isPush) {
       return <Badge className="bg-yellow-500 text-white text-xs font-semibold">PUSH</Badge>;
     } else if (homeCovered) {
@@ -151,7 +151,7 @@ export function HistoricalGameCard({ game }: HistoricalGameCardProps) {
 
   const getOverUnderBadge = () => {
     if (overUnder === 0) return null;
-    
+
     if (isOverPush) {
       return <Badge className="bg-yellow-500 text-white text-xs font-semibold">PUSH</Badge>;
     } else if (wentOver) {
@@ -202,8 +202,8 @@ export function HistoricalGameCard({ game }: HistoricalGameCardProps) {
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 flex-shrink-0">
                 {getTeamLogo(game.awayTeam) ? (
-                  <img 
-                    src={getTeamLogo(game.awayTeam)} 
+                  <img
+                    src={getTeamLogo(game.awayTeam)}
                     alt={game.awayTeam.name}
                     className="w-full h-full object-contain"
                     onError={(e) => {
@@ -265,8 +265,8 @@ export function HistoricalGameCard({ game }: HistoricalGameCardProps) {
               </div>
               <div className="w-10 h-10 flex-shrink-0">
                 {getTeamLogo(game.homeTeam) ? (
-                  <img 
-                    src={getTeamLogo(game.homeTeam)} 
+                  <img
+                    src={getTeamLogo(game.homeTeam)}
                     alt={game.homeTeam.name}
                     className="w-full h-full object-contain"
                     onError={(e) => {
