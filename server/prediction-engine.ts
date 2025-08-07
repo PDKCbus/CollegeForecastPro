@@ -343,11 +343,13 @@ export class RicksPicksPredictionEngine {
           recommendedBet = `Take ${homeTeam}`;
           console.log(`   ✅ OPPOSITE SIDES RECOMMENDATION: ${recommendedBet}`);
         } else if (totalScore > Math.abs(vegasSpread)) {
-          // Same side but we favor home team more strongly
+          // Same side but we favor home team more strongly - take the favorite
           recommendedBet = `Take ${homeTeam}`;
           console.log(`   ✅ SAME SIDE RECOMMENDATION: ${recommendedBet} (we favor by ${totalScore}, Vegas by ${Math.abs(vegasSpread)})`);
         } else {
-          console.log(`   ❌ No recommendation - same side but Vegas edge is stronger`);
+          // Same side but Vegas favors home team more strongly - VALUE IS ON THE UNDERDOG
+          recommendedBet = `Take ${awayTeam}`;
+          console.log(`   ✅ UNDERDOG VALUE RECOMMENDATION: ${recommendedBet} +${Math.abs(vegasSpread)} (we think they lose by only ${totalScore}, Vegas gives ${Math.abs(vegasSpread)} points)`);
         }
       }
     } else {
@@ -358,11 +360,13 @@ export class RicksPicksPredictionEngine {
           recommendedBet = `Take ${awayTeam}`;
           console.log(`   ✅ OPPOSITE SIDES RECOMMENDATION: ${recommendedBet}`);
         } else if (Math.abs(totalScore) > Math.abs(vegasSpread)) {
-          // Same side but we favor away team more strongly
+          // Same side but we favor away team more strongly - take the favorite
           recommendedBet = `Take ${awayTeam}`;
           console.log(`   ✅ SAME SIDE RECOMMENDATION: ${recommendedBet} (we favor by ${Math.abs(totalScore)}, Vegas by ${Math.abs(vegasSpread)})`);
         } else {
-          console.log(`   ❌ No recommendation - same side but Vegas edge is stronger`);
+          // Same side but Vegas favors away team more strongly - VALUE IS ON THE UNDERDOG
+          recommendedBet = `Take ${homeTeam}`;
+          console.log(`   ✅ UNDERDOG VALUE RECOMMENDATION: ${recommendedBet} +${Math.abs(vegasSpread)} (we think they lose by only ${Math.abs(totalScore)}, Vegas gives ${Math.abs(vegasSpread)} points)`);
         }
       }
     }
