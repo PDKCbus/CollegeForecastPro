@@ -372,21 +372,19 @@ export default function GameAnalysis() {
                   <CardHeader>
                     <CardTitle className="flex items-center gap-2">
                       Team Analytics Comparison
-                      <TooltipProvider>
-                        <Tooltip>
-                          <TooltipTrigger>
-                            <Info className="h-4 w-4 text-muted-foreground" />
-                          </TooltipTrigger>
-                          <TooltipContent className="max-w-sm">
-                            <p>
-                              {selectedGame?.week === 1 
-                                ? "Week 1 predictions use preseason rankings, recruiting data, and returning player projections. Analytics become more accurate after games are played."
-                                : "Analytics based on current season performance, updated after each game with real statistics and momentum scoring."
-                              }
-                            </p>
-                          </TooltipContent>
-                        </Tooltip>
-                      </TooltipProvider>
+                      <Tooltip>
+                        <TooltipTrigger>
+                          <Info className="h-4 w-4 text-muted-foreground" />
+                        </TooltipTrigger>
+                        <TooltipContent className="max-w-sm">
+                          <p>
+                            {selectedGame?.week === 1 
+                              ? "Week 1 predictions use preseason rankings, recruiting data, and returning player projections. Analytics become more accurate after games are played."
+                              : "Analytics based on current season performance, updated after each game with real statistics and momentum scoring."
+                            }
+                          </p>
+                        </TooltipContent>
+                      </Tooltip>
                     </CardTitle>
                     <CardDescription>
                       Side-by-side comparison of team performance metrics
