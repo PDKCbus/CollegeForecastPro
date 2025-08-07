@@ -204,6 +204,14 @@ export function GameCard({ game }: GameCardProps) {
           reason: "Algorithm assessment matches Vegas line - no significant edge"
         };
       }
+      
+      // Handle case where prediction exists but no bet recommendation (edge below threshold)
+      if (!algorithmicPrediction.spreadPick) {
+        return {
+          pick: "No Strong Edge",
+          reason: "Analysis complete - edge below 2-point threshold"
+        };
+      }
     }
     
     // Final fallback if no server prediction available
