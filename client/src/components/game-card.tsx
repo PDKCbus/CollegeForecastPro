@@ -10,6 +10,7 @@ import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Calendar, Clock, MapPin, MoreHorizontal, Twitter, TrendingUp, TrendingDown, BarChart3, Cloud, CloudRain, CloudSnow, Sun, Wind, Thermometer, Share2, Copy, Check, Heart } from "lucide-react";
+import { GiAmericanFootballHelmet } from "react-icons/gi";
 import { useQuery, useMutation } from "@/lib/queryClient";
 import { useState } from "react";
 import { Link } from "wouter";
@@ -63,6 +64,16 @@ export function GameCard({ game }: GameCardProps) {
 
   const formatTeamRecord = (wins: number, losses: number) => {
     return `${wins}-${losses}`;
+  };
+
+  // Get team logo with shield fallback for football teams
+  const getTeamLogo = (team: any) => {
+    // Use team's stored logoUrl if available and not the default
+    if (team.logoUrl && team.logoUrl !== 'https://a.espncdn.com/i/teamlogos/ncaa/500/default.png') {
+      return team.logoUrl;
+    }
+    // Return null to trigger Shield icon component fallback
+    return null;
   };
 
   // Helper function to format spreads properly for football (whole numbers or .5 only)
@@ -347,11 +358,20 @@ export function GameCard({ game }: GameCardProps) {
 
         <div className="flex justify-between items-center">
           <div className="flex items-center space-x-3">
-            <img
-              src={game.awayTeam.logoUrl || ""}
-              alt={game.awayTeam.name}
-              className="team-logo w-[45px] h-[45px] object-contain"
-            />
+            {getTeamLogo(game.awayTeam) ? (
+              <img
+                src={getTeamLogo(game.awayTeam)}
+                alt={game.awayTeam.name}
+                className="team-logo w-[45px] h-[45px] object-contain"
+                onError={(e) => {
+                  e.currentTarget.style.display = 'none';
+                  e.currentTarget.nextElementSibling.style.display = 'flex';
+                }}
+              />
+            ) : null}
+            <div className={`w-[45px] h-[45px] bg-blue-600 rounded-lg flex items-center justify-center ${getTeamLogo(game.awayTeam) ? 'hidden' : 'flex'}`}>
+              <GiAmericanFootballHelmet className="w-6 h-6 text-white" />
+            </div>
             <div className="flex-1">
               <div className="flex items-center gap-2">
                 <span className="font-semibold">{game.awayTeam.name}</span>
@@ -369,11 +389,20 @@ export function GameCard({ game }: GameCardProps) {
 
         <div className="flex justify-between items-center mt-4">
           <div className="flex items-center space-x-3">
-            <img
-              src={game.homeTeam.logoUrl || ""}
-              alt={game.homeTeam.name}
-              className="team-logo w-[45px] h-[45px] object-contain"
-            />
+            {getTeamLogo(game.homeTeam) ? (
+              <img
+                src={getTeamLogo(game.homeTeam)}
+                alt={game.homeTeam.name}
+                className="team-logo w-[45px] h-[45px] object-contain"
+                onError={(e) => {
+                  e.currentTarget.style.display = 'none';
+                  e.currentTarget.nextElementSibling.style.display = 'flex';
+                }}
+              />
+            ) : null}
+            <div className={`w-[45px] h-[45px] bg-blue-600 rounded-lg flex items-center justify-center ${getTeamLogo(game.homeTeam) ? 'hidden' : 'flex'}`}>
+              <GiAmericanFootballHelmet className="w-6 h-6 text-white" />
+            </div>
             <div className="flex-1">
               <div className="flex items-center gap-2">
                 <span className="font-semibold">{game.homeTeam.name}</span>
@@ -409,12 +438,12 @@ export function GameCard({ game }: GameCardProps) {
                         <div className="text-white/60 text-xs flex items-center justify-center gap-1">
                           SPREAD
                           <SpreadExplainerTooltip
-                            spread={game.spread}
+                            spread={game.spread ?? undefined}
                             homeTeam={game.homeTeam.name}
                             awayTeam={game.awayTeam.name}
-                            homeScore={game.homeTeamScore}
-                            awayScore={game.awayTeamScore}
-                            isCompleted={game.completed}
+                            homeScore={game.homeTeamScore ?? undefined}
+                            awayScore={game.awayTeamScore ?? undefined}
+                            isCompleted={game.completed ?? undefined}
                             className="ml-1"
                           />
                         </div>
@@ -609,7 +638,7 @@ export function GameCard({ game }: GameCardProps) {
                 <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-accent mx-auto mb-2"></div>
                 <div className="text-white/70">Loading historical matchups...</div>
               </div>
-            ) : headToHeadData && Array.isArray(headToHeadData.games) && headToHeadData.games.length > 0 ? (
+            ) : headToHeadData && Array.isArray((headToHeadData as any).games) && (headToHeadData as any).games.length > 0 ? (
               <>
                 {/* Series Summary */}
                 <div className="bg-surface-light rounded-lg p-4">
@@ -618,7 +647,7 @@ export function GameCard({ game }: GameCardProps) {
                       {game.awayTeam.name} vs {game.homeTeam.name}
                     </div>
                     <div className="text-sm text-white/70">
-                      All-Time Series • {headToHeadData.totalGames || 0} games since 2009
+                      All-Time Series • {(headToHeadData as any).totalGames || 0} games since 2009
                     </div>
                   </div>
 
@@ -631,7 +660,7 @@ export function GameCard({ game }: GameCardProps) {
                           className="w-12 h-12 object-contain"
                         />
                       </div>
-                      <div className="font-bold text-xl">{headToHeadData.awayTeamWins || 0}</div>
+                      <div className="font-bold text-xl">{(headToHeadData as any).awayTeamWins || 0}</div>
                       <div className="text-xs text-white/60">Wins</div>
                     </div>
                     <div className="text-center">
@@ -642,7 +671,7 @@ export function GameCard({ game }: GameCardProps) {
                           className="w-12 h-12 object-contain"
                         />
                       </div>
-                      <div className="font-bold text-xl">{headToHeadData.homeTeamWins || 0}</div>
+                      <div className="font-bold text-xl">{(headToHeadData as any).homeTeamWins || 0}</div>
                       <div className="text-xs text-white/60">Wins</div>
                     </div>
                   </div>
@@ -650,9 +679,9 @@ export function GameCard({ game }: GameCardProps) {
 
                 {/* Recent Games */}
                 <div>
-                  <div className="text-sm font-medium mb-3">Recent Matchups ({Math.min(headToHeadData.games?.length || 0, 10)} games)</div>
+                  <div className="text-sm font-medium mb-3">Recent Matchups ({Math.min((headToHeadData as any).games?.length || 0, 10)} games)</div>
                   <div className="space-y-2 max-h-64 overflow-y-auto">
-                    {(headToHeadData.games || []).slice(0, 10).map((historicalGame: any, index: number) => (
+                    {((headToHeadData as any).games || []).slice(0, 10).map((historicalGame: any, index: number) => (
                       <div key={index} className="bg-surface-light rounded-lg p-3">
                         <div className="flex justify-between items-center">
                           <div className="text-sm text-white/70">
