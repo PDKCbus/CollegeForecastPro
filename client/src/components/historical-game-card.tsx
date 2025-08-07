@@ -4,7 +4,6 @@ import { TeamPerformanceIndicators } from "./team-performance-indicators";
 import { format } from "date-fns";
 import { Clock, Trophy, TrendingUp, Target, Calendar } from "lucide-react";
 import { GiAmericanFootballHelmet } from "react-icons/gi";
-import { HelmetFallback } from "./helmet-fallback";
 
 interface HistoricalGameCardProps {
   game: {
@@ -36,7 +35,7 @@ interface HistoricalGameCardProps {
   };
 }
 
-export function ImprovedHistoricalGameCard({ game }: HistoricalGameCardProps) {
+export function HistoricalGameCard({ game }: HistoricalGameCardProps) {
   if (!game.completed || game.homeTeamScore === null || game.awayTeamScore === null) {
     return null;
   }
@@ -209,7 +208,8 @@ export function ImprovedHistoricalGameCard({ game }: HistoricalGameCardProps) {
                     className="w-full h-full object-contain"
                     onError={(e) => {
                       e.currentTarget.style.display = 'none';
-                      e.currentTarget.nextElementSibling.style.display = 'flex';
+                      const nextSibling = e.currentTarget.nextElementSibling as HTMLElement;
+                      if (nextSibling) nextSibling.style.display = 'flex';
                     }}
                   />
                 ) : null}
@@ -271,7 +271,8 @@ export function ImprovedHistoricalGameCard({ game }: HistoricalGameCardProps) {
                     className="w-full h-full object-contain"
                     onError={(e) => {
                       e.currentTarget.style.display = 'none';
-                      e.currentTarget.nextElementSibling.style.display = 'flex';
+                      const nextSibling = e.currentTarget.nextElementSibling as HTMLElement;
+                      if (nextSibling) nextSibling.style.display = 'flex';
                     }}
                   />
                 ) : null}
@@ -323,3 +324,5 @@ export function ImprovedHistoricalGameCard({ game }: HistoricalGameCardProps) {
     </div>
   );
 }
+
+export default HistoricalGameCard;
