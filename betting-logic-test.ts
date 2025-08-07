@@ -44,21 +44,21 @@ function calculateBettingRecommendation(vegasSpread: number, ourPrediction: numb
   if (significantEdge) {
     if (totalScore > 0) { // We favor home team
       if (oppositeSides) {
-        recommendedBet = `Take ${homeTeam}`;
+        recommendedBet = `Take ${homeTeam} ${totalScore > 0 ? '-' : '+'}${Math.abs(totalScore).toFixed(1)}`;
       } else if (totalScore > Math.abs(vegasSpread)) {
-        recommendedBet = `Take ${homeTeam}`;
+        recommendedBet = `Take ${homeTeam} -${Math.abs(vegasSpread)}`;
       } else {
         // Underdog value - Vegas favors home more strongly
-        recommendedBet = `Take ${awayTeam}`;
+        recommendedBet = `Take ${awayTeam} +${Math.abs(vegasSpread)}`;
       }
     } else { // We favor away team  
       if (oppositeSides) {
-        recommendedBet = `Take ${awayTeam}`;
+        recommendedBet = `Take ${awayTeam} ${Math.abs(totalScore) > 0 ? '-' : '+'}${Math.abs(totalScore).toFixed(1)}`;
       } else if (Math.abs(totalScore) > Math.abs(vegasSpread)) {
-        recommendedBet = `Take ${awayTeam}`;
+        recommendedBet = `Take ${awayTeam} -${Math.abs(vegasSpread)}`;
       } else {
         // Underdog value - Vegas favors away more strongly  
-        recommendedBet = `Take ${homeTeam}`;
+        recommendedBet = `Take ${homeTeam} +${Math.abs(vegasSpread)}`;
       }
     }
   }
@@ -72,7 +72,7 @@ const BETTING_TEST_CASES: BettingTestCase[] = [
     name: "Vegas favors away, we favor home (opposite sides)",
     vegasSpread: 3.5,    // Away -3.5
     ourPrediction: 1.75, // Home -1.75
-    expectedRecommendation: "Take Home",
+    expectedRecommendation: "Take Home -1.8",
     expectedEdge: 5.25,   // 1.75 + 3.5
     scenario: 'opposite_sides'
   },
@@ -80,7 +80,7 @@ const BETTING_TEST_CASES: BettingTestCase[] = [
     name: "Vegas favors home, we favor away (opposite sides)",
     vegasSpread: -7,      // Home -7
     ourPrediction: -3,    // Away -3
-    expectedRecommendation: "Take Away",
+    expectedRecommendation: "Take Away -3.0",
     expectedEdge: 10,     // 3 + 7
     scenario: 'opposite_sides'
   },
@@ -90,7 +90,7 @@ const BETTING_TEST_CASES: BettingTestCase[] = [
     name: "Same side: We favor home more than Vegas",
     vegasSpread: -3,      // Home -3
     ourPrediction: 7,     // Home -7
-    expectedRecommendation: "Take Home",
+    expectedRecommendation: "Take Home -3",
     expectedEdge: 4,      // |7 - 3|
     scenario: 'same_side_we_stronger'
   },
@@ -98,7 +98,7 @@ const BETTING_TEST_CASES: BettingTestCase[] = [
     name: "Same side: We favor away more than Vegas",
     vegasSpread: 6,       // Away -6
     ourPrediction: -10,   // Away -10
-    expectedRecommendation: "Take Away",
+    expectedRecommendation: "Take Away -6",
     expectedEdge: 4,      // |10 - 6|
     scenario: 'same_side_we_stronger'
   },
@@ -108,7 +108,7 @@ const BETTING_TEST_CASES: BettingTestCase[] = [
     name: "UNDERDOG VALUE: Vegas favors home more than we do",
     vegasSpread: -14.5,   // Home -14.5
     ourPrediction: 6,     // Home -6
-    expectedRecommendation: "Take Away", 
+    expectedRecommendation: "Take Away +14.5", 
     expectedEdge: 8.5,    // |6 - 14.5|
     scenario: 'underdog_value'
   },
@@ -116,7 +116,7 @@ const BETTING_TEST_CASES: BettingTestCase[] = [
     name: "UNDERDOG VALUE: Vegas favors away more than we do", 
     vegasSpread: 21,      // Away -21
     ourPrediction: -7,    // Away -7
-    expectedRecommendation: "Take Home",
+    expectedRecommendation: "Take Home +21",
     expectedEdge: 14,     // |7 - 21|
     scenario: 'underdog_value'
   },
@@ -134,7 +134,7 @@ const BETTING_TEST_CASES: BettingTestCase[] = [
     name: "Exactly 2-point edge threshold",
     vegasSpread: -5,      // Home -5
     ourPrediction: 7,     // Home -7
-    expectedRecommendation: "Take Home",
+    expectedRecommendation: "Take Home -5",
     expectedEdge: 2,      // Exactly at threshold
     scenario: 'threshold_edge'
   }
