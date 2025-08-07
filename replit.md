@@ -49,6 +49,8 @@ Key tables include `Teams`, `Games`, `Predictions`, `Sentiment Analysis`, `Users
 - **Admin Security System**: Comprehensive authentication middleware protecting all administrative endpoints (data sync, team updates, historical collection) with Bearer token authentication.
 - **Team Logo Fallback System**: Professional American football helmet SVG graphics with team abbreviations automatically replace broken ESPN CDN logos to eliminate 400 errors and maintain visual consistency.
 - **Unified Prediction Consistency**: Centralized prediction logic ensures identical recommendations across all UI components (green badges, recommendation tabs, API endpoints) with comprehensive integration testing to prevent display inconsistencies.
+- **Critical Betting Logic Fix (Aug 2025)**: Resolved betting recommendation engine bug where significant edges (5+ points) showed "No Strong Edge". Fixed edge calculation to properly handle opposite-side predictions by adding magnitudes instead of subtracting, enabling proper identification of valuable betting opportunities.
+- **Database Integrity Cleanup (Aug 2025)**: Removed 2,772 duplicate and invalid game entries (including 45 duplicate Montana State vs Idaho games) to eliminate frontend display issues and ensure clean data presentation.
 
 ## External Dependencies
 
