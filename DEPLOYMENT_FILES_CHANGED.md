@@ -24,10 +24,10 @@
 - **Functionality**: Cross-endpoint validation and regression testing
 - **Usage**: Run with standard test runner
 
-**5. `scripts/test-prediction-consistency.js`** (New)
+**5. `test-prediction-consistency.js`** (New)
 - **Purpose**: Quick validation tool for ongoing development
 - **Functionality**: Real-time consistency monitoring across all game predictions
-- **Usage**: `node scripts/test-prediction-consistency.js`
+- **Usage**: `node test-prediction-consistency.js`
 
 **6. `PREDICTION_CONSISTENCY_FIX.md`** (New)
 - **Purpose**: Detailed implementation documentation
@@ -49,12 +49,12 @@ For manual deployment to production:
 
 2. **Copy New Files**:
    - `tests/prediction-consistency.test.js`
-   - `scripts/test-prediction-consistency.js`
+   - `test-prediction-consistency.js`
    - `PREDICTION_CONSISTENCY_FIX.md`
    - `DEPLOYMENT_FILES_CHANGED.md`
 
 3. **Validation**:
-   - Run `node scripts/test-prediction-consistency.js` after deployment
+   - Run `node test-prediction-consistency.js` after deployment
    - Expected result: 100% consistency rate
 
 ## Result
