@@ -286,6 +286,11 @@ export default function AdminPanel() {
                 {isLoading ? 'Logging in...' : 'Login'}
               </Button>
             </form>
+            <div className="mt-4 p-3 bg-slate-100 rounded-lg text-sm text-slate-600">
+              <strong>Default credentials:</strong><br />
+              Username: rick<br />
+              Password: RicksPicks2025!
+            </div>
           </CardContent>
         </Card>
       </div>
@@ -365,10 +370,10 @@ export default function AdminPanel() {
             {/* Games List */}
             <div className="grid gap-6">
               {games.map(game => (
-                <GamePickCard 
-                  key={game.id} 
-                  game={game} 
-                  currentPick={currentPicks[game.id]} 
+                <GamePickCard
+                  key={game.id}
+                  game={game}
+                  currentPick={currentPicks[game.id]}
                   onSavePick={(pickData) => savePick(game.id, pickData)}
                 />
               ))}
@@ -412,14 +417,14 @@ export default function AdminPanel() {
 }
 
 // Individual Game Pick Card Component
-function GamePickCard({ 
-  game, 
-  currentPick, 
-  onSavePick 
-}: { 
-  game: AdminGame; 
-  currentPick?: RicksPick; 
-  onSavePick: (pickData: Partial<RicksPick>) => void; 
+function GamePickCard({
+  game,
+  currentPick,
+  onSavePick
+}: {
+  game: AdminGame;
+  currentPick?: RicksPick;
+  onSavePick: (pickData: Partial<RicksPick>) => void;
 }) {
   const [formData, setFormData] = useState({
     spreadPick: currentPick?.spreadPick || '',
@@ -460,7 +465,8 @@ function GamePickCard({
   const getSpreadDisplay = () => {
     if (!game.spread) return "N/A";
     const favoredTeam = game.spread > 0 ? game.awayTeam : game.homeTeam;
-    return `${favoredTeam.abbreviation} -${Math.abs(game.spread).toFixed(1)}`;
+    const teamAbbr = favoredTeam.abbreviation || favoredTeam.name?.slice(0, 4).toUpperCase() || "TEAM";
+    return `${teamAbbr} -${Math.abs(game.spread).toFixed(1)}`;
   };
 
   const getWeatherIcon = () => {
