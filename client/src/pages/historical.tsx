@@ -1,5 +1,5 @@
 import { useQuery, useMutation } from "@/lib/queryClient";
-import { ImprovedHistoricalGameCard } from "@/components/improved-historical-game-card";
+import { HistoricalGameCard } from "@/components/historical-game-card";
 import { FilterBar } from "@/components/filter-bar";
 import { useState, useEffect } from "react";
 import React from "react";
@@ -196,7 +196,7 @@ export default function Historical() {
           </div>
         ) : (
           filteredGames.map((game: any) => (
-            <ImprovedHistoricalGameCard key={game.id} game={game} />
+            <HistoricalGameCard key={game.id} game={game} />
           ))
         )}
       </div>
