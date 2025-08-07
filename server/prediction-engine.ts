@@ -339,9 +339,9 @@ export class RicksPicksPredictionEngine {
       prediction = `${homeTeam} favored by ${Math.abs(totalScore).toFixed(1)} points`;
       if (vegasSpread && significantEdge) {
         if (oppositeSides) {
-          // Vegas favors away team, we favor home team - always take home team
-          recommendedBet = `Take ${homeTeam} ${totalScore > 0 ? '-' : '+'}${Math.abs(totalScore).toFixed(1)}`;
-          console.log(`   ✅ OPPOSITE SIDES RECOMMENDATION: ${recommendedBet}`);
+          // Vegas favors away team, we favor home team - take home team at Vegas line
+          recommendedBet = `Take ${homeTeam} +${Math.abs(vegasSpread)}`;
+          console.log(`   ✅ OPPOSITE SIDES RECOMMENDATION: ${recommendedBet} (Vegas has them getting ${Math.abs(vegasSpread)} points)`);
         } else if (totalScore > Math.abs(vegasSpread)) {
           // Same side but we favor home team more strongly - take the favorite
           recommendedBet = `Take ${homeTeam} -${Math.abs(vegasSpread)}`;
@@ -356,9 +356,9 @@ export class RicksPicksPredictionEngine {
       prediction = `${awayTeam} favored by ${Math.abs(totalScore).toFixed(1)} points`;
       if (vegasSpread && significantEdge) {
         if (oppositeSides) {
-          // Vegas favors home team, we favor away team - always take away team
-          recommendedBet = `Take ${awayTeam} ${Math.abs(totalScore) > 0 ? '-' : '+'}${Math.abs(totalScore).toFixed(1)}`;
-          console.log(`   ✅ OPPOSITE SIDES RECOMMENDATION: ${recommendedBet}`);
+          // Vegas favors home team, we favor away team - take away team at Vegas line
+          recommendedBet = `Take ${awayTeam} +${Math.abs(vegasSpread)}`;
+          console.log(`   ✅ OPPOSITE SIDES RECOMMENDATION: ${recommendedBet} (Vegas has them getting ${Math.abs(vegasSpread)} points)`);
         } else if (Math.abs(totalScore) > Math.abs(vegasSpread)) {
           // Same side but we favor away team more strongly - take the favorite
           recommendedBet = `Take ${awayTeam} -${Math.abs(vegasSpread)}`;

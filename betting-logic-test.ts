@@ -44,7 +44,7 @@ function calculateBettingRecommendation(vegasSpread: number, ourPrediction: numb
   if (significantEdge) {
     if (totalScore > 0) { // We favor home team
       if (oppositeSides) {
-        recommendedBet = `Take ${homeTeam} ${totalScore > 0 ? '-' : '+'}${Math.abs(totalScore).toFixed(1)}`;
+        recommendedBet = `Take ${homeTeam} +${Math.abs(vegasSpread)}`;
       } else if (totalScore > Math.abs(vegasSpread)) {
         recommendedBet = `Take ${homeTeam} -${Math.abs(vegasSpread)}`;
       } else {
@@ -53,7 +53,7 @@ function calculateBettingRecommendation(vegasSpread: number, ourPrediction: numb
       }
     } else { // We favor away team  
       if (oppositeSides) {
-        recommendedBet = `Take ${awayTeam} ${Math.abs(totalScore) > 0 ? '-' : '+'}${Math.abs(totalScore).toFixed(1)}`;
+        recommendedBet = `Take ${awayTeam} +${Math.abs(vegasSpread)}`;
       } else if (Math.abs(totalScore) > Math.abs(vegasSpread)) {
         recommendedBet = `Take ${awayTeam} -${Math.abs(vegasSpread)}`;
       } else {
@@ -72,7 +72,7 @@ const BETTING_TEST_CASES: BettingTestCase[] = [
     name: "Vegas favors away, we favor home (opposite sides)",
     vegasSpread: 3.5,    // Away -3.5
     ourPrediction: 1.75, // Home -1.75
-    expectedRecommendation: "Take Home -1.8",
+    expectedRecommendation: "Take Home +3.5",
     expectedEdge: 5.25,   // 1.75 + 3.5
     scenario: 'opposite_sides'
   },
@@ -80,7 +80,7 @@ const BETTING_TEST_CASES: BettingTestCase[] = [
     name: "Vegas favors home, we favor away (opposite sides)",
     vegasSpread: -7,      // Home -7
     ourPrediction: -3,    // Away -3
-    expectedRecommendation: "Take Away -3.0",
+    expectedRecommendation: "Take Away +7",
     expectedEdge: 10,     // 3 + 7
     scenario: 'opposite_sides'
   },
