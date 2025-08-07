@@ -299,17 +299,41 @@ export class PostgresStorage implements IStorage {
   }
 
   async getSentimentByGame(gameId: number): Promise<SentimentAnalysis[]> {
-    return await db.select()
-      .from(sentimentAnalysis)
-      .where(eq(sentimentAnalysis.gameId, gameId))
-      .orderBy(desc(sentimentAnalysis.lastUpdated));
+    try {
+      if (!gameId || isNaN(gameId)) {
+        console.log(`⚠️  Invalid gameId for sentiment query: ${gameId}`);
+        return [];
+      }
+      
+      const result = await db.select()
+        .from(sentimentAnalysis)
+        .where(eq(sentimentAnalysis.gameId, gameId))
+        .orderBy(desc(sentimentAnalysis.lastUpdated));
+      
+      return result;
+    } catch (error) {
+      console.error(`💥 Error in getSentimentByGame(${gameId}):`, error);
+      return [];
+    }
   }
 
   async getSentimentByTeam(teamId: number): Promise<SentimentAnalysis[]> {
-    return await db.select()
-      .from(sentimentAnalysis)
-      .where(eq(sentimentAnalysis.teamId, teamId))
-      .orderBy(desc(sentimentAnalysis.lastUpdated));
+    try {
+      if (!teamId || isNaN(teamId)) {
+        console.log(`⚠️  Invalid teamId for sentiment query: ${teamId}`);
+        return [];
+      }
+      
+      const result = await db.select()
+        .from(sentimentAnalysis)
+        .where(eq(sentimentAnalysis.teamId, teamId))
+        .orderBy(desc(sentimentAnalysis.lastUpdated));
+      
+      return result;
+    } catch (error) {
+      console.error(`💥 Error in getSentimentByTeam(${teamId}):`, error);
+      return [];
+    }
   }
 
   async createSentimentAnalysis(sentiment: InsertSentimentAnalysis): Promise<SentimentAnalysis> {

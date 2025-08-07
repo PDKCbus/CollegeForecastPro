@@ -1,7 +1,7 @@
 import { Team } from "@shared/schema";
 import { getTeamPerformanceIndicators, getPrimaryIndicator, TeamPerformanceIndicator } from "@/utils/team-performance-indicators";
 import { Badge } from "@/components/ui/badge";
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 
 interface TeamPerformanceIndicatorsProps {
   team: Team;
@@ -24,18 +24,16 @@ export function TeamPerformanceIndicators({
     if (!primary) return null;
     
     return (
-      <TooltipProvider>
-        <Tooltip>
-          <TooltipTrigger>
-            <span className={`text-lg ${primary.color}`} role="img" aria-label={primary.label}>
-              {primary.emoji}
-            </span>
-          </TooltipTrigger>
-          <TooltipContent>
-            <p>{primary.label}</p>
-          </TooltipContent>
-        </Tooltip>
-      </TooltipProvider>
+      <Tooltip>
+        <TooltipTrigger>
+          <span className={`text-lg ${primary.color}`} role="img" aria-label={primary.label}>
+            {primary.emoji}
+          </span>
+        </TooltipTrigger>
+        <TooltipContent>
+          <p>{primary.label}</p>
+        </TooltipContent>
+      </Tooltip>
     );
   }
   
@@ -46,22 +44,20 @@ export function TeamPerformanceIndicators({
     return (
       <div className="flex items-center gap-1 ml-1">
         {displayIndicators.map((indicator, index) => (
-          <TooltipProvider key={index}>
-            <Tooltip>
-              <TooltipTrigger>
-                <span 
-                  className={`text-sm ${indicator.color}`}
-                  role="img" 
-                  aria-label={indicator.label}
-                >
-                  {indicator.emoji}
-                </span>
-              </TooltipTrigger>
-              <TooltipContent>
-                <p>{indicator.label}</p>
-              </TooltipContent>
-            </Tooltip>
-          </TooltipProvider>
+          <Tooltip key={index}>
+            <TooltipTrigger>
+              <span 
+                className={`text-sm ${indicator.color}`}
+                role="img" 
+                aria-label={indicator.label}
+              >
+                {indicator.emoji}
+              </span>
+            </TooltipTrigger>
+            <TooltipContent>
+              <p>{indicator.label}</p>
+            </TooltipContent>
+          </Tooltip>
         ))}
       </div>
     );
@@ -163,21 +159,19 @@ export function MomentumIndicator({ team }: MomentumIndicatorProps) {
   if (!indicator) return null;
   
   return (
-    <TooltipProvider>
-      <Tooltip>
-        <TooltipTrigger>
-          <span 
-            className={`text-sm ${indicator.color}`}
-            role="img" 
-            aria-label={indicator.label}
-          >
-            {indicator.emoji}
-          </span>
-        </TooltipTrigger>
-        <TooltipContent>
-          <p>{indicator.label}</p>
-        </TooltipContent>
-      </Tooltip>
-    </TooltipProvider>
+    <Tooltip>
+      <TooltipTrigger>
+        <span 
+          className={`text-sm ${indicator.color}`}
+          role="img" 
+          aria-label={indicator.label}
+        >
+          {indicator.emoji}
+        </span>
+      </TooltipTrigger>
+      <TooltipContent>
+        <p>{indicator.label}</p>
+      </TooltipContent>
+    </Tooltip>
   );
 }

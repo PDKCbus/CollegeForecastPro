@@ -1,0 +1,42 @@
+#13 9.086 error during build:
+#13 9.086 client/src/pages/historical.tsx (2:9): "HistoricalGameCard" is not exported by "client/src/components/historical-game-card.tsx", imported by 
+"client/src/pages/historical.tsx".
+#13 9.086 file: /app/client/src/pages/historical.tsx:2:9
+#13 9.086 
+#13 9.086 1: import { useQuery, useMutation } from "@/lib/queryClient";
+#13 9.086 2: import { HistoricalGameCard } from "@/components/historical-game-card";
+#13 9.086             ^
+#13 9.086 3: import { FilterBar } from "@/components/filter-bar";
+#13 9.086 4: import { useState, useEffect } from "react";
+#13 9.086 
+#13 9.086     at getRollupError (file:///app/node_modules/rollup/dist/es/shared/parseAst.js:401:41)
+#13 9.086     at error (file:///app/node_modules/rollup/dist/es/shared/parseAst.js:397:42)
+#13 9.086     at Module.error (file:///app/node_modules/rollup/dist/es/shared/node-entry.js:16875:16)
+#13 9.086     at Module.traceVariable (file:///app/node_modules/rollup/dist/es/shared/node-entry.js:17327:29)
+#13 9.086     at ModuleScope.findVariable (file:///app/node_modules/rollup/dist/es/shared/node-entry.js:14997:39)
+#13 9.086     at FunctionScope.findVariable (file:///app/node_modules/rollup/dist/es/shared/node-entry.js:5620:38)
+#13 9.086     at FunctionBodyScope.findVariable (file:///app/node_modules/rollup/dist/es/shared/node-entry.js:5620:38)
+#13 9.086     at ReturnValueScope.findVariable (file:///app/node_modules/rollup/dist/es/shared/node-entry.js:5620:38)
+#13 9.086     at FunctionBodyScope.findVariable (file:///app/node_modules/rollup/dist/es/shared/node-entry.js:5620:38)
+#13 9.086     at Identifier.bind (file:///app/node_modules/rollup/dist/es/shared/node-entry.js:5394:40)
+#13 ERROR: process "/bin/sh -c npm run build" did not complete successfully: exit code: 1
+------
+ > [ 8/11] RUN npm run build:
+9.086     at getRollupError (file:///app/node_modules/rollup/dist/es/shared/parseAst.js:401:41)
+9.086     at error (file:///app/node_modules/rollup/dist/es/shared/parseAst.js:397:42)
+9.086     at Module.error (file:///app/node_modules/rollup/dist/es/shared/node-entry.js:16875:16)
+9.086     at Module.traceVariable (file:///app/node_modules/rollup/dist/es/shared/node-entry.js:17327:29)
+9.086     at ModuleScope.findVariable (file:///app/node_modules/rollup/dist/es/shared/node-entry.js:14997:39)
+9.086     at FunctionScope.findVariable (file:///app/node_modules/rollup/dist/es/shared/node-entry.js:5620:38)
+9.086     at FunctionBodyScope.findVariable (file:///app/node_modules/rollup/dist/es/shared/node-entry.js:5620:38)
+9.086     at ReturnValueScope.findVariable (file:///app/node_modules/rollup/dist/es/shared/node-entry.js:5620:38)
+9.086     at FunctionBodyScope.findVariable (file:///app/node_modules/rollup/dist/es/shared/node-entry.js:5620:38)
+9.086     at Identifier.bind (file:///app/node_modules/rollup/dist/es/shared/node-entry.js:5394:40)
+------
+Dockerfile.unified:24
+
+--------------------
+
+  22 |     # Build with all deps available but in production mode
+
+  23 |     ENV NODE_ENV=production

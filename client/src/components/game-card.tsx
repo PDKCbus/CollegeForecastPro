@@ -86,13 +86,13 @@ export function GameCard({ game }: GameCardProps) {
 
   const handleShareGame = async () => {
     const gameUrl = `${window.location.origin}/game-analysis?game=${game.id}`;
-
+    
     try {
       // Always copy to clipboard for consistent behavior
       await navigator.clipboard.writeText(gameUrl);
       setLinkCopied(true);
       setTimeout(() => setLinkCopied(false), 2000);
-
+      
       // Show success toast
       toast({
         title: "Link copied!",
@@ -109,7 +109,7 @@ export function GameCard({ game }: GameCardProps) {
       document.body.removeChild(textArea);
       setLinkCopied(true);
       setTimeout(() => setLinkCopied(false), 2000);
-
+      
       // Show success toast
       toast({
         title: "Link copied!",
@@ -123,7 +123,7 @@ export function GameCard({ game }: GameCardProps) {
 
   const getSpreadDisplay = () => {
     if (game.spread === null || game.spread === undefined) return "N/A";
-
+    
     const favoredTeam = game.spread > 0 ? game.awayTeam : game.homeTeam;
     const teamAbbr = favoredTeam.abbreviation || favoredTeam.name?.slice(0, 4).toUpperCase() || "TEAM";
     return `${teamAbbr} -${formatSpread(Math.abs(game.spread))}`;
@@ -161,61 +161,105 @@ export function GameCard({ game }: GameCardProps) {
     };
   };
 
-  const getRicksPick = () => {
-    // Priority 1: Rick's personal picks (when available)
+  // Get Rick's personal pick only
+  const getRicksPersonalPick = () => {
     if (predictionData?.ricksPick) {
       const pick = predictionData.ricksPick;
-
+      
       // Format Rick's spread pick
       if (pick.spreadPick && pick.spreadPick !== 'NO PLAY') {
         return {
-          team: pick.spreadPick.includes('HOME') ? game.homeTeam : game.awayTeam,
           pick: pick.spreadPick,
-          reason: pick.personalNotes || 'Rick\'s Expert Analysis',
-          isRicksPick: true
+          reason: pick.personalNotes || 'Rick\'s Expert Analysis'
         };
       }
-
+      
       // Format Rick's total pick if no spread pick
       if (pick.totalPick && pick.totalPick !== 'NO PLAY') {
         return {
-          team: null,
           pick: pick.totalPick,
-          reason: pick.personalNotes || 'Rick\'s Expert Analysis',
-          isRicksPick: true
+          reason: pick.personalNotes || 'Rick\'s Expert Analysis'
         };
       }
     }
+    return null;
+  };
 
-    // Priority 2: Use unified server prediction (algorithmic fallback)
+  // Get algorithmic analysis pick
+  const getAnalysisPick = () => {
     const algorithmicPrediction = predictionData?.algorithmicPredictions?.[0];
     if (algorithmicPrediction) {
       // Check if prediction has a meaningful recommendation
       if (algorithmicPrediction.spreadPick && algorithmicPrediction.spreadPick !== "No Strong Play") {
         return {
-          team: null, // Let the text describe the pick
           pick: algorithmicPrediction.spreadPick,
-          reason: algorithmicPrediction.notes || "Data-driven algorithmic analysis",
-          isRicksPick: false
+          reason: algorithmicPrediction.notes || "Data-driven algorithmic analysis"
         };
       }
-
+      
       // Handle "No Strong Play" case
       if (algorithmicPrediction.notes && algorithmicPrediction.notes.includes("No Strong Play")) {
         return {
-          team: null,
           pick: "No Strong Play",
-          reason: "Algorithm assessment matches Vegas line - no significant edge",
-          isRicksPick: false
+          reason: "Algorithm assessment matches Vegas line - no significant edge"
+        };
+      }
+
+      // Handle case where prediction exists but no bet recommendation (edge below threshold)
+      if (!algorithmicPrediction.spreadPick) {
+        // Extract prediction details for informative message
+        const ourSpread = algorithmicPrediction.predictedSpread || 0;
+        const vegasSpread = game?.spread;
+
+        let predictionSummary = "Analysis complete - edge below 2-point threshold";
+
+        if (vegasSpread !== null && vegasSpread !== undefined) {
+          // Determine which team is favored in our prediction vs Vegas
+          const homeTeam = game?.homeTeam?.abbreviation || game?.homeTeam?.name?.slice(0, 4) || "Home";
+          const awayTeam = game?.awayTeam?.abbreviation || game?.awayTeam?.name?.slice(0, 4) || "Away";
+
+          // Our prediction: positive = home favored, negative = away favored
+          // Vegas spread: negative = home favored, positive = away favored
+          const ourPredictionText = ourSpread > 0
+            ? `${homeTeam} -${Math.abs(ourSpread).toFixed(1)}`
+            : `${awayTeam} -${Math.abs(ourSpread).toFixed(1)}`;
+
+          const vegasPredictionText = vegasSpread < 0
+            ? `${homeTeam} -${Math.abs(vegasSpread).toFixed(1)}`
+            : `${awayTeam} -${Math.abs(vegasSpread).toFixed(1)}`;
+
+          const edge = Math.abs(Math.abs(ourSpread) - Math.abs(vegasSpread)).toFixed(1);
+
+          predictionSummary = `Algorithm: ${ourPredictionText} vs Vegas: ${vegasPredictionText} (${edge} point edge)`;
+        }
+
+        return {
+          pick: "No Strong Edge",
+          reason: predictionSummary
         };
       }
     }
-
+    
     // Final fallback if no server prediction available
     return {
-      team: null,
       pick: "Analysis Pending",
-      reason: "Algorithmic analysis in progress",
+      reason: "Algorithmic analysis in progress"
+    };
+  };
+
+  // Legacy function for compatibility
+  const getRicksPick = () => {
+    const ricksPersonalPick = getRicksPersonalPick();
+    if (ricksPersonalPick) {
+      return {
+        ...ricksPersonalPick,
+        isRicksPick: true
+      };
+    }
+
+    const analysisPick = getAnalysisPick();
+    return {
+      ...analysisPick,
       isRicksPick: false
     };
   };
@@ -232,8 +276,8 @@ export function GameCard({ game }: GameCardProps) {
     }
 
     // Check if we have any actual weather data
-    const hasWeatherData = game.temperature !== null ||
-                          game.windSpeed !== null ||
+    const hasWeatherData = game.temperature !== null || 
+                          game.windSpeed !== null || 
                           game.weatherCondition !== null ||
                           game.precipitation !== null;
 
@@ -312,7 +356,7 @@ export function GameCard({ game }: GameCardProps) {
             <div>{formatTime(game.startDate)} ET</div>
           </div>
         </div>
-
+        
         {/* Venue and Weather Info */}
         <div className="text-center mb-3">
           <div className="text-white/60 text-xs mb-1 flex items-center justify-center gap-1">
@@ -337,7 +381,7 @@ export function GameCard({ game }: GameCardProps) {
             // Show location information
             const stadium = game.stadium || '';
             const location = game.location || '';
-
+            
             // For international venues, show city and country
             if (stadium === 'Aviva Stadium') {
               return <div className="text-white/50 text-xs">Dublin, Ireland</div>;
@@ -356,13 +400,13 @@ export function GameCard({ game }: GameCardProps) {
             return null;
           })()}
         </div>
-
+        
         <div className="flex justify-between items-center">
           <div className="flex items-center space-x-3">
             {getTeamLogo(game.awayTeam) ? (
-              <img
-                src={getTeamLogo(game.awayTeam)}
-                alt={game.awayTeam.name}
+              <img 
+                src={getTeamLogo(game.awayTeam)} 
+                alt={game.awayTeam.name} 
                 className="team-logo w-[45px] h-[45px] object-contain"
                 onError={(e) => {
                   e.currentTarget.style.display = 'none';
@@ -387,13 +431,13 @@ export function GameCard({ game }: GameCardProps) {
           </div>
           <div className="font-bold text-xl">{formatTeamRecord(game.awayTeam.wins || 0, game.awayTeam.losses || 0)}</div>
         </div>
-
+        
         <div className="flex justify-between items-center mt-4">
           <div className="flex items-center space-x-3">
             {getTeamLogo(game.homeTeam) ? (
-              <img
-                src={getTeamLogo(game.homeTeam)}
-                alt={game.homeTeam.name}
+              <img 
+                src={getTeamLogo(game.homeTeam)} 
+                alt={game.homeTeam.name} 
                 className="team-logo w-[45px] h-[45px] object-contain"
                 onError={(e) => {
                   e.currentTarget.style.display = 'none';
@@ -418,13 +462,13 @@ export function GameCard({ game }: GameCardProps) {
           </div>
           <div className="font-bold text-xl">{formatTeamRecord(game.homeTeam.wins || 0, game.homeTeam.losses || 0)}</div>
         </div>
-
+        
         <div className="mt-4 pt-3 border-t border-surface-light">
           {/* Team Comparison Indicator */}
           <div className="mb-3">
             <TeamComparisonIndicator homeTeam={game.homeTeam} awayTeam={game.awayTeam} />
           </div>
-
+          
           <div className="flex justify-between mb-3">
             <div className="flex justify-center flex-1">
               <div className="flex space-x-2">
@@ -432,13 +476,13 @@ export function GameCard({ game }: GameCardProps) {
                   const ricksPickData = getRicksPickData();
                   const spreadBgColor = ricksPickData.hasSpreadPick ? 'bg-blue-600' : 'bg-surface-light';
                   const totalBgColor = ricksPickData.hasTotalPick ? 'bg-blue-600' : 'bg-surface-light';
-
+                  
                   return (
                     <>
                       <div className={`text-center px-4 py-3 ${spreadBgColor} rounded min-w-[110px]`}>
                         <div className="text-white/60 text-xs flex items-center justify-center gap-1">
                           SPREAD
-                          <SpreadExplainerTooltip
+                          <SpreadExplainerTooltip 
                             spread={game.spread ?? undefined}
                             homeTeam={game.homeTeam.name}
                             awayTeam={game.awayTeam.name}
@@ -478,14 +522,14 @@ export function GameCard({ game }: GameCardProps) {
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="bg-surface border-surface-light">
-                <DropdownMenuItem
+                <DropdownMenuItem 
                   onClick={() => setHeadToHeadDialogOpen(true)}
                   className="text-white hover:bg-surface-light cursor-pointer"
                 >
                   <BarChart3 className="mr-2 h-4 w-4" />
                   View Head-to-Head History
                 </DropdownMenuItem>
-                <DropdownMenuItem
+                <DropdownMenuItem 
                   onClick={handleShareGame}
                   className="text-white hover:bg-surface-light cursor-pointer"
                 >
@@ -504,45 +548,62 @@ export function GameCard({ game }: GameCardProps) {
               </DropdownMenuContent>
             </DropdownMenu>
           </div>
-
+          
           {/* Fan Sentiment Section - Currently hidden but code preserved for future use */}
           {/* <div className="mb-3">
-            <FanSentiment
-              gameId={game.id}
-              homeTeam={game.homeTeam.abbreviation}
-              awayTeam={game.awayTeam.abbreviation}
-              compact={true}
+            <FanSentiment 
+              gameId={game.id} 
+              homeTeam={game.homeTeam.abbreviation} 
+              awayTeam={game.awayTeam.abbreviation} 
+              compact={true} 
             />
           </div> */}
 
-          {/* Rick's Pick Section */}
-          {(() => {
-            const ricksPick = getRicksPick();
-            if (ricksPick) {
-              const isRicksPick = ricksPick.isRicksPick;
-              const headerText = isRicksPick ? "🏈 RICK'S PICK" : "🤓 ANALYSIS PICK";
-              const bgColor = isRicksPick ? "bg-blue-600 border-blue-500" : "bg-slate-600 border-slate-500";
-              const textColor = isRicksPick ? "text-blue-100" : "text-slate-100";
-
-              return (
-                <div className={`${bgColor} border rounded-lg p-3 mb-3`}>
-                  <div className="text-center">
-                    <div className="text-white font-bold text-sm mb-1">{headerText}</div>
-                    <div className="text-white font-semibold text-lg">{ricksPick.pick}</div>
-                    <div className={`${textColor} text-xs mt-1`}>
-                      {ricksPick.reason}
-                      {!isRicksPick && (
-                        <span className="block mt-1 text-xs opacity-75">
-                          (Data-driven analysis - Rick hasn't made picks yet)
-                        </span>
-                      )}
+          {/* Picks Section - Both Rick's and Analysis */}
+          <div className="flex gap-3 mb-3">
+            {/* Rick's Personal Pick */}
+            {(() => {
+              const ricksPersonalPick = getRicksPersonalPick();
+              if (ricksPersonalPick) {
+                return (
+                  <div className="bg-blue-600 border-blue-500 border rounded-lg p-3 flex-1">
+                    <div className="text-center">
+                      <div className="text-white font-bold text-sm mb-1">🏈 RICK'S PICK</div>
+                      <div className="text-white font-semibold text-lg">{ricksPersonalPick.pick}</div>
+                      <div className="text-blue-100 text-xs mt-1">
+                        {ricksPersonalPick.reason}
+                      </div>
                     </div>
                   </div>
-                </div>
-              );
-            }
-            return null;
-          })()}
+                );
+              }
+              return null;
+            })()}
+
+            {/* Analysis Pick */}
+            {(() => {
+              const analysisPick = getAnalysisPick();
+              if (analysisPick) {
+                return (
+                  <div className="bg-slate-600 border-slate-500 border rounded-lg p-3 flex-1">
+                    <div className="text-center">
+                      <div className="text-white font-bold text-sm mb-1">🤓 ANALYSIS PICK</div>
+                      <div className="text-white font-semibold text-lg">{analysisPick.pick}</div>
+                      <div className="text-slate-100 text-xs mt-1">
+                        {analysisPick.reason}
+                        {analysisPick.pick === "Analysis Pending" && (
+                          <span className="block mt-1 text-xs opacity-75">
+                            (Data-driven analysis - Rick hasn't made picks yet)
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                );
+              }
+              return null;
+            })()}
+          </div>
 
           {/* Action Buttons */}
           <div className="mt-3 flex gap-2">
@@ -553,7 +614,7 @@ export function GameCard({ game }: GameCardProps) {
               </Button>
             </Link>
             <div className="flex-1">
-              <SocialShare
+              <SocialShare 
                 game={game}
                 prediction={(() => {
                   // Use the same algorithm as game analysis page for consistency
@@ -588,7 +649,7 @@ export function GameCard({ game }: GameCardProps) {
               What Twitter/X Thinks
             </DialogTitle>
           </DialogHeader>
-
+          
           <div className="space-y-4">
             {analyzeSentimentMutation.isPending ? (
               <div className="text-center py-6">
@@ -599,7 +660,7 @@ export function GameCard({ game }: GameCardProps) {
               <div className="text-center py-6">
                 <Twitter className="h-12 w-12 text-white/40 mx-auto mb-3" />
                 <div className="text-white/70 mb-4">No sentiment data available yet</div>
-                <Button
+                <Button 
                   onClick={() => analyzeSentimentMutation.mutate()}
                   className="bg-blue-500 hover:bg-blue-600"
                 >
@@ -632,7 +693,7 @@ export function GameCard({ game }: GameCardProps) {
               Head-to-Head History
             </DialogTitle>
           </DialogHeader>
-
+          
           <div className="space-y-4">
             {isHeadToHeadLoading ? (
               <div className="text-center py-6">
@@ -651,12 +712,12 @@ export function GameCard({ game }: GameCardProps) {
                       All-Time Series • {(headToHeadData as any).totalGames || 0} games since 2009
                     </div>
                   </div>
-
+                  
                   <div className="grid grid-cols-2 gap-4">
                     <div className="text-center">
                       <div className="flex items-center justify-center mb-2">
-                        <img
-                          src={game.awayTeam.logoUrl || ""}
+                        <img 
+                          src={game.awayTeam.logoUrl || ""} 
                           alt={game.awayTeam.name}
                           className="w-12 h-12 object-contain"
                         />
@@ -666,8 +727,8 @@ export function GameCard({ game }: GameCardProps) {
                     </div>
                     <div className="text-center">
                       <div className="flex items-center justify-center mb-2">
-                        <img
-                          src={game.homeTeam.logoUrl || ""}
+                        <img 
+                          src={game.homeTeam.logoUrl || ""} 
                           alt={game.homeTeam.name}
                           className="w-12 h-12 object-contain"
                         />
@@ -692,7 +753,7 @@ export function GameCard({ game }: GameCardProps) {
                             {historicalGame.venue || 'N/A'}
                           </div>
                         </div>
-
+                        
                         <div className="flex justify-between items-center mt-2">
                           <div className="flex items-center gap-2">
                             <span className="text-sm">{historicalGame.awayTeamName}</span>
@@ -707,12 +768,12 @@ export function GameCard({ game }: GameCardProps) {
                             <span className="text-sm">{historicalGame.homeTeamName}</span>
                           </div>
                         </div>
-
+                        
                         {historicalGame.spread && (
                           <div className="text-xs text-white/60 mt-1 text-center">
                             <div className="flex items-center justify-center gap-1">
                               Spread: {Math.abs(historicalGame.spread)}
-                              <SpreadExplainerTooltip
+                              <SpreadExplainerTooltip 
                                 spread={historicalGame.spread}
                                 homeTeam={historicalGame.homeTeamName}
                                 awayTeam={historicalGame.awayTeamName}
@@ -725,10 +786,10 @@ export function GameCard({ game }: GameCardProps) {
                             {historicalGame.spreadResult && (
                               <div className="mt-1">
                                 <span className={`px-1 rounded ${
-                                  historicalGame.spreadResult === 'covered' ? 'bg-green-600' :
+                                  historicalGame.spreadResult === 'covered' ? 'bg-green-600' : 
                                   historicalGame.spreadResult === 'push' ? 'bg-yellow-600' : 'bg-red-600'
                                 }`}>
-                                  {historicalGame.spreadResult === 'push' ? 'PUSH' :
+                                  {historicalGame.spreadResult === 'push' ? 'PUSH' : 
                                    historicalGame.spreadResult === 'covered' ? 'COVERED' : 'NOT COVERED'}
                                   {historicalGame.favoriteTeam && historicalGame.spreadResult !== 'push' && (
                                     <span className="ml-1 text-xs opacity-75">

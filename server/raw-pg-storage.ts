@@ -25,6 +25,17 @@ export class RawPGStorage {
           stadium, location, spread, over_under, home_team_score, away_team_score,
           completed, is_conference_game, is_rivalry_game, is_featured
         ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15)
+        ON CONFLICT (home_team_id, away_team_id, start_date, season, week) 
+        DO UPDATE SET
+          stadium = EXCLUDED.stadium,
+          location = EXCLUDED.location,
+          spread = COALESCE(EXCLUDED.spread, games.spread),
+          over_under = COALESCE(EXCLUDED.over_under, games.over_under),
+          home_team_score = COALESCE(EXCLUDED.home_team_score, games.home_team_score),
+          away_team_score = COALESCE(EXCLUDED.away_team_score, games.away_team_score),
+          completed = COALESCE(EXCLUDED.completed, games.completed),
+          is_conference_game = COALESCE(EXCLUDED.is_conference_game, games.is_conference_game),
+          is_rivalry_game = COALESCE(EXCLUDED.is_rivalry_game, games.is_rivalry_game)
         RETURNING id
       `;
       

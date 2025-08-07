@@ -150,7 +150,6 @@ class AlgorithmBacktester {
     const awayScore = game.awayTeamScore;
     const actualSpread = homeScore - awayScore; // Positive = home team won by X
     const vegasSpread = game.spread; // Negative = home team favored
-
     // Generate algorithm prediction using our enhanced system
     try {
       const prediction = await ricksPicksEngine.generatePrediction(

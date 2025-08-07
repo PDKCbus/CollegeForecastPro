@@ -143,9 +143,9 @@ export default function GameAnalysis() {
                 {value}{unit}
               </p>
               {teamLogo && (
-                <img
-                  src={teamLogo}
-                  alt="Favored team"
+                <img 
+                  src={teamLogo} 
+                  alt="Favored team" 
                   className="w-8 h-8 object-contain"
                 />
               )}
@@ -154,9 +154,9 @@ export default function GameAnalysis() {
           <div className="flex items-center space-x-2">
             <Icon className="h-4 w-4 text-muted-foreground" />
             {trend && (
-              trend === 'up' ?
+              trend === 'up' ? 
                 <TrendingUp className="h-4 w-4 text-green-600" /> :
-              trend === 'down' ?
+              trend === 'down' ? 
                 <TrendingDown className="h-4 w-4 text-red-600" /> :
                 <Activity className="h-4 w-4 text-gray-600" />
             )}
@@ -204,7 +204,7 @@ export default function GameAnalysis() {
             </button>
           </Link>
         </div>
-
+        
         <div className="flex items-center space-x-4">
           <Select value={selectedGameId} onValueChange={setSelectedGameId}>
             <SelectTrigger className="w-full sm:w-80">
@@ -296,7 +296,7 @@ export default function GameAnalysis() {
                       <div className="text-sm text-muted-foreground">Vegas Line</div>
                       <div className="font-medium">
                         {selectedGame.spread ? (
-                          selectedGame.spread < 0
+                          selectedGame.spread < 0 
                             ? `${selectedGame.homeTeam?.name} ${formatSpread(selectedGame.spread)}`
                             : `${selectedGame.awayTeam?.name} -${formatSpread(selectedGame.spread)}`
                         ) : 'No line'}
@@ -305,7 +305,7 @@ export default function GameAnalysis() {
                     <div>
                       <div className="text-sm text-muted-foreground">Our Prediction</div>
                       <div className="font-medium">
-                        {analysis.predictiveMetrics.spreadPrediction > 0
+                        {analysis.predictiveMetrics.spreadPrediction > 0 
                           ? `${selectedGame.homeTeam?.name} -${formatSpread(analysis.predictiveMetrics.spreadPrediction)}`
                           : `${selectedGame.awayTeam?.name} -${formatSpread(Math.abs(analysis.predictiveMetrics.spreadPrediction))}`
                         }
@@ -372,21 +372,19 @@ export default function GameAnalysis() {
                   <CardHeader>
                     <CardTitle className="flex items-center gap-2">
                       Team Analytics Comparison
-                      <TooltipProvider>
-                        <Tooltip>
-                          <TooltipTrigger>
-                            <Info className="h-4 w-4 text-muted-foreground" />
-                          </TooltipTrigger>
-                          <TooltipContent className="max-w-sm">
-                            <p>
-                              {selectedGame?.week === 1
-                                ? "Week 1 predictions use preseason rankings, recruiting data, and returning player projections. Analytics become more accurate after games are played."
-                                : "Analytics based on current season performance, updated after each game with real statistics and momentum scoring."
-                              }
-                            </p>
-                          </TooltipContent>
-                        </Tooltip>
-                      </TooltipProvider>
+                      <Tooltip>
+                        <TooltipTrigger>
+                          <Info className="h-4 w-4 text-muted-foreground" />
+                        </TooltipTrigger>
+                        <TooltipContent className="max-w-sm">
+                          <p>
+                            {selectedGame?.week === 1
+                              ? "Week 1 predictions use preseason rankings, recruiting data, and returning player projections. Analytics become more accurate after games are played."
+                              : "Analytics based on current season performance, updated after each game with real statistics and momentum scoring."
+                            }
+                          </p>
+                        </TooltipContent>
+                      </Tooltip>
                     </CardTitle>
                     <CardDescription>
                       Side-by-side comparison of team performance metrics
@@ -402,7 +400,7 @@ export default function GameAnalysis() {
                       <h4 className="font-semibold text-red-600 text-sm sm:text-base">{selectedGame.awayTeam?.name} (Away)</h4>
                     </div>
                   </div>
-
+                  
                   {/* Analytics Bars */}
                   <div className="space-y-4">
                     <AnalyticsBar
@@ -574,7 +572,7 @@ export default function GameAnalysis() {
                       </div>
                       <p className="text-blue-700">{analysis.predictiveMetrics.recommendation}</p>
                     </div>
-
+                    
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                       <div className="text-center p-4 border rounded-lg">
                         <div className="text-2xl font-bold text-green-600">

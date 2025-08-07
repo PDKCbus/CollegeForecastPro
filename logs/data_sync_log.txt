@@ -231,3 +231,69 @@
 [2025-08-04T01:59:22.147Z] - SYNC_START: CURRENT_WEEK_SYNC Week 1 2025 season
 [2025-08-04T01:59:29.627Z] - SYNC_COMPLETE: CURRENT_WEEK_SYNC 10 games processed
 [2025-08-04T01:59:29.627Z] - SYNC_COMPLETE: AUTO_SYNC_4H Regular scheduled sync completed
+[2025-08-07T02:06:56.172Z] - AUTO_SYNC: Triggered - Regular 4-hour scheduled update
+[2025-08-07T02:06:56.176Z] - SYNC_START: CURRENT_WEEK_SYNC Latest completed games from 2024 season
+[2025-08-07T02:07:08.960Z] - SYNC_COMPLETE: CURRENT_WEEK_SYNC 10 games processed
+[2025-08-07T02:07:08.960Z] - SYNC_COMPLETE: AUTO_SYNC_4H Regular scheduled sync completed
+[2025-08-07T02:17:16.058Z] - AUTO_SYNC: Triggered - Regular 4-hour scheduled update
+[2025-08-07T02:17:16.060Z] - SYNC_START: CURRENT_WEEK_SYNC Latest completed games from 2024 season
+[2025-08-07T02:17:27.880Z] - AUTO_SYNC: Triggered - Regular 4-hour scheduled update
+[2025-08-07T02:17:27.881Z] - SYNC_START: CURRENT_WEEK_SYNC Latest completed games from 2024 season
+[2025-08-07T02:17:36.788Z] - SYNC_COMPLETE: CURRENT_WEEK_SYNC 10 games processed
+[2025-08-07T02:17:36.788Z] - SYNC_COMPLETE: AUTO_SYNC_4H Regular scheduled sync completed
+[2025-08-07T14:59:37.679Z] - AUTO_SYNC: Triggered - Regular 4-hour scheduled update
+[2025-08-07T14:59:37.682Z] - SYNC_START: CURRENT_WEEK_SYNC Latest completed games from 2024 season
+[2025-08-07T14:59:47.248Z] - SYNC_COMPLETE: CURRENT_WEEK_SYNC 10 games processed
+[2025-08-07T14:59:47.248Z] - SYNC_COMPLETE: AUTO_SYNC_4H Regular scheduled sync completed
+[2025-08-07T15:09:58.906Z] - AUTO_SYNC: Triggered - Regular 4-hour scheduled update
+[2025-08-07T15:09:58.906Z] - SYNC_START: CURRENT_WEEK_SYNC Latest completed games from 2024 season
+[2025-08-07T15:10:07.864Z] - SYNC_COMPLETE: CURRENT_WEEK_SYNC 10 games processed
+[2025-08-07T15:10:07.864Z] - SYNC_COMPLETE: AUTO_SYNC_4H Regular scheduled sync completed
+[2025-08-07T15:13:45.131Z] - AUTO_SYNC: Triggered - Regular 4-hour scheduled update
+[2025-08-07T15:13:45.132Z] - SYNC_START: CURRENT_WEEK_SYNC Latest completed games from 2024 season
+[2025-08-07T15:13:54.303Z] - SYNC_COMPLETE: CURRENT_WEEK_SYNC 10 games processed
+[2025-08-07T15:13:54.303Z] - SYNC_COMPLETE: AUTO_SYNC_4H Regular scheduled sync completed
+[2025-08-07T15:18:32.067Z] - AUTO_SYNC: Triggered - Regular 4-hour scheduled update
+[2025-08-07T15:18:32.068Z] - SYNC_START: CURRENT_WEEK_SYNC Latest completed games from 2024 season
+[2025-08-07T15:18:42.132Z] - SYNC_COMPLETE: CURRENT_WEEK_SYNC 10 games processed
+[2025-08-07T15:18:42.132Z] - SYNC_COMPLETE: AUTO_SYNC_4H Regular scheduled sync completed
+[2025-08-07T15:19:40.937Z] - AUTO_SYNC: Triggered - Regular 4-hour scheduled update
+[2025-08-07T15:19:40.938Z] - SYNC_START: CURRENT_WEEK_SYNC Latest completed games from 2024 season
+[2025-08-07T15:19:51.197Z] - SYNC_COMPLETE: CURRENT_WEEK_SYNC 10 games processed
+[2025-08-07T15:19:51.198Z] - SYNC_COMPLETE: AUTO_SYNC_4H Regular scheduled sync completed
+[2025-08-07T15:21:40.653Z] - AUTO_SYNC: Triggered - Regular 4-hour scheduled update
+[2025-08-07T15:21:40.654Z] - SYNC_START: CURRENT_WEEK_SYNC Latest completed games from 2024 season
+[2025-08-07T15:21:50.991Z] - SYNC_COMPLETE: CURRENT_WEEK_SYNC 10 games processed
+[2025-08-07T15:21:50.991Z] - SYNC_COMPLETE: AUTO_SYNC_4H Regular scheduled sync completed
+[2025-08-07T15:23:43.032Z] - AUTO_SYNC: Triggered - Regular 4-hour scheduled update
+[2025-08-07T15:23:43.033Z] - SYNC_START: CURRENT_WEEK_SYNC Latest completed games from 2024 season
+[2025-08-07T15:23:52.978Z] - SYNC_COMPLETE: CURRENT_WEEK_SYNC 10 games processed
+[2025-08-07T15:23:52.978Z] - SYNC_COMPLETE: AUTO_SYNC_4H Regular scheduled sync completed
+[2025-08-07T15:27:47.437Z] - AUTO_SYNC: Triggered - Regular 4-hour scheduled update
+[2025-08-07T15:27:47.438Z] - SYNC_START: CURRENT_WEEK_SYNC Latest completed games from 2024 season
+[2025-08-07T15:27:57.098Z] - SYNC_COMPLETE: CURRENT_WEEK_SYNC 10 games processed
+[2025-08-07T15:27:57.098Z] - SYNC_COMPLETE: AUTO_SYNC_4H Regular scheduled sync completed
+[2025-08-07T15:54:00.017Z] - AUTO_SYNC: Triggered - Regular 4-hour scheduled update
+[2025-08-07T15:54:00.032Z] - SYNC_START: CURRENT_WEEK_SYNC Latest completed games from 2024 season
+[2025-08-07T15:54:01.348Z] - SYNC_ERROR: CURRENT_WEEK_SYNC - duplicate key value violates unique constraint "games_unique_matchup"
+[2025-08-07T15:54:01.348Z] - SYNC_COMPLETE: AUTO_SYNC_4H Regular scheduled sync completed
+[2025-08-07T15:58:10.024Z] - AUTO_SYNC: Triggered - Regular 4-hour scheduled update
+[2025-08-07T15:58:10.025Z] - SYNC_START: CURRENT_WEEK_SYNC Latest completed games from 2024 season
+[2025-08-07T15:58:11.409Z] - SYNC_ERROR: CURRENT_WEEK_SYNC - duplicate key value violates unique constraint "games_unique_matchup"
+[2025-08-07T15:58:11.409Z] - SYNC_COMPLETE: AUTO_SYNC_4H Regular scheduled sync completed
+[2025-08-07T16:00:59.096Z] - AUTO_SYNC: Triggered - Regular 4-hour scheduled update
+[2025-08-07T16:00:59.098Z] - SYNC_START: CURRENT_WEEK_SYNC Latest completed games from 2024 season
+[2025-08-07T16:01:00.695Z] - SYNC_ERROR: CURRENT_WEEK_SYNC - duplicate key value violates unique constraint "games_unique_matchup"
+[2025-08-07T16:01:00.695Z] - SYNC_COMPLETE: AUTO_SYNC_4H Regular scheduled sync completed
+[2025-08-07T17:11:47.832Z] - AUTO_SYNC: Triggered - Regular 4-hour scheduled update
+[2025-08-07T17:11:47.835Z] - SYNC_START: CURRENT_WEEK_SYNC Latest completed games from 2024 season
+[2025-08-07T17:11:49.129Z] - SYNC_ERROR: CURRENT_WEEK_SYNC - duplicate key value violates unique constraint "games_unique_matchup"
+[2025-08-07T17:11:49.130Z] - SYNC_COMPLETE: AUTO_SYNC_4H Regular scheduled sync completed
+[2025-08-07T23:06:26.429Z] - AUTO_SYNC: Triggered - Regular 4-hour scheduled update
+[2025-08-07T23:06:26.431Z] - SYNC_START: CURRENT_WEEK_SYNC Latest completed games from 2024 season
+[2025-08-07T23:06:28.712Z] - SYNC_ERROR: CURRENT_WEEK_SYNC - duplicate key value violates unique constraint "games_unique_matchup"
+[2025-08-07T23:06:28.713Z] - SYNC_COMPLETE: AUTO_SYNC_4H Regular scheduled sync completed
+[2025-08-07T23:20:06.003Z] - AUTO_SYNC: Triggered - Regular 4-hour scheduled update
+[2025-08-07T23:20:06.004Z] - SYNC_START: CURRENT_WEEK_SYNC Latest completed games from 2024 season
+[2025-08-07T23:20:06.953Z] - SYNC_ERROR: CURRENT_WEEK_SYNC - duplicate key value violates unique constraint "games_unique_matchup"
+[2025-08-07T23:20:06.953Z] - SYNC_COMPLETE: AUTO_SYNC_4H Regular scheduled sync completed
