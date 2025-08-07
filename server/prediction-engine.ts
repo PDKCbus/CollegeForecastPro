@@ -40,7 +40,7 @@ interface PredictionResult {
 
 export class RicksPicksPredictionEngine {
   private rosterAnalytics: RosterAnalyticsEngine;
-  
+
   constructor() {
     this.rosterAnalytics = new RosterAnalyticsEngine();
   }
@@ -78,7 +78,7 @@ export class RicksPicksPredictionEngine {
       impactDescription.push("Dome: Controlled climate favors offense (+4.0)");
     } else if (this.hasValidWeatherData(weather)) {
       // Only apply outdoor weather factors if we have actual weather data
-      
+
       // Temperature impact
       if (weather.temperature !== undefined && weather.temperature !== null && !isNaN(weather.temperature)) {
         if (weather.temperature < 32) {
@@ -122,7 +122,7 @@ export class RicksPicksPredictionEngine {
     const hasTemp = weather.temperature !== undefined && weather.temperature !== null && !isNaN(weather.temperature);
     const hasWind = weather.windSpeed !== undefined && weather.windSpeed !== null && !isNaN(weather.windSpeed);
     const hasPrecip = weather.precipitation !== undefined && weather.precipitation !== null && !isNaN(weather.precipitation);
-    
+
     // We need at least one valid weather data point to make weather predictions
     return hasTemp || hasWind || hasPrecip;
   }
@@ -134,12 +134,12 @@ export class RicksPicksPredictionEngine {
   private calculateConferenceFactor(homeConference: string, awayConference: string): { score: number; impact: string[] } {
     const homeRating = this.conferencePowerRatings[homeConference] || 0;
     const awayRating = this.conferencePowerRatings[awayConference] || 0;
-    
+
     const differential = homeRating - awayRating;
     let factorScore = differential * 0.3; // Scale to reasonable range
-    
+
     const impactDescription: string[] = [];
-    
+
     if (Math.abs(differential) > 3) {
       impactDescription.push(`Major conference mismatch: ${homeConference} vs ${awayConference} (${differential > 0 ? '+' : ''}${differential.toFixed(1)})`);
     } else if (Math.abs(differential) > 1) {
@@ -175,7 +175,7 @@ export class RicksPicksPredictionEngine {
 
     // Reduced from traditional 3 points due to our analysis
     const factorScore = 2.0;
-    
+
     return {
       score: factorScore,
       impact: [`Home field advantage: Traditional boost, but away teams cover 53.3% (+${factorScore})`]
@@ -222,24 +222,24 @@ export class RicksPicksPredictionEngine {
     vegasSpread: number | null = null,
     isNeutralSite: boolean = false
   ): Promise<PredictionResult> {
-    
+
     // Get team IDs for advanced analytics
     const homeTeamData = await storage.getTeamByName(homeTeam);
     const awayTeamData = await storage.getTeamByName(awayTeam);
     const currentSeason = new Date().getFullYear();
-    
+
     // Calculate traditional factors
     const weatherFactor = this.calculateWeatherFactor(weather);
     const conferenceFactor = this.calculateConferenceFactor(homeConference, awayConference);
     const homeFieldFactor = this.calculateHomeFieldFactor(isNeutralSite);
-    
+
     // Base prediction (home team perspective)
     let basePrediction = homeFieldFactor.score + conferenceFactor.score + weatherFactor.score;
-    
+
     // Calculate advanced analytics if team data available
     let advancedAnalytics = null;
     let rosterAnalytics = null;
-    
+
     if (homeTeamData && awayTeamData) {
       try {
         // Get existing advanced analytics
@@ -248,31 +248,31 @@ export class RicksPicksPredictionEngine {
           awayTeamData.id,
           currentSeason
         );
-        
+
         // Apply advanced analytics adjustment
         basePrediction += advancedAnalytics.totalAdvancedAdj;
       } catch (error) {
         console.log("Advanced analytics unavailable, using basic algorithm");
       }
-      
+
       // Note: Roster analytics require gameId which is not available in this context
       // Will be applied at the route level where gameId is available
       console.log("Roster analytics unavailable, using existing algorithms");
     }
-    
+
     // Calculate betting value
     const bettingValue = this.calculateBettingLineValue(vegasSpread, basePrediction);
-    
+
     // Final prediction
     const totalScore = basePrediction + bettingValue.score;
-    
+
     // Determine confidence level (enhanced with advanced analytics)
     const basicFactors = [weatherFactor, conferenceFactor, homeFieldFactor, bettingValue]
       .filter(f => f.score !== 0).length;
-    
+
     let confidence: 'High' | 'Medium' | 'Low';
     let confidenceScore = basicFactors;
-    
+
     // Boost confidence with advanced analytics
     if (advancedAnalytics && typeof advancedAnalytics === 'object' && 'confidence' in advancedAnalytics) {
       if (advancedAnalytics.confidence > 0.8) {
@@ -281,15 +281,15 @@ export class RicksPicksPredictionEngine {
         confidenceScore += 1;
       }
     }
-    
+
     if (Math.abs(totalScore) > 6 && confidenceScore >= 4) {
       confidence = "High";
     } else if (Math.abs(totalScore) > 3 && confidenceScore >= 2) {
-      confidence = "Medium";  
+      confidence = "Medium";
     } else {
       confidence = "Low";
     }
-    
+
     // Compile all key factors including advanced analytics
     const allFactors: string[] = [
       ...weatherFactor.impact,
@@ -298,22 +298,22 @@ export class RicksPicksPredictionEngine {
       ...bettingValue.impact,
       ...(advancedAnalytics ? advancedAnalytics.keyInsights : [])
     ].filter(impact => impact.length > 0);
-    
+
     // Prediction result
     let prediction: string;
     let recommendedBet: string | undefined;
-    
+
     // Calculate the true edge between our prediction and Vegas line
     let edge = 0;
     let oppositeSides = false;
-    
+
     if (vegasSpread) {
       // Check if predictions are on opposite sides
       const vegasFavorsAway = vegasSpread > 0;  // Positive = away team favored
       const weFavorHome = totalScore > 0;       // Positive = home team favored
-      
+
       oppositeSides = (vegasFavorsAway && weFavorHome) || (!vegasFavorsAway && !weFavorHome);
-      
+
       if (oppositeSides) {
         // Opposite sides: Add the magnitudes
         edge = Math.abs(totalScore) + Math.abs(vegasSpread);
@@ -322,9 +322,9 @@ export class RicksPicksPredictionEngine {
         edge = Math.abs(Math.abs(totalScore) - Math.abs(vegasSpread));
       }
     }
-    
+
     const significantEdge = edge >= 2; // 2+ point edge required for recommendation
-    
+
     // Debug logging for betting recommendations
     if (vegasSpread) {
       console.log(`🎯 Betting Logic Debug:`);
@@ -334,7 +334,7 @@ export class RicksPicksPredictionEngine {
       console.log(`   Edge Calculation: ${oppositeSides ? `${Math.abs(totalScore)} + ${Math.abs(vegasSpread)}` : `|${Math.abs(totalScore)} - ${Math.abs(vegasSpread)}|`} = ${edge.toFixed(2)} points`);
       console.log(`   Significant Edge (>=2): ${significantEdge}`);
     }
-    
+
     if (totalScore > 0) {
       prediction = `${homeTeam} favored by ${Math.abs(totalScore).toFixed(1)} points`;
       if (vegasSpread && significantEdge) {
@@ -366,7 +366,7 @@ export class RicksPicksPredictionEngine {
         }
       }
     }
-    
+
     return {
       prediction,
       spread: totalScore,

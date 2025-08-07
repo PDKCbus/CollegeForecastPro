@@ -6,7 +6,7 @@ import { useQuery, useMutation, QueryClient } from "@tanstack/react-query";
 // Export these to ensure they stay in the bundle
 export const forceReactQueryBundle = {
   useQuery,
-  useMutation, 
+  useMutation,
   QueryClient,
   __bundled: true
 };

@@ -1,41 +1,25 @@
-import axios from 'axios';
+import { TwitterApi } from 'twitter-api-v2';
 import Sentiment from 'sentiment';
 import { storage } from './storage';
 import type { Team, Game, GameWithTeams, InsertSentimentAnalysis } from '@shared/schema';
 
 const sentiment = new Sentiment();
 
-interface RedditCredentials {
-  clientId?: string;
-  clientSecret?: string;
-  userAgent?: string;
+interface TwitterCredentials {
+  bearerToken?: string;
+  appKey?: string;
+  appSecret?: string;
+  accessToken?: string;
+  accessSecret?: string;
 }
 
-interface RedditPost {
-  title: string;
-  selftext: string;
-  created_utc: number;
-  score: number;
-  num_comments: number;
-  upvote_ratio: number;
-  author: string;
-  subreddit: string;
-}
-
-interface RedditComment {
-  body: string;
-  created_utc: number;
-  score: number;
-  author: string;
-}
-
-interface RedditData {
+interface TweetData {
   text: string;
   created_at: string;
   public_metrics?: {
-    score: number;
-    num_comments: number;
-    upvote_ratio: number;
+    retweet_count: number;
+    like_count: number;
+    reply_count: number;
   };
 }
 
@@ -48,53 +32,45 @@ interface SentimentResult {
   keywords: string[];
 }
 
-class RedditSentimentService {
-  private accessToken: string | null = null;
+class TwitterSentimentService {
+  private twitterClient: TwitterApi | null = null;
   private isInitialized = false;
-  private userAgent = 'college-football-predictor/1.0.0';
 
   constructor() {
-    this.initializeRedditClient();
+    this.initializeTwitterClient();
   }
 
-  private async initializeRedditClient() {
-    const credentials: RedditCredentials = {
-      clientId: process.env.REDDIT_CLIENT_ID,
-      clientSecret: process.env.REDDIT_CLIENT_SECRET,
-      userAgent: process.env.REDDIT_USER_AGENT || this.userAgent,
+  private initializeTwitterClient() {
+    const credentials: TwitterCredentials = {
+      bearerToken: process.env.TWITTER_BEARER_TOKEN,
+      appKey: process.env.TWITTER_API_KEY,
+      appSecret: process.env.TWITTER_API_SECRET,
+      accessToken: process.env.TWITTER_ACCESS_TOKEN,
+      accessSecret: process.env.TWITTER_ACCESS_SECRET,
     };
 
-    if (credentials.clientId && credentials.clientSecret) {
-      try {
-        // Get OAuth token for Reddit API access
-        const auth = Buffer.from(`${credentials.clientId}:${credentials.clientSecret}`).toString('base64');
-        
-        const response = await axios.post('https://www.reddit.com/api/v1/access_token', 
-          'grant_type=client_credentials',
-          {
-            headers: {
-              'Authorization': `Basic ${auth}`,
-              'Content-Type': 'application/x-www-form-urlencoded',
-              'User-Agent': credentials.userAgent
-            }
-          }
-        );
-
-        this.accessToken = response.data.access_token;
-        this.isInitialized = true;
-        console.log('🟢 Reddit sentiment analysis initialized with r/CFB access (4.4M users)');
-      } catch (error) {
-        console.log('Reddit API authentication failed, falling back to public access');
-        this.isInitialized = true; // Can still use public endpoints
-      }
+    // Use bearer token for app-only auth (recommended for search)
+    if (credentials.bearerToken) {
+      this.twitterClient = new TwitterApi(credentials.bearerToken);
+      this.isInitialized = true;
+      console.log('Twitter sentiment analysis initialized with bearer token');
+    } else if (credentials.appKey && credentials.appSecret) {
+      // Fallback to app auth
+      this.twitterClient = new TwitterApi({
+        appKey: credentials.appKey,
+        appSecret: credentials.appSecret,
+        accessToken: credentials.accessToken,
+        accessSecret: credentials.accessSecret,
+      });
+      this.isInitialized = true;
+      console.log('Twitter sentiment analysis initialized with app credentials');
     } else {
-      console.log('🟡 Reddit credentials not found - using public r/CFB access (limited rate)');
-      this.isInitialized = true; // Reddit public API doesn't require auth for basic read access
+      console.log('Twitter credentials not found - sentiment analysis will use simulated data');
     }
   }
 
-  async analyzeRedditSentiment(redditData: RedditData[]): Promise<SentimentResult> {
-    if (redditData.length === 0) {
+  async analyzeTweetSentiment(tweets: TweetData[]): Promise<SentimentResult> {
+    if (tweets.length === 0) {
       return {
         score: 0,
         positive: 0,
@@ -111,18 +87,13 @@ class RedditSentimentService {
     let neutralCount = 0;
     const allKeywords = new Set<string>();
 
-    for (const item of redditData) {
-      const result = sentiment.analyze(item.text);
-      // Weight by Reddit engagement metrics
-      const redditWeight = item.public_metrics ? 
-        Math.log(Math.max(1, item.public_metrics.score + 1)) * (item.public_metrics.upvote_ratio || 0.5) : 1;
-      
-      const weightedScore = result.score * redditWeight;
-      totalScore += weightedScore;
+    for (const tweet of tweets) {
+      const result = sentiment.analyze(tweet.text);
+      totalScore += result.score;
 
-      if (weightedScore > 0) {
+      if (result.score > 0) {
         positiveCount++;
-      } else if (weightedScore < 0) {
+      } else if (result.score < 0) {
         negativeCount++;
       } else {
         neutralCount++;
@@ -133,123 +104,98 @@ class RedditSentimentService {
       result.negative.forEach(word => allKeywords.add(word));
     }
 
-    // Normalize score to -1 to 1 range based on Reddit data
-    const normalizedScore = Math.max(-1, Math.min(1, totalScore / redditData.length / 5));
+    // Normalize score to -1 to 1 range
+    const normalizedScore = Math.max(-1, Math.min(1, totalScore / tweets.length / 5));
 
     return {
       score: normalizedScore,
       positive: positiveCount,
       negative: negativeCount,
       neutral: neutralCount,
-      total: redditData.length,
+      total: tweets.length,
       keywords: Array.from(allKeywords).slice(0, 10) // Top 10 keywords
     };
   }
 
-  async fetchRedditDataForTeam(team: Team, maxResults = 50): Promise<RedditData[]> {
-    if (!this.isInitialized) {
-      console.log('Reddit API not available, generating simulated r/CFB data');
-      return this.generateSimulatedRedditData(team.name, maxResults);
+  async fetchTweetsForTeam(team: Team, maxResults = 50): Promise<TweetData[]> {
+    if (!this.isInitialized || !this.twitterClient) {
+      console.log('Twitter API not available, generating simulated sentiment data');
+      return this.generateSimulatedTweets(team.name, maxResults);
     }
 
     try {
-      // Search r/CFB for team-related posts and comments
       const searchTerms = [
         team.name,
         team.abbreviation,
-        team.mascot || ''
+        team.mascot || '',
+        `#${team.abbreviation}`,
+        `#${team.name.replace(/\s+/g, '')}`
       ].filter(term => term).join(' OR ');
 
-      const headers: any = {
-        'User-Agent': this.userAgent
-      };
+      const tweets = await this.twitterClient.v2.search(searchTerms, {
+        max_results: Math.min(maxResults, 100),
+        'tweet.fields': ['created_at', 'public_metrics'],
+        expansions: ['author_id'],
+      });
 
-      if (this.accessToken) {
-        headers['Authorization'] = `Bearer ${this.accessToken}`;
-      }
-
-      // Search r/CFB subreddit specifically
-      const searchUrl = `https://www.reddit.com/r/CFB/search.json?q=${encodeURIComponent(searchTerms)}&sort=new&limit=${Math.min(maxResults, 100)}&restrict_sr=1`;
-      
-      const response = await axios.get(searchUrl, { headers });
-      
-      const posts = response.data?.data?.children || [];
-      
-      return posts.map((post: any) => ({
-        text: `${post.data.title} ${post.data.selftext || ''}`.trim(),
-        created_at: new Date(post.data.created_utc * 1000).toISOString(),
-        public_metrics: {
-          score: post.data.score,
-          num_comments: post.data.num_comments,
-          upvote_ratio: post.data.upvote_ratio
-        }
-      }));
+      return tweets.data?.map(tweet => ({
+        text: tweet.text,
+        created_at: tweet.created_at || new Date().toISOString(),
+        public_metrics: tweet.public_metrics
+      })) || [];
 
     } catch (error) {
-      console.error('Error fetching Reddit data:', error);
-      return this.generateSimulatedRedditData(team.name, maxResults);
+      console.error('Error fetching tweets:', error);
+      return this.generateSimulatedTweets(team.name, maxResults);
     }
   }
 
-  async fetchRedditDataForGame(game: GameWithTeams, maxResults = 100): Promise<RedditData[]> {
-    if (!this.isInitialized) {
-      console.log('Reddit API not available, generating simulated r/CFB data');
-      return this.generateSimulatedRedditData(`${game.homeTeam.name} vs ${game.awayTeam.name}`, maxResults);
+  async fetchTweetsForGame(game: GameWithTeams, maxResults = 100): Promise<TweetData[]> {
+    if (!this.isInitialized || !this.twitterClient) {
+      console.log('Twitter API not available, generating simulated sentiment data');
+      return this.generateSimulatedTweets(`${game.homeTeam.name} vs ${game.awayTeam.name}`, maxResults);
     }
 
     try {
       const searchTerms = [
         `${game.homeTeam.name} vs ${game.awayTeam.name}`,
         `${game.homeTeam.abbreviation} vs ${game.awayTeam.abbreviation}`,
+        `#${game.homeTeam.abbreviation}vs${game.awayTeam.abbreviation}`,
+        `#CFB`,
         game.homeTeam.name,
-        game.awayTeam.name,
-        'college football',
-        'CFB'
+        game.awayTeam.name
       ].join(' OR ');
 
-      const headers: any = {
-        'User-Agent': this.userAgent
-      };
+      const tweets = await this.twitterClient.v2.search(searchTerms, {
+        max_results: Math.min(maxResults, 100),
+        'tweet.fields': ['created_at', 'public_metrics'],
+        expansions: ['author_id'],
+      });
 
-      if (this.accessToken) {
-        headers['Authorization'] = `Bearer ${this.accessToken}`;
-      }
-
-      // Search r/CFB for game-related posts
-      const searchUrl = `https://www.reddit.com/r/CFB/search.json?q=${encodeURIComponent(searchTerms)}&sort=new&limit=${Math.min(maxResults, 100)}&restrict_sr=1&t=week`;
-      
-      const response = await axios.get(searchUrl, { headers });
-      
-      const posts = response.data?.data?.children || [];
-      
-      return posts.map((post: any) => ({
-        text: `${post.data.title} ${post.data.selftext || ''}`.trim(),
-        created_at: new Date(post.data.created_utc * 1000).toISOString(),
-        public_metrics: {
-          score: post.data.score,
-          num_comments: post.data.num_comments,
-          upvote_ratio: post.data.upvote_ratio
-        }
-      }));
+      return tweets.data?.map(tweet => ({
+        text: tweet.text,
+        created_at: tweet.created_at || new Date().toISOString(),
+        public_metrics: tweet.public_metrics
+      })) || [];
 
     } catch (error) {
-      console.error('Error fetching game Reddit data:', error);
-      return this.generateSimulatedRedditData(`${game.homeTeam.name} vs ${game.awayTeam.name}`, maxResults);
+      console.error('Error fetching game tweets:', error);
+      return this.generateSimulatedTweets(`${game.homeTeam.name} vs ${game.awayTeam.name}`, maxResults);
     }
   }
 
-  private generateSimulatedRedditData(subject: string, count: number): RedditData[] {
+  private generateSimulatedTweets(subject: string, count: number): TweetData[] {
     const positiveTemplates = [
-      `${subject} is looking really strong this season! Go team!`,
-      `Great performance from ${subject} today, playoff bound!`,
-      `Love watching ${subject} play, they're incredible this year`,
-      `${subject} is going all the way this year! Championship material`,
-      `Amazing game by ${subject}, they're unstoppable right now`,
-      `${subject} has such a talented roster, coaching is amazing`,
-      `Rooting for ${subject} to win it all! Conference champs!`,
+      `${subject} is looking really strong this season!`,
+      `Great performance from ${subject} today`,
+      `Love watching ${subject} play, they're incredible`,
+      `${subject} is going all the way this year!`,
+      `Amazing game by ${subject}, they're unstoppable`,
+      `${subject} has such a talented roster`,
+      `Rooting for ${subject} to win it all!`,
       `${subject} played with such heart and determination`,
-      `${subject} is my favorite team to watch in CFB`,
-      `Can't wait to see ${subject} in action again next week`
+      `${subject} is my favorite team to watch`,
+      `Can't wait to see ${subject} in action again`
     ];
 
     const negativeTemplates = [
@@ -278,44 +224,40 @@ class RedditSentimentService {
       `${subject} schedule for next week`
     ];
 
-    const redditData: RedditData[] = [];
+    const tweets: TweetData[] = [];
     
     for (let i = 0; i < count; i++) {
       const rand = Math.random();
       let template: string;
       
-      if (rand < 0.35) {
+      if (rand < 0.4) {
         template = positiveTemplates[Math.floor(Math.random() * positiveTemplates.length)];
-      } else if (rand < 0.65) {
-        template = negativeTemplates[Math.floor(Math.random() * negativeTemplates.length)];
-      } else {
+      } else if (rand < 0.7) {
         template = neutralTemplates[Math.floor(Math.random() * neutralTemplates.length)];
+      } else {
+        template = negativeTemplates[Math.floor(Math.random() * negativeTemplates.length)];
       }
 
-      // Simulate Reddit post characteristics
-      const score = Math.floor(Math.random() * 500) - 50; // Can be negative
-      const upvoteRatio = 0.5 + Math.random() * 0.5; // 0.5 to 1.0
-      
-      redditData.push({
+      tweets.push({
         text: template,
-        created_at: new Date(Date.now() - Math.random() * 7 * 24 * 60 * 60 * 1000).toISOString(),
+        created_at: new Date(Date.now() - Math.random() * 24 * 60 * 60 * 1000).toISOString(),
         public_metrics: {
-          score: score,
-          num_comments: Math.floor(Math.random() * 150),
-          upvote_ratio: upvoteRatio
+          retweet_count: Math.floor(Math.random() * 50),
+          like_count: Math.floor(Math.random() * 200),
+          reply_count: Math.floor(Math.random() * 30)
         }
       });
     }
 
-    return redditData;
+    return tweets;
   }
 
   async analyzeTeamSentiment(teamId: number): Promise<void> {
     const team = await storage.getTeam(teamId);
     if (!team) return;
 
-    const redditData = await this.fetchRedditDataForTeam(team);
-    const sentimentResult = await this.analyzeRedditSentiment(redditData);
+    const tweets = await this.fetchTweetsForTeam(team);
+    const sentimentResult = await this.analyzeTweetSentiment(tweets);
 
     const sentimentData: InsertSentimentAnalysis = {
       teamId: team.id,
@@ -342,8 +284,8 @@ class RedditSentimentService {
     const game = await storage.getGameWithTeams(gameId);
     if (!game) return;
 
-    const redditData = await this.fetchRedditDataForGame(game);
-    const sentimentResult = await this.analyzeRedditSentiment(redditData);
+    const tweets = await this.fetchTweetsForGame(game);
+    const sentimentResult = await this.analyzeTweetSentiment(tweets);
 
     const sentimentData: InsertSentimentAnalysis = {
       gameId: game.id,
@@ -384,4 +326,4 @@ class RedditSentimentService {
   }
 }
 
-export const sentimentService = new RedditSentimentService();
+export const sentimentService = new TwitterSentimentService();

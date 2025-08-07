@@ -35,7 +35,7 @@ export function FeaturedGame({ game }: FeaturedGameProps) {
 
   const getSpreadDisplay = () => {
     if (game.spread === null || game.spread === undefined) return "N/A";
-    
+
     const team = game.spread > 0 ? game.awayTeam.abbreviation : game.homeTeam.abbreviation;
     const value = Math.abs(game.spread);
     return `${team} -${formatSpread(value)}`;
@@ -44,10 +44,10 @@ export function FeaturedGame({ game }: FeaturedGameProps) {
   return (
     <div className="mb-8 bg-surface rounded-xl overflow-hidden shadow-lg animate-fade-in">
       {/* Football Background Header */}
-      <div 
-        className="h-48 md:h-64 bg-cover bg-center relative" 
-        style={{ 
-          backgroundImage: "url('https://images.unsplash.com/photo-1566577739112-5180d4bf9390?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1526&q=80')" 
+      <div
+        className="h-48 md:h-64 bg-cover bg-center relative"
+        style={{
+          backgroundImage: "url('https://images.unsplash.com/photo-1566577739112-5180d4bf9390?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1526&q=80')"
         }}
       >
         <div className="absolute inset-0 bg-gradient-to-t from-surface to-transparent"></div>
@@ -55,7 +55,7 @@ export function FeaturedGame({ game }: FeaturedGameProps) {
           GAME OF THE WEEK
         </div>
       </div>
-      
+
       <div className="p-6">
         {/* Game Date/Time */}
         <div className="text-center mb-4">
@@ -67,10 +67,10 @@ export function FeaturedGame({ game }: FeaturedGameProps) {
         {/* Teams */}
         <div className="flex items-center justify-between mb-6">
           <div className="flex flex-col items-center flex-1">
-            <img 
+            <img
               src={game.awayTeam.logoUrl || ""}
-              alt={game.awayTeam.name} 
-              className="team-logo mb-2 w-[45px] h-[45px] object-contain" 
+              alt={game.awayTeam.name}
+              className="team-logo mb-2 w-[45px] h-[45px] object-contain"
             />
             <div className="text-center">
               <div className="font-bold text-lg">{game.awayTeam.name}</div>
@@ -87,10 +87,10 @@ export function FeaturedGame({ game }: FeaturedGameProps) {
           </div>
 
           <div className="flex flex-col items-center flex-1">
-            <img 
+            <img
               src={game.homeTeam.logoUrl || ""}
-              alt={game.homeTeam.name} 
-              className="team-logo mb-2 w-[45px] h-[45px] object-contain" 
+              alt={game.homeTeam.name}
+              className="team-logo mb-2 w-[45px] h-[45px] object-contain"
             />
             <div className="text-center">
               <div className="font-bold text-lg">{game.homeTeam.name}</div>
@@ -110,7 +110,7 @@ export function FeaturedGame({ game }: FeaturedGameProps) {
               <div className="text-center p-3 bg-surface-light rounded-lg">
                 <div className="text-xs text-white/60 mb-1">RICK'S PICK</div>
                 <div className="font-bold">
-                  {game.prediction.predictedWinnerId === game.homeTeam.id 
+                  {game.prediction.predictedWinnerId === game.homeTeam.id
                     ? game.homeTeam.name
                     : game.awayTeam.name
                   }
@@ -121,7 +121,7 @@ export function FeaturedGame({ game }: FeaturedGameProps) {
               <div className="text-center p-3 bg-surface-light rounded-lg">
                 <div className="text-xs text-white/60 mb-1">🤓 ANALYSIS PICK</div>
                 <div className="font-bold">
-                  {algorithmicPredictions.algorithmicPredictions[0].predictedWinnerId === game.homeTeam.id 
+                  {algorithmicPredictions.algorithmicPredictions[0].predictedWinnerId === game.homeTeam.id
                     ? game.homeTeam.name
                     : game.awayTeam.name
                   }
@@ -167,7 +167,7 @@ export function FeaturedGame({ game }: FeaturedGameProps) {
             // Show location information
             const stadium = game.stadium || '';
             const location = game.location || '';
-            
+
             // For international venues, show city and country
             if (stadium === 'Aviva Stadium') {
               return <div className="text-white/50 text-sm mb-2">Dublin, Ireland</div>;
@@ -218,7 +218,7 @@ export function FeaturedGame({ game }: FeaturedGameProps) {
             </Button>
           </Link>
           <div className="flex-1">
-            <SocialShare 
+            <SocialShare
               game={game}
               prediction={algorithmicPredictions?.algorithmicPredictions?.[0] ? {
                 spreadPick: algorithmicPredictions.algorithmicPredictions[0].spreadPick,

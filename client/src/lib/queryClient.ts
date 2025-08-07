@@ -1,53 +1,43 @@
-// ULTRA NUCLEAR option - force React Query inclusion AND fix runtime imports
+// ULTRA NUCLEAR option - force React Query inclusion
 import * as ReactQuery from "@tanstack/react-query";
-import { 
-  useQuery as origUseQuery, 
-  useMutation as origUseMutation,
-  QueryClient as origQueryClient,
-  QueryClientProvider as origQueryClientProvider,
+import {
+  useQuery,
+  useMutation,
+  QueryClient,
+  QueryClientProvider,
   type QueryFunction
 } from "@tanstack/react-query";
-
-// CRITICAL: Create runtime-safe exports
-export const useQuery = origUseQuery;
-export const useMutation = origUseMutation;
-export const QueryClient = origQueryClient;
-export const QueryClientProvider = origQueryClientProvider;
 
 // CRITICAL: Force bundler to include React Query by multiple methods
 const FORCE_INCLUDE = {
   // Method 1: Direct references
-  useQuery: origUseQuery,
-  useMutation: origUseMutation,
-  QueryClient: origQueryClient,
-  QueryClientProvider: origQueryClientProvider,
+  useQuery,
+  useMutation,
+  QueryClient,
+  QueryClientProvider,
   // Method 2: Namespace import
   ReactQuery,
   // Method 3: Function calls to prevent tree-shaking
-  testQuery: () => origUseQuery({ queryKey: ['test'], enabled: false }),
-  testMutation: () => origUseMutation({ mutationFn: async () => {} }),
-  testClient: () => new origQueryClient()
+  testQuery: () => useQuery({ queryKey: ['test'], enabled: false }),
+  testMutation: () => useMutation({ mutationFn: async () => {} }),
+  testClient: () => new QueryClient()
 };
 
-// Method 4: Global window references (multiple assignments for runtime access)
+// Method 4: Global window references (multiple assignments)
 if (typeof window !== 'undefined') {
   (window as any).__REACT_QUERY_FORCED__ = FORCE_INCLUDE;
   (window as any).__TANSTACK_QUERY__ = ReactQuery;
-  (window as any).__USE_QUERY__ = origUseQuery;
-  (window as any).__USE_MUTATION__ = origUseMutation;
-  (window as any).__QUERY_CLIENT__ = origQueryClient;
-  (window as any).__QUERY_CLIENT_PROVIDER__ = origQueryClientProvider;
-  
-  // Additional runtime backup - make exports globally available
-  (window as any).useQuery = origUseQuery;
-  (window as any).useMutation = origUseMutation;
-  (window as any).QueryClient = origQueryClient;
-  (window as any).QueryClientProvider = origQueryClientProvider;
+  (window as any).__USE_QUERY__ = useQuery;
+  (window as any).__USE_MUTATION__ = useMutation;
+  (window as any).__QUERY_CLIENT__ = QueryClient;
+  (window as any).__QUERY_CLIENT_PROVIDER__ = QueryClientProvider;
 }
 
 // Method 5: Force evaluation to prevent dead code elimination
-console.log('🔥 React Query forced into bundle:', typeof origUseQuery, typeof origUseMutation);
-console.log('🚀 Runtime exports verified:', typeof useQuery, typeof useMutation);
+console.log('🔥 React Query forced into bundle:', typeof useQuery, typeof useMutation);
+
+// Re-export for use throughout the app
+export { useQuery, useMutation, QueryClient, QueryClientProvider };
 
 async function throwIfResNotOk(res: Response) {
   if (!res.ok) {
