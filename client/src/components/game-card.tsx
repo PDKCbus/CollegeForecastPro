@@ -161,61 +161,105 @@ export function GameCard({ game }: GameCardProps) {
     };
   };
 
-  const getRicksPick = () => {
-    // Priority 1: Rick's personal picks (when available)
+  // Get Rick's personal pick only
+  const getRicksPersonalPick = () => {
     if (predictionData?.ricksPick) {
       const pick = predictionData.ricksPick;
       
       // Format Rick's spread pick
       if (pick.spreadPick && pick.spreadPick !== 'NO PLAY') {
         return {
-          team: pick.spreadPick.includes('HOME') ? game.homeTeam : game.awayTeam,
           pick: pick.spreadPick,
-          reason: pick.personalNotes || 'Rick\'s Expert Analysis',
-          isRicksPick: true
+          reason: pick.personalNotes || 'Rick\'s Expert Analysis'
         };
       }
       
       // Format Rick's total pick if no spread pick
       if (pick.totalPick && pick.totalPick !== 'NO PLAY') {
         return {
-          team: null,
           pick: pick.totalPick,
-          reason: pick.personalNotes || 'Rick\'s Expert Analysis',
-          isRicksPick: true
+          reason: pick.personalNotes || 'Rick\'s Expert Analysis'
         };
       }
     }
-    
-    // Priority 2: Use unified server prediction (algorithmic fallback)
+    return null;
+  };
+  
+  // Get algorithmic analysis pick
+  const getAnalysisPick = () => {
     const algorithmicPrediction = predictionData?.algorithmicPredictions?.[0];
     if (algorithmicPrediction) {
       // Check if prediction has a meaningful recommendation
       if (algorithmicPrediction.spreadPick && algorithmicPrediction.spreadPick !== "No Strong Play") {
         return {
-          team: null, // Let the text describe the pick
           pick: algorithmicPrediction.spreadPick,
-          reason: algorithmicPrediction.notes || "Data-driven algorithmic analysis",
-          isRicksPick: false
+          reason: algorithmicPrediction.notes || "Data-driven algorithmic analysis"
         };
       }
       
       // Handle "No Strong Play" case
       if (algorithmicPrediction.notes && algorithmicPrediction.notes.includes("No Strong Play")) {
         return {
-          team: null,
           pick: "No Strong Play",
-          reason: "Algorithm assessment matches Vegas line - no significant edge",
-          isRicksPick: false
+          reason: "Algorithm assessment matches Vegas line - no significant edge"
+        };
+      }
+      
+      // Handle case where prediction exists but no bet recommendation (edge below threshold)
+      if (!algorithmicPrediction.spreadPick) {
+        // Extract prediction details for informative message
+        const ourSpread = algorithmicPrediction.predictedSpread || 0;
+        const vegasSpread = game?.spread;
+        
+        let predictionSummary = "Analysis complete - edge below 2-point threshold";
+        
+        if (vegasSpread !== null && vegasSpread !== undefined) {
+          // Determine which team is favored in our prediction vs Vegas
+          const homeTeam = game?.homeTeam?.abbreviation || game?.homeTeam?.name?.slice(0, 4) || "Home";
+          const awayTeam = game?.awayTeam?.abbreviation || game?.awayTeam?.name?.slice(0, 4) || "Away";
+          
+          // Our prediction: positive = home favored, negative = away favored
+          // Vegas spread: negative = home favored, positive = away favored
+          const ourPredictionText = ourSpread > 0 
+            ? `${homeTeam} -${Math.abs(ourSpread).toFixed(1)}`
+            : `${awayTeam} -${Math.abs(ourSpread).toFixed(1)}`;
+            
+          const vegasPredictionText = vegasSpread < 0
+            ? `${homeTeam} -${Math.abs(vegasSpread).toFixed(1)}`
+            : `${awayTeam} -${Math.abs(vegasSpread).toFixed(1)}`;
+            
+          const edge = Math.abs(Math.abs(ourSpread) - Math.abs(vegasSpread)).toFixed(1);
+          
+          predictionSummary = `Algorithm: ${ourPredictionText} vs Vegas: ${vegasPredictionText} (${edge} point edge)`;
+        }
+        
+        return {
+          pick: "No Strong Edge",
+          reason: predictionSummary
         };
       }
     }
     
     // Final fallback if no server prediction available
     return {
-      team: null,
       pick: "Analysis Pending",
-      reason: "Algorithmic analysis in progress",
+      reason: "Algorithmic analysis in progress"
+    };
+  };
+
+  // Legacy function for compatibility
+  const getRicksPick = () => {
+    const ricksPersonalPick = getRicksPersonalPick();
+    if (ricksPersonalPick) {
+      return {
+        ...ricksPersonalPick,
+        isRicksPick: true
+      };
+    }
+    
+    const analysisPick = getAnalysisPick();
+    return {
+      ...analysisPick,
       isRicksPick: false
     };
   };
@@ -515,34 +559,51 @@ export function GameCard({ game }: GameCardProps) {
             />
           </div> */}
 
-          {/* Rick's Pick Section */}
-          {(() => {
-            const ricksPick = getRicksPick();
-            if (ricksPick) {
-              const isRicksPick = ricksPick.isRicksPick;
-              const headerText = isRicksPick ? "🏈 RICK'S PICK" : "🤓 ANALYSIS PICK";
-              const bgColor = isRicksPick ? "bg-blue-600 border-blue-500" : "bg-slate-600 border-slate-500";
-              const textColor = isRicksPick ? "text-blue-100" : "text-slate-100";
-              
-              return (
-                <div className={`${bgColor} border rounded-lg p-3 mb-3`}>
-                  <div className="text-center">
-                    <div className="text-white font-bold text-sm mb-1">{headerText}</div>
-                    <div className="text-white font-semibold text-lg">{ricksPick.pick}</div>
-                    <div className={`${textColor} text-xs mt-1`}>
-                      {ricksPick.reason}
-                      {!isRicksPick && (
-                        <span className="block mt-1 text-xs opacity-75">
-                          (Data-driven analysis - Rick hasn't made picks yet)
-                        </span>
-                      )}
+          {/* Picks Section - Both Rick's and Analysis */}
+          <div className="flex gap-3 mb-3">
+            {/* Rick's Personal Pick */}
+            {(() => {
+              const ricksPersonalPick = getRicksPersonalPick();
+              if (ricksPersonalPick) {
+                return (
+                  <div className="bg-blue-600 border-blue-500 border rounded-lg p-3 flex-1">
+                    <div className="text-center">
+                      <div className="text-white font-bold text-sm mb-1">🏈 RICK'S PICK</div>
+                      <div className="text-white font-semibold text-lg">{ricksPersonalPick.pick}</div>
+                      <div className="text-blue-100 text-xs mt-1">
+                        {ricksPersonalPick.reason}
+                      </div>
                     </div>
                   </div>
-                </div>
-              );
-            }
-            return null;
-          })()}
+                );
+              }
+              return null;
+            })()}
+            
+            {/* Analysis Pick */}
+            {(() => {
+              const analysisPick = getAnalysisPick();
+              if (analysisPick) {
+                return (
+                  <div className="bg-slate-600 border-slate-500 border rounded-lg p-3 flex-1">
+                    <div className="text-center">
+                      <div className="text-white font-bold text-sm mb-1">🤓 ANALYSIS PICK</div>
+                      <div className="text-white font-semibold text-lg">{analysisPick.pick}</div>
+                      <div className="text-slate-100 text-xs mt-1">
+                        {analysisPick.reason}
+                        {analysisPick.pick === "Analysis Pending" && (
+                          <span className="block mt-1 text-xs opacity-75">
+                            (Data-driven analysis - Rick hasn't made picks yet)
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                );
+              }
+              return null;
+            })()}
+          </div>
 
           {/* Action Buttons */}
           <div className="mt-3 flex gap-2">

@@ -211,7 +211,16 @@ export default function AdminPanel() {
   };
 
   const savePick = async (gameId: number, pickData: Partial<RicksPick>) => {
-    if (!authToken) return;
+    if (!authToken) {
+      toast({
+        title: "Authentication Required",
+        description: "Please log in first",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    console.log('Saving pick:', { gameId, pickData });
     
     try {
       const response = await fetch('/api/admin/ricks-pick', {
@@ -223,8 +232,11 @@ export default function AdminPanel() {
         }
       });
 
+      console.log('Save response status:', response.status);
       const data = await response.json();
-      if (data.success) {
+      console.log('Save response data:', data);
+      
+      if (response.ok && data.success) {
         setCurrentPicks(prev => ({
           ...prev,
           [gameId]: { ...prev[gameId], ...pickData, gameId, id: data.pick.id }
@@ -234,11 +246,14 @@ export default function AdminPanel() {
           title: "Pick Saved",
           description: "Rick's pick has been saved successfully",
         });
+      } else {
+        throw new Error(data.error || `HTTP ${response.status}`);
       }
     } catch (error) {
+      console.error('Save pick error:', error);
       toast({
         title: "Save Failed",
-        description: "Could not save Rick's pick",
+        description: `Could not save Rick's pick: ${error.message}`,
         variant: "destructive",
       });
     }
@@ -437,10 +452,28 @@ function GamePickCard({
   });
 
   const handleSave = () => {
+    console.log('Saving pick with data:', formData);
     onSavePick({
       ...formData,
       keyFactors: formData.keyFactors.split(',').map(f => f.trim()).filter(Boolean),
     });
+  };
+
+  // Helper function to get clean team abbreviation
+  const getTeamAbbr = (team: { abbreviation: string; name: string }) => {
+    if (team.abbreviation && team.abbreviation !== 'UNK') {
+      return team.abbreviation;
+    }
+    
+    // Generate abbreviation from team name
+    const name = team.name || 'TEAM';
+    if (name.includes(' ')) {
+      // Take first letter of each word
+      return name.split(' ').map(word => word[0]).join('').toUpperCase().slice(0, 4);
+    } else {
+      // Take first 3-4 letters
+      return name.slice(0, 4).toUpperCase();
+    }
   };
 
   const formatDate = (dateString: string) => {
@@ -465,7 +498,21 @@ function GamePickCard({
   const getSpreadDisplay = () => {
     if (!game.spread) return "N/A";
     const favoredTeam = game.spread > 0 ? game.awayTeam : game.homeTeam;
-    const teamAbbr = favoredTeam.abbreviation || favoredTeam.name?.slice(0, 4).toUpperCase() || "TEAM";
+    
+    // Better abbreviation fallback - don't show UNK
+    let teamAbbr = favoredTeam.abbreviation;
+    if (!teamAbbr || teamAbbr === 'UNK') {
+      // Generate abbreviation from team name
+      const name = favoredTeam.name || 'TEAM';
+      if (name.includes(' ')) {
+        // Take first letter of each word
+        teamAbbr = name.split(' ').map(word => word[0]).join('').toUpperCase().slice(0, 4);
+      } else {
+        // Take first 3-4 letters
+        teamAbbr = name.slice(0, 4).toUpperCase();
+      }
+    }
+    
     return `${teamAbbr} -${Math.abs(game.spread).toFixed(1)}`;
   };
 
@@ -582,24 +629,24 @@ function GamePickCard({
             <Label className="text-base font-medium">Spread Pick</Label>
             <div className="grid grid-cols-3 gap-2">
               <Button
-                variant={formData.spreadPick === `${game.homeTeam.abbreviation} ${game.spread > 0 ? '+' : ''}${game.spread}` ? "default" : "outline"}
+                variant={formData.spreadPick === `${getTeamAbbr(game.homeTeam)} ${game.spread > 0 ? '+' : ''}${game.spread}` ? "default" : "outline"}
                 onClick={() => setFormData(prev => ({ 
                   ...prev, 
-                  spreadPick: `${game.homeTeam.abbreviation} ${game.spread > 0 ? '+' : ''}${game.spread}` 
+                  spreadPick: `${getTeamAbbr(game.homeTeam)} ${game.spread > 0 ? '+' : ''}${game.spread}` 
                 }))}
                 className="text-sm"
               >
-                {game.homeTeam.abbreviation} {game.spread > 0 ? '+' : ''}{game.spread}
+                {getTeamAbbr(game.homeTeam)} {game.spread > 0 ? '+' : ''}{game.spread}
               </Button>
               <Button
-                variant={formData.spreadPick === `${game.awayTeam.abbreviation} ${game.spread < 0 ? '+' : ''}${-game.spread}` ? "default" : "outline"}
+                variant={formData.spreadPick === `${getTeamAbbr(game.awayTeam)} ${game.spread < 0 ? '+' : ''}${-game.spread}` ? "default" : "outline"}
                 onClick={() => setFormData(prev => ({ 
                   ...prev, 
-                  spreadPick: `${game.awayTeam.abbreviation} ${game.spread < 0 ? '+' : ''}${-game.spread}` 
+                  spreadPick: `${getTeamAbbr(game.awayTeam)} ${game.spread < 0 ? '+' : ''}${-game.spread}` 
                 }))}
                 className="text-sm"
               >
-                {game.awayTeam.abbreviation} {game.spread < 0 ? '+' : ''}{-game.spread}
+                {getTeamAbbr(game.awayTeam)} {game.spread < 0 ? '+' : ''}{-game.spread}
               </Button>
               <Button
                 variant={formData.spreadPick === 'NO PLAY' ? "default" : "outline"}

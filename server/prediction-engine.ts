@@ -339,30 +339,34 @@ export class RicksPicksPredictionEngine {
       prediction = `${homeTeam} favored by ${Math.abs(totalScore).toFixed(1)} points`;
       if (vegasSpread && significantEdge) {
         if (oppositeSides) {
-          // Vegas favors away team, we favor home team - always take home team
-          recommendedBet = `Take ${homeTeam}`;
-          console.log(`   ✅ OPPOSITE SIDES RECOMMENDATION: ${recommendedBet}`);
+          // Vegas favors away team, we favor home team - take home team at Vegas line
+          recommendedBet = `Take ${homeTeam} +${Math.abs(vegasSpread)}`;
+          console.log(`   ✅ OPPOSITE SIDES RECOMMENDATION: ${recommendedBet} (Vegas has them getting ${Math.abs(vegasSpread)} points)`);
         } else if (totalScore > Math.abs(vegasSpread)) {
-          // Same side but we favor home team more strongly
-          recommendedBet = `Take ${homeTeam}`;
+          // Same side but we favor home team more strongly - take the favorite
+          recommendedBet = `Take ${homeTeam} -${Math.abs(vegasSpread)}`;
           console.log(`   ✅ SAME SIDE RECOMMENDATION: ${recommendedBet} (we favor by ${totalScore}, Vegas by ${Math.abs(vegasSpread)})`);
         } else {
-          console.log(`   ❌ No recommendation - same side but Vegas edge is stronger`);
+          // Same side but Vegas favors home team more strongly - VALUE IS ON THE UNDERDOG
+          recommendedBet = `Take ${awayTeam} +${Math.abs(vegasSpread)}`;
+          console.log(`   ✅ UNDERDOG VALUE RECOMMENDATION: ${recommendedBet} (we think they lose by only ${totalScore}, Vegas gives ${Math.abs(vegasSpread)} points)`);
         }
       }
     } else {
       prediction = `${awayTeam} favored by ${Math.abs(totalScore).toFixed(1)} points`;
       if (vegasSpread && significantEdge) {
         if (oppositeSides) {
-          // Vegas favors home team, we favor away team - always take away team
-          recommendedBet = `Take ${awayTeam}`;
-          console.log(`   ✅ OPPOSITE SIDES RECOMMENDATION: ${recommendedBet}`);
+          // Vegas favors home team, we favor away team - take away team at Vegas line
+          recommendedBet = `Take ${awayTeam} +${Math.abs(vegasSpread)}`;
+          console.log(`   ✅ OPPOSITE SIDES RECOMMENDATION: ${recommendedBet} (Vegas has them getting ${Math.abs(vegasSpread)} points)`);
         } else if (Math.abs(totalScore) > Math.abs(vegasSpread)) {
-          // Same side but we favor away team more strongly
-          recommendedBet = `Take ${awayTeam}`;
+          // Same side but we favor away team more strongly - take the favorite
+          recommendedBet = `Take ${awayTeam} -${Math.abs(vegasSpread)}`;
           console.log(`   ✅ SAME SIDE RECOMMENDATION: ${recommendedBet} (we favor by ${Math.abs(totalScore)}, Vegas by ${Math.abs(vegasSpread)})`);
         } else {
-          console.log(`   ❌ No recommendation - same side but Vegas edge is stronger`);
+          // Same side but Vegas favors away team more strongly - VALUE IS ON THE UNDERDOG
+          recommendedBet = `Take ${homeTeam} +${Math.abs(vegasSpread)}`;
+          console.log(`   ✅ UNDERDOG VALUE RECOMMENDATION: ${recommendedBet} (we think they lose by only ${Math.abs(totalScore)}, Vegas gives ${Math.abs(vegasSpread)} points)`);
         }
       }
     }
