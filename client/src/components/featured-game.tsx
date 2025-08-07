@@ -36,9 +36,10 @@ export function FeaturedGame({ game }: FeaturedGameProps) {
   const getSpreadDisplay = () => {
     if (game.spread === null || game.spread === undefined) return "N/A";
     
-    const team = game.spread > 0 ? game.awayTeam.abbreviation : game.homeTeam.abbreviation;
+    const favoredTeam = game.spread > 0 ? game.awayTeam : game.homeTeam;
+    const teamAbbr = favoredTeam.abbreviation || favoredTeam.name?.slice(0, 4).toUpperCase() || "TEAM";
     const value = Math.abs(game.spread);
-    return `${team} -${formatSpread(value)}`;
+    return `${teamAbbr} -${formatSpread(value)}`;
   };
 
   return (

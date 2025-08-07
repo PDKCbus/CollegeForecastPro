@@ -465,7 +465,8 @@ function GamePickCard({
   const getSpreadDisplay = () => {
     if (!game.spread) return "N/A";
     const favoredTeam = game.spread > 0 ? game.awayTeam : game.homeTeam;
-    return `${favoredTeam.abbreviation} -${Math.abs(game.spread).toFixed(1)}`;
+    const teamAbbr = favoredTeam.abbreviation || favoredTeam.name?.slice(0, 4).toUpperCase() || "TEAM";
+    return `${teamAbbr} -${Math.abs(game.spread).toFixed(1)}`;
   };
 
   const getWeatherIcon = () => {

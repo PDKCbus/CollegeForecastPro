@@ -125,7 +125,8 @@ export function GameCard({ game }: GameCardProps) {
     if (game.spread === null || game.spread === undefined) return "N/A";
     
     const favoredTeam = game.spread > 0 ? game.awayTeam : game.homeTeam;
-    return `${favoredTeam.abbreviation} -${formatSpread(Math.abs(game.spread))}`;
+    const teamAbbr = favoredTeam.abbreviation || favoredTeam.name?.slice(0, 4).toUpperCase() || "TEAM";
+    return `${teamAbbr} -${formatSpread(Math.abs(game.spread))}`;
   };
 
   // Fetch Rick's personal picks and algorithmic predictions
