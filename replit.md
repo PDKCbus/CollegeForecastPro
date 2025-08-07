@@ -51,6 +51,7 @@ Key tables include `Teams`, `Games`, `Predictions`, `Sentiment Analysis`, `Users
 - **Unified Prediction Consistency**: Centralized prediction logic ensures identical recommendations across all UI components (green badges, recommendation tabs, API endpoints) with comprehensive integration testing to prevent display inconsistencies.
 - **Critical Betting Logic Fix (Aug 2025)**: Resolved betting recommendation engine bug where significant edges (5+ points) showed "No Strong Edge". Fixed edge calculation to properly handle opposite-side predictions by adding magnitudes instead of subtracting, enabling proper identification of valuable betting opportunities.
 - **Database Integrity Cleanup (Aug 2025)**: Removed 2,772 duplicate and invalid game entries (including 45 duplicate Montana State vs Idaho games) to eliminate frontend display issues and ensure clean data presentation.
+- **Component Consolidation (Aug 7, 2025)**: Merged duplicate `ImprovedHistoricalGameCard` into `HistoricalGameCard` with enhanced features including helmet logo fallback system, TypeScript safety improvements, and production-ready error handling. Files modified: `client/src/components/historical-game-card.tsx` (replaced), `client/src/pages/historical.tsx` (import updated), deleted duplicate components and temporary files.
 
 ## External Dependencies
 
