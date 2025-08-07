@@ -207,9 +207,35 @@ export function GameCard({ game }: GameCardProps) {
       
       // Handle case where prediction exists but no bet recommendation (edge below threshold)
       if (!algorithmicPrediction.spreadPick) {
+        // Extract prediction details for informative message
+        const ourSpread = algorithmicPrediction.predictedSpread || 0;
+        const vegasSpread = game?.spread;
+        
+        let predictionSummary = "Analysis complete - edge below 2-point threshold";
+        
+        if (vegasSpread !== null && vegasSpread !== undefined) {
+          // Determine which team is favored in our prediction vs Vegas
+          const homeTeam = game?.homeTeam?.abbreviation || game?.homeTeam?.name?.slice(0, 4) || "Home";
+          const awayTeam = game?.awayTeam?.abbreviation || game?.awayTeam?.name?.slice(0, 4) || "Away";
+          
+          // Our prediction: positive = home favored, negative = away favored
+          // Vegas spread: negative = home favored, positive = away favored
+          const ourPredictionText = ourSpread > 0 
+            ? `${homeTeam} -${Math.abs(ourSpread).toFixed(1)}`
+            : `${awayTeam} -${Math.abs(ourSpread).toFixed(1)}`;
+            
+          const vegasPredictionText = vegasSpread < 0
+            ? `${homeTeam} -${Math.abs(vegasSpread).toFixed(1)}`
+            : `${awayTeam} -${Math.abs(vegasSpread).toFixed(1)}`;
+            
+          const edge = Math.abs(Math.abs(ourSpread) - Math.abs(vegasSpread)).toFixed(1);
+          
+          predictionSummary = `Algorithm: ${ourPredictionText} vs Vegas: ${vegasPredictionText} (${edge} point edge)`;
+        }
+        
         return {
           pick: "No Strong Edge",
-          reason: "Analysis complete - edge below 2-point threshold"
+          reason: predictionSummary
         };
       }
     }
