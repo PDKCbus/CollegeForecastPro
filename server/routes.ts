@@ -1,4 +1,4 @@
-import type { Express } from "express";
+import type { Express, Request, Response, NextFunction } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { db } from "./db";
@@ -931,7 +931,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         predictedSpread: prediction.spread, // Use the SAME value as game analysis
         predictedTotal: game.overUnder || 48.5,
         notes: prediction.recommendedBet || prediction.prediction,
-        spreadPick: prediction.recommendedBet,
+        spreadPick: prediction.recommendedBet || null,
         overUnderPick: undefined,
         createdAt: new Date().toISOString()
       };
@@ -2005,7 +2005,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           overUnderPrediction: game.overUnder || 48.5,
           keyFactors: prediction.keyFactors,
           riskLevel: prediction.confidence === "High" ? 'Low' : prediction.confidence === "Medium" ? 'Medium' : 'High',
-          recommendation: prediction.recommendedBet || prediction.prediction
+          recommendation: prediction.recommendedBet || null
         },
         homeTeamAnalytics: {
           offensiveRating: Math.max(50, Math.min(95, 75 + homeConferenceRating + (game.isDome ? 3 : 0))),
