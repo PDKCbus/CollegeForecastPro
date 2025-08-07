@@ -4,6 +4,7 @@ import { TeamPerformanceIndicators } from "./team-performance-indicators";
 import { format } from "date-fns";
 import { Clock, Trophy, TrendingUp, Target, Calendar } from "lucide-react";
 import { GiAmericanFootballHelmet } from "react-icons/gi";
+import { HelmetFallback } from "./helmet-fallback";
 
 interface HistoricalGameCardProps {
   game: {
