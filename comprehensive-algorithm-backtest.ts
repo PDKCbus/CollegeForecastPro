@@ -133,7 +133,7 @@ class AlgorithmBacktester {
   
   async backtestGame(game: any): Promise<BacktestResult | null> {
     // Skip games without complete data
-    if (!game.homeTeamScore || !game.awayTeamScore || !game.homeSpread) {
+    if (!game.homeTeamScore || !game.awayTeamScore || !game.spread) {
       return null;
     }
     
@@ -149,20 +149,18 @@ class AlgorithmBacktester {
     const homeScore = game.homeTeamScore;
     const awayScore = game.awayTeamScore;
     const actualSpread = homeScore - awayScore; // Positive = home team won by X
-    const vegasSpread = game.homeSpread; // Negative = home team favored
+    const vegasSpread = game.spread; // Negative = home team favored
     
     // Generate algorithm prediction using our enhanced system
     try {
       const prediction = await ricksPicksEngine.generatePrediction(
-        game.id,
         homeTeam[0].name,
         awayTeam[0].name,
         homeTeam[0].conference || 'Unknown',
         awayTeam[0].conference || 'Unknown',
         { temperature: 70, windSpeed: 5, isDome: false }, // Default weather
-        game.season,
-        game.neutralSite || false,
-        vegasSpread
+        vegasSpread,
+        game.isNeutralSite || false
       );
       
       const algorithmSpread = prediction.spread;

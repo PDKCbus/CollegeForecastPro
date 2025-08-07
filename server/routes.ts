@@ -2876,25 +2876,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
             return res.status(404).json({ error: "Game not found" });
           }
 
-          // Upsert Rick's pick
-          const [pick] = await db
-            .insert(ricksPicks)
-            .values({
-              gameId,
-              week: gameDetails.week,
-              season: gameDetails.season,
-              spreadPick,
-              spreadConfidence,
-              totalPick,
-              totalConfidence,
-              personalNotes,
-              keyFactors,
-              expectedValue,
-              updatedAt: new Date()
-            })
-            .onConflictDoUpdate({
-              target: [ricksPicks.gameId, ricksPicks.season, ricksPicks.week],
-              set: {
+          // Check if pick already exists for this game
+          const existingPick = await db
+            .select()
+            .from(ricksPicks)
+            .where(eq(ricksPicks.gameId, gameId))
+            .limit(1);
+
+          let pick;
+          if (existingPick.length > 0) {
+            // Update existing pick
+            [pick] = await db
+              .update(ricksPicks)
+              .set({
                 spreadPick,
                 spreadConfidence,
                 totalPick,
@@ -2903,9 +2897,28 @@ export async function registerRoutes(app: Express): Promise<Server> {
                 keyFactors,
                 expectedValue,
                 updatedAt: new Date()
-              }
-            })
-            .returning();
+              })
+              .where(eq(ricksPicks.gameId, gameId))
+              .returning();
+          } else {
+            // Insert new pick
+            [pick] = await db
+              .insert(ricksPicks)
+              .values({
+                gameId,
+                week: gameDetails.week,
+                season: gameDetails.season,
+                spreadPick,
+                spreadConfidence,
+                totalPick,
+                totalConfidence,
+                personalNotes,
+                keyFactors,
+                expectedValue,
+                updatedAt: new Date()
+              })
+              .returning();
+          }
 
           res.json({
             success: true,
