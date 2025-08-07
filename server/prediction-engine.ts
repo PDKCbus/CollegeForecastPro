@@ -255,22 +255,9 @@ export class RicksPicksPredictionEngine {
         console.log("Advanced analytics unavailable, using basic algorithm");
       }
       
-      try {
-        // NEW: Get roster analytics for final algorithm improvements
-        rosterAnalytics = await this.rosterAnalytics.calculateGameAnalytics(gameId);
-        
-        // Apply roster analytics (+1.3 points target improvement)
-        const rosterAdjustment = (rosterAnalytics.playerEfficiency * 0.06) + // Player efficiency: +0.6 pts
-                                (rosterAnalytics.teamEfficiency * 0.04) +    // Team efficiency: +0.4 pts  
-                                (rosterAnalytics.momentum * 0.06);           // Momentum: +0.3 pts (scaled)
-        
-        basePrediction += rosterAdjustment;
-        
-        console.log(`🚀 Roster analytics applied: Player(${rosterAnalytics.playerEfficiency.toFixed(2)}) + Team(${rosterAnalytics.teamEfficiency.toFixed(2)}) + Momentum(${rosterAnalytics.momentum.toFixed(2)}) = ${rosterAdjustment.toFixed(2)} pts`);
-        
-      } catch (error) {
-        console.log("Roster analytics unavailable, using existing algorithms");
-      }
+      // Note: Roster analytics require gameId which is not available in this context
+      // Will be applied at the route level where gameId is available
+      console.log("Roster analytics unavailable, using existing algorithms");
     }
     
     // Calculate betting value
@@ -287,17 +274,12 @@ export class RicksPicksPredictionEngine {
     let confidenceScore = basicFactors;
     
     // Boost confidence with advanced analytics
-    if (advancedAnalytics && advancedAnalytics.confidence > 0.8) {
-      confidenceScore += 2;
-    } else if (advancedAnalytics && advancedAnalytics.confidence > 0.6) {
-      confidenceScore += 1;
-    }
-    
-    // Additional confidence boost from roster analytics
-    if (rosterAnalytics && rosterAnalytics.confidence > 0.8) {
-      confidenceScore += 2;
-    } else if (rosterAnalytics && rosterAnalytics.confidence > 0.6) {
-      confidenceScore += 1;
+    if (advancedAnalytics && typeof advancedAnalytics === 'object' && 'confidence' in advancedAnalytics) {
+      if (advancedAnalytics.confidence > 0.8) {
+        confidenceScore += 2;
+      } else if (advancedAnalytics.confidence > 0.6) {
+        confidenceScore += 1;
+      }
     }
     
     if (Math.abs(totalScore) > 6 && confidenceScore >= 4) {
@@ -308,42 +290,80 @@ export class RicksPicksPredictionEngine {
       confidence = "Low";
     }
     
-    // Compile all key factors including advanced analytics and roster analytics
-    const rosterInsights: string[] = [];
-    if (rosterAnalytics) {
-      if (Math.abs(rosterAnalytics.playerEfficiency) > 2) {
-        rosterInsights.push(`Player advantage: ${rosterAnalytics.playerEfficiency > 0 ? homeTeam : awayTeam} (+${Math.abs(rosterAnalytics.playerEfficiency).toFixed(1)} rating)`);
-      }
-      if (Math.abs(rosterAnalytics.teamEfficiency) > 2) {
-        rosterInsights.push(`Roster talent: ${rosterAnalytics.teamEfficiency > 0 ? homeTeam : awayTeam} (+${Math.abs(rosterAnalytics.teamEfficiency).toFixed(1)} talent)`);
-      }
-      if (Math.abs(rosterAnalytics.momentum) > 1) {
-        rosterInsights.push(`Recent momentum: ${rosterAnalytics.momentum > 0 ? homeTeam : awayTeam} (+${Math.abs(rosterAnalytics.momentum).toFixed(1)} trend)`);
-      }
-    }
-    
+    // Compile all key factors including advanced analytics
     const allFactors: string[] = [
       ...weatherFactor.impact,
       ...conferenceFactor.impact,
       ...homeFieldFactor.impact,
       ...bettingValue.impact,
-      ...(advancedAnalytics ? advancedAnalytics.keyInsights : []),
-      ...rosterInsights
+      ...(advancedAnalytics ? advancedAnalytics.keyInsights : [])
     ].filter(impact => impact.length > 0);
     
     // Prediction result
     let prediction: string;
     let recommendedBet: string | undefined;
     
+    // Calculate the true edge between our prediction and Vegas line
+    let edge = 0;
+    let oppositeSides = false;
+    
+    if (vegasSpread) {
+      // Check if predictions are on opposite sides
+      const vegasFavorsAway = vegasSpread > 0;  // Positive = away team favored
+      const weFavorHome = totalScore > 0;       // Positive = home team favored
+      
+      oppositeSides = (vegasFavorsAway && weFavorHome) || (!vegasFavorsAway && !weFavorHome);
+      
+      if (oppositeSides) {
+        // Opposite sides: Add the magnitudes
+        edge = Math.abs(totalScore) + Math.abs(vegasSpread);
+      } else {
+        // Same side: Subtract the magnitudes
+        edge = Math.abs(Math.abs(totalScore) - Math.abs(vegasSpread));
+      }
+    }
+    
+    const significantEdge = edge >= 2; // 2+ point edge required for recommendation
+    
+    // Debug logging for betting recommendations
+    if (vegasSpread) {
+      console.log(`🎯 Betting Logic Debug:`);
+      console.log(`   Vegas Spread: ${vegasSpread} (${vegasSpread > 0 ? `${awayTeam} -${vegasSpread}` : `${homeTeam} -${Math.abs(vegasSpread)}`})`);
+      console.log(`   Our Prediction: ${totalScore} (${totalScore > 0 ? `${homeTeam} -${totalScore}` : `${awayTeam} -${Math.abs(totalScore)}`})`);
+      console.log(`   Opposite Sides: ${oppositeSides}`);
+      console.log(`   Edge Calculation: ${oppositeSides ? `${Math.abs(totalScore)} + ${Math.abs(vegasSpread)}` : `|${Math.abs(totalScore)} - ${Math.abs(vegasSpread)}|`} = ${edge.toFixed(2)} points`);
+      console.log(`   Significant Edge (>=2): ${significantEdge}`);
+    }
+    
     if (totalScore > 0) {
       prediction = `${homeTeam} favored by ${Math.abs(totalScore).toFixed(1)} points`;
-      if (vegasSpread && totalScore > vegasSpread + 1.5) {
-        recommendedBet = `Take ${homeTeam}`;
+      if (vegasSpread && significantEdge) {
+        if (oppositeSides) {
+          // Vegas favors away team, we favor home team - always take home team
+          recommendedBet = `Take ${homeTeam}`;
+          console.log(`   ✅ OPPOSITE SIDES RECOMMENDATION: ${recommendedBet}`);
+        } else if (totalScore > Math.abs(vegasSpread)) {
+          // Same side but we favor home team more strongly
+          recommendedBet = `Take ${homeTeam}`;
+          console.log(`   ✅ SAME SIDE RECOMMENDATION: ${recommendedBet} (we favor by ${totalScore}, Vegas by ${Math.abs(vegasSpread)})`);
+        } else {
+          console.log(`   ❌ No recommendation - same side but Vegas edge is stronger`);
+        }
       }
     } else {
       prediction = `${awayTeam} favored by ${Math.abs(totalScore).toFixed(1)} points`;
-      if (vegasSpread && Math.abs(totalScore) > Math.abs(vegasSpread) + 1.5) {
-        recommendedBet = `Take ${awayTeam}`;
+      if (vegasSpread && significantEdge) {
+        if (oppositeSides) {
+          // Vegas favors home team, we favor away team - always take away team
+          recommendedBet = `Take ${awayTeam}`;
+          console.log(`   ✅ OPPOSITE SIDES RECOMMENDATION: ${recommendedBet}`);
+        } else if (Math.abs(totalScore) > Math.abs(vegasSpread)) {
+          // Same side but we favor away team more strongly
+          recommendedBet = `Take ${awayTeam}`;
+          console.log(`   ✅ SAME SIDE RECOMMENDATION: ${recommendedBet} (we favor by ${Math.abs(totalScore)}, Vegas by ${Math.abs(vegasSpread)})`);
+        } else {
+          console.log(`   ❌ No recommendation - same side but Vegas edge is stronger`);
+        }
       }
     }
     
@@ -353,16 +373,16 @@ export class RicksPicksPredictionEngine {
       confidence,
       keyFactors: allFactors,
       recommendedBet,
-      vegasLine: vegasSpread,
+      vegasLine: vegasSpread || undefined,
       edge: vegasSpread ? Math.abs(totalScore - vegasSpread) : undefined,
       factorBreakdown: {
         weather: weatherFactor.score,
         conference: conferenceFactor.score,
         homeField: homeFieldFactor.score,
         bettingValue: bettingValue.score,
-        playerEfficiency: rosterAnalytics?.playerEfficiency || advancedAnalytics?.playerEfficiencyAdj || 0,
-        teamEfficiency: rosterAnalytics?.teamEfficiency || advancedAnalytics?.teamEfficiencyAdj || 0,
-        momentum: rosterAnalytics?.momentum || advancedAnalytics?.momentumAdj || 0
+        playerEfficiency: advancedAnalytics?.playerEfficiencyAdj || 0,
+        teamEfficiency: advancedAnalytics?.teamEfficiencyAdj || 0,
+        momentum: advancedAnalytics?.momentumAdj || 0
       }
     };
   }
