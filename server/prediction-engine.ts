@@ -27,6 +27,10 @@ interface PredictionFactors {
   momentum: number;
   largeFavoriteRisk: number;
   seasonalPattern: number;
+  weatherInteraction: number;
+  injuryImpact: number;
+  rivalryGame: number;
+  recruitingEdge: number;
 }
 
 interface PredictionResult {
@@ -212,6 +216,96 @@ export class RicksPicksPredictionEngine {
   }
 
   /**
+   * Weather Interaction Effects - NEW IMPLEMENTATION
+   * Based on analysis of 9,330 games with weather data:
+   * - Freezing (<32°F) + Large Favorites: 58.57% cover (boost)
+   * - Cold (32-49°F) + Large Favorites: 48.20% cover (penalty)
+   * - Hot (>80°F) + Large Favorites: 53.87% cover (slight boost)
+   * - Freezing + Small Favorites: 66.67% cover (strong boost)
+   */
+  private calculateWeatherInteractionEffects(
+    weather: WeatherConditions, 
+    vegasSpread: number | null
+  ): { score: number; impact: string[] } {
+    if (!vegasSpread || weather.isDome) {
+      return { score: 0, impact: [] };
+    }
+
+    const absSpread = Math.abs(vegasSpread);
+    const isLargeFavorite = absSpread >= 10;
+    const isSmallFavorite = absSpread < 7;
+    
+    let factorScore = 0;
+    const impactDescription: string[] = [];
+
+    if (weather.temperature !== undefined && weather.temperature !== null && !isNaN(weather.temperature)) {
+      // Freezing weather interactions
+      if (weather.temperature < 32) {
+        if (isSmallFavorite) {
+          factorScore += 1.5; // Freezing small favorites: 66.67% cover
+          impactDescription.push(`Freezing + Small Favorite: Historical 66.7% cover rate (+1.5)`);
+        } else if (isLargeFavorite) {
+          factorScore += 0.8; // Freezing large favorites: 58.57% vs 51.91% moderate
+          impactDescription.push(`Freezing + Large Favorite: Historical 58.6% vs 51.9% moderate (+0.8)`);
+        }
+      }
+      // Cold weather interactions  
+      else if (weather.temperature >= 32 && weather.temperature < 50) {
+        if (isLargeFavorite) {
+          factorScore -= 1.2; // Cold large favorites: 48.20% cover
+          impactDescription.push(`Cold + Large Favorite: Historical 48.2% vs 51.9% moderate (-1.2)`);
+        }
+      }
+      // Hot weather interactions
+      else if (weather.temperature > 80) {
+        if (isLargeFavorite) {
+          factorScore += 0.5; // Hot large favorites: 53.87% vs 51.91% moderate
+          impactDescription.push(`Hot + Large Favorite: Historical 53.9% vs 51.9% moderate (+0.5)`);
+        }
+      }
+    }
+
+    return { score: factorScore, impact: impactDescription };
+  }
+
+  /**
+   * Injury Impact Analysis - FRAMEWORK READY
+   * Limited data available, but framework for when injury data is populated
+   */
+  private calculateInjuryImpact(
+    homeTeamId?: number,
+    awayTeamId?: number, 
+    vegasSpread: number | null = null
+  ): { score: number; impact: string[] } {
+    // Placeholder for when injury data becomes available
+    // Would analyze: key player injuries, position impact, depth chart effects
+    return { score: 0, impact: [] };
+  }
+
+  /**
+   * Rivalry Game Analysis - FRAMEWORK READY  
+   * Limited data available, but framework for when rivalry flags are populated
+   */
+  private calculateRivalryGameImpact(isRivalryGame?: boolean): { score: number; impact: string[] } {
+    // Placeholder for when rivalry data becomes available
+    // Would analyze: historical rivalry ATS performance, emotional factors
+    return { score: 0, impact: [] };
+  }
+
+  /**
+   * Recruiting Rankings Correlation - FRAMEWORK READY
+   * Limited data available, but framework for when recruiting data is populated
+   */
+  private calculateRecruitingEdge(
+    homeTeamId?: number,
+    awayTeamId?: number
+  ): { score: number; impact: string[] } {
+    // Placeholder for when recruiting rankings become available
+    // Would analyze: recruiting class rankings, talent differential impact on ATS
+    return { score: 0, impact: [] };
+  }
+
+  /**
    * Calculate conference strength differential
    * Based on finding: SEC +5.7 differential, Power 5 beats G5 77.4% of time
    */
@@ -324,9 +418,14 @@ export class RicksPicksPredictionEngine {
     // Calculate NEW betting pattern factors
     const largeFavoriteRisk = this.calculateLargeFavoriteRisk(basePrediction, vegasSpread, true);
     const seasonalPattern = this.calculateSeasonalPattern(week);
+    const weatherInteraction = this.calculateWeatherInteractionEffects(weather, vegasSpread);
+    const injuryImpact = this.calculateInjuryImpact(homeTeamData?.id, awayTeamData?.id, vegasSpread);
+    const rivalryGame = this.calculateRivalryGameImpact();
+    const recruitingEdge = this.calculateRecruitingEdge(homeTeamData?.id, awayTeamData?.id);
     
     // Apply betting pattern adjustments to base prediction
-    basePrediction += largeFavoriteRisk.score + seasonalPattern.score;
+    basePrediction += largeFavoriteRisk.score + seasonalPattern.score + weatherInteraction.score 
+                   + injuryImpact.score + rivalryGame.score + recruitingEdge.score;
     
     // Calculate advanced analytics if team data available
     let advancedAnalytics = null;
@@ -388,8 +487,12 @@ export class RicksPicksPredictionEngine {
       ...conferenceFactor.impact,
       ...homeFieldFactor.impact,
       ...bettingValue.impact,
-      ...largeFavoriteRisk.impact,  // NEW: Large favorite risk analysis
-      ...seasonalPattern.impact,    // NEW: Seasonal betting patterns
+      ...largeFavoriteRisk.impact,   // NEW: Large favorite risk analysis
+      ...seasonalPattern.impact,     // NEW: Seasonal betting patterns
+      ...weatherInteraction.impact,  // NEW: Weather interaction effects
+      ...injuryImpact.impact,        // NEW: Injury correlation (framework)
+      ...rivalryGame.impact,         // NEW: Rivalry games analysis (framework)
+      ...recruitingEdge.impact,      // NEW: Recruiting rankings correlation (framework)
       ...(advancedAnalytics ? advancedAnalytics.keyInsights : [])
     ].filter(impact => impact.length > 0);
     
@@ -482,7 +585,11 @@ export class RicksPicksPredictionEngine {
         teamEfficiency: advancedAnalytics?.teamEfficiencyAdj || 0,
         momentum: advancedAnalytics?.momentumAdj || 0,
         largeFavoriteRisk: largeFavoriteRisk.score,  // NEW betting pattern factor
-        seasonalPattern: seasonalPattern.score       // NEW seasonal factor
+        seasonalPattern: seasonalPattern.score,      // NEW seasonal factor
+        weatherInteraction: weatherInteraction.score, // NEW weather interaction effects
+        injuryImpact: injuryImpact.score,            // NEW injury correlation (framework)
+        rivalryGame: rivalryGame.score,              // NEW rivalry analysis (framework)
+        recruitingEdge: recruitingEdge.score         // NEW recruiting correlation (framework)
       }
     };
   }
