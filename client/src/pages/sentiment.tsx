@@ -5,8 +5,6 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { SentimentDisplay } from "@/components/sentiment-display";
-import { Header } from "@/components/header";
-import { Footer } from "@/components/footer";
 import { Twitter, TrendingUp, TrendingDown, BarChart3, Play } from "lucide-react";
 import type { Team, GameWithTeams, SentimentAnalysis } from "@shared/schema";
 
@@ -55,7 +53,6 @@ export default function SentimentPage() {
 
   return (
     <div className="min-h-screen bg-dark text-white">
-      <Header />
       
       <main className="container mx-auto px-4 py-8">
         <div className="mb-8">
@@ -298,7 +295,6 @@ export default function SentimentPage() {
         </Tabs>
       </main>
 
-      <Footer />
     </div>
   );
 }
