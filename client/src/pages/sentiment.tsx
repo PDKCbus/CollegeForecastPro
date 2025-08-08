@@ -23,7 +23,7 @@ export default function SentimentPage() {
     },
   });
 
-  const { data: games = [] } = useQuery<GameWithTeams[]>({
+  const { data: gamesResponse } = useQuery<{games: GameWithTeams[]}>({
     queryKey: ['/api/games/upcoming'],
     queryFn: async () => {
       const response = await fetch('/api/games/upcoming');
@@ -31,6 +31,8 @@ export default function SentimentPage() {
       return response.json();
     },
   });
+
+  const games = gamesResponse?.games || [];
 
   // Mutation to analyze all sentiment
   const analyzeAllMutation = useMutation({

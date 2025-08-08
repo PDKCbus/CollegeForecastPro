@@ -51,7 +51,7 @@ interface SentimentResult {
 class RedditSentimentService {
   private accessToken: string | null = null;
   private isInitialized = false;
-  private userAgent = 'college-football-predictor/1.0.0';
+  private userAgent = 'web:college-football-predictor:1.0.0 (by /u/rickspicks)';
 
   constructor() {
     this.initializeRedditClient();
