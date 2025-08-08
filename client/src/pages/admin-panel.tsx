@@ -251,10 +251,9 @@ export default function AdminPanel() {
       }
     } catch (error) {
       console.error('Save pick error:', error);
-      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
       toast({
         title: "Save Failed",
-        description: `Could not save Rick's pick: ${errorMessage}`,
+        description: `Could not save Rick's pick: ${error.message}`,
         variant: "destructive",
       });
     }
@@ -302,11 +301,6 @@ export default function AdminPanel() {
                 {isLoading ? 'Logging in...' : 'Login'}
               </Button>
             </form>
-            <div className="mt-4 p-3 bg-slate-100 rounded-lg text-sm text-slate-600">
-              <strong>Default credentials:</strong><br />
-              Username: rick<br />
-              Password: RicksPicks2025!
-            </div>
           </CardContent>
         </Card>
       </div>
@@ -630,24 +624,24 @@ function GamePickCard({
             <Label className="text-base font-medium">Spread Pick</Label>
             <div className="grid grid-cols-3 gap-2">
               <Button
-                variant={formData.spreadPick === `${getTeamAbbr(game.homeTeam)} ${(game.spread || 0) > 0 ? '+' : ''}${game.spread || 0}` ? "default" : "outline"}
+                variant={formData.spreadPick === `${getTeamAbbr(game.homeTeam)} ${game.spread > 0 ? '+' : ''}${game.spread}` ? "default" : "outline"}
                 onClick={() => setFormData(prev => ({ 
                   ...prev, 
-                  spreadPick: `${getTeamAbbr(game.homeTeam)} ${(game.spread || 0) > 0 ? '+' : ''}${game.spread || 0}` 
+                  spreadPick: `${getTeamAbbr(game.homeTeam)} ${game.spread > 0 ? '+' : ''}${game.spread}` 
                 }))}
                 className="text-sm"
               >
-                {getTeamAbbr(game.homeTeam)} {(game.spread || 0) > 0 ? '+' : ''}{game.spread || 0}
+                {getTeamAbbr(game.homeTeam)} {game.spread > 0 ? '+' : ''}{game.spread}
               </Button>
               <Button
-                variant={formData.spreadPick === `${getTeamAbbr(game.awayTeam)} ${(game.spread || 0) < 0 ? '+' : ''}${-(game.spread || 0)}` ? "default" : "outline"}
+                variant={formData.spreadPick === `${getTeamAbbr(game.awayTeam)} ${game.spread < 0 ? '+' : ''}${-game.spread}` ? "default" : "outline"}
                 onClick={() => setFormData(prev => ({ 
                   ...prev, 
-                  spreadPick: `${getTeamAbbr(game.awayTeam)} ${(game.spread || 0) < 0 ? '+' : ''}${-(game.spread || 0)}` 
+                  spreadPick: `${getTeamAbbr(game.awayTeam)} ${game.spread < 0 ? '+' : ''}${-game.spread}` 
                 }))}
                 className="text-sm"
               >
-                {getTeamAbbr(game.awayTeam)} {(game.spread || 0) < 0 ? '+' : ''}{-(game.spread || 0)}
+                {getTeamAbbr(game.awayTeam)} {game.spread < 0 ? '+' : ''}{-game.spread}
               </Button>
               <Button
                 variant={formData.spreadPick === 'NO PLAY' ? "default" : "outline"}

@@ -51,7 +51,7 @@ export function FeaturedGame({ game }: FeaturedGameProps) {
   const getRicksPersonalPick = () => {
     if (predictionData?.ricksPick) {
       const pick = predictionData.ricksPick;
-      
+
       // Format Rick's spread pick
       if (pick.spreadPick && pick.spreadPick !== 'NO PLAY') {
         return {
@@ -59,7 +59,7 @@ export function FeaturedGame({ game }: FeaturedGameProps) {
           reason: pick.personalNotes || 'Rick\'s Expert Analysis'
         };
       }
-      
+
       // Format Rick's total pick if no spread pick
       if (pick.totalPick && pick.totalPick !== 'NO PLAY') {
         return {
@@ -70,7 +70,7 @@ export function FeaturedGame({ game }: FeaturedGameProps) {
     }
     return null;
   };
-  
+
   // Get algorithmic analysis pick
   const getAnalysisPick = () => {
     const algorithmicPrediction = predictionData?.algorithmicPredictions?.[0];
@@ -82,7 +82,7 @@ export function FeaturedGame({ game }: FeaturedGameProps) {
           reason: algorithmicPrediction.notes || "Data-driven algorithmic analysis"
         };
       }
-      
+
       // Handle "No Strong Play" case
       if (algorithmicPrediction.notes && algorithmicPrediction.notes.includes("No Strong Play")) {
         return {
@@ -90,42 +90,42 @@ export function FeaturedGame({ game }: FeaturedGameProps) {
           reason: "Algorithm assessment matches Vegas line - no significant edge"
         };
       }
-      
+
       // Handle case where prediction exists but no bet recommendation (edge below threshold)
       if (!algorithmicPrediction.spreadPick) {
         // Extract prediction details for informative message
         const ourSpread = algorithmicPrediction.predictedSpread || 0;
         const vegasSpread = game?.spread;
-        
+
         let predictionSummary = "Analysis complete - edge below 2-point threshold";
-        
+
         if (vegasSpread !== null && vegasSpread !== undefined) {
           // Determine which team is favored in our prediction vs Vegas
           const homeTeam = game?.homeTeam?.abbreviation || game?.homeTeam?.name?.slice(0, 4) || "Home";
           const awayTeam = game?.awayTeam?.abbreviation || game?.awayTeam?.name?.slice(0, 4) || "Away";
-          
+
           // Our prediction: positive = home favored, negative = away favored
           // Vegas spread: negative = home favored, positive = away favored
-          const ourPredictionText = ourSpread > 0 
+          const ourPredictionText = ourSpread > 0
             ? `${homeTeam} -${Math.abs(ourSpread).toFixed(1)}`
             : `${awayTeam} -${Math.abs(ourSpread).toFixed(1)}`;
-            
+
           const vegasPredictionText = vegasSpread < 0
             ? `${homeTeam} -${Math.abs(vegasSpread).toFixed(1)}`
             : `${awayTeam} -${Math.abs(vegasSpread).toFixed(1)}`;
-            
+
           const edge = Math.abs(Math.abs(ourSpread) - Math.abs(vegasSpread)).toFixed(1);
-          
+
           predictionSummary = `Algorithm: ${ourPredictionText} vs Vegas: ${vegasPredictionText} (${edge} point edge)`;
         }
-        
+
         return {
           pick: "No Strong Edge",
           reason: predictionSummary
         };
       }
     }
-    
+
     // Final fallback if no server prediction available
     return {
       pick: "Analysis Pending",

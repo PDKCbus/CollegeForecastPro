@@ -182,7 +182,7 @@ export const playerStats = pgTable("player_stats", {
   playerId: integer("player_id").references(() => players.id).notNull(),
   gameId: integer("game_id").references(() => games.id),
   season: integer("season").notNull(),
-  
+
   // Offensive Stats
   rushingYards: integer("rushing_yards").default(0),
   rushingAttempts: integer("rushing_attempts").default(0),
@@ -195,14 +195,14 @@ export const playerStats = pgTable("player_stats", {
   receivingYards: integer("receiving_yards").default(0),
   receptions: integer("receptions").default(0),
   receivingTouchdowns: integer("receiving_touchdowns").default(0),
-  
+
   // Defensive Stats
   tackles: integer("tackles").default(0),
   sacks: real("sacks").default(0),
   interceptions: integer("interceptions").default(0),
   passBreakups: integer("pass_breakups").default(0),
   fumblesRecovered: integer("fumbles_recovered").default(0),
-  
+
   // Special Teams
   fieldGoalsMade: integer("field_goals_made").default(0),
   fieldGoalsAttempted: integer("field_goals_attempted").default(0),
@@ -210,7 +210,7 @@ export const playerStats = pgTable("player_stats", {
   extraPointsAttempted: integer("extra_points_attempted").default(0),
   puntingYards: integer("punting_yards").default(0),
   puntingAttempts: integer("punting_attempts").default(0),
-  
+
   lastUpdated: timestamp("last_updated").defaultNow().notNull(),
 });
 
@@ -222,24 +222,24 @@ export const teamSeasonStats = pgTable("team_season_stats", {
   losses: integer("losses").default(0),
   conferenceWins: integer("conference_wins").default(0),
   conferenceLosses: integer("conference_losses").default(0),
-  
+
   // Offensive Stats
   totalOffenseYards: integer("total_offense_yards").default(0),
   rushingYards: integer("rushing_yards").default(0),
   passingYards: integer("passing_yards").default(0),
   pointsScored: integer("points_scored").default(0),
-  
+
   // Defensive Stats
   totalDefenseYards: integer("total_defense_yards").default(0),
   rushingYardsAllowed: integer("rushing_yards_allowed").default(0),
   passingYardsAllowed: integer("passing_yards_allowed").default(0),
   pointsAllowed: integer("points_allowed").default(0),
-  
+
   // Advanced Metrics
   turnoverMargin: integer("turnover_margin").default(0),
   thirdDownConversion: real("third_down_conversion").default(0),
   redZoneConversion: real("red_zone_conversion").default(0),
-  
+
   lastUpdated: timestamp("last_updated").defaultNow().notNull(),
 });
 
@@ -268,7 +268,7 @@ export type PlayerStats = typeof playerStats.$inferSelect;
 export type InsertTeamSeasonStats = z.infer<typeof insertTeamSeasonStatsSchema>;
 export type TeamSeasonStats = typeof teamSeasonStats.$inferSelect;
 
-// Custom combined types for frontend use  
+// Custom combined types for frontend use
 export type GameWithTeams = Game & {
   homeTeam: Team;
   awayTeam: Team;
@@ -393,21 +393,21 @@ export const ricksPicks = pgTable("ricks_picks", {
   gameId: integer("game_id").notNull().references(() => games.id),
   week: integer("week").notNull(),
   season: integer("season").notNull(),
-  
+
   // Rick's personal picks (overrides algorithm)
   spreadPick: varchar("spread_pick", { length: 50 }), // "HOME -3.5", "AWAY +7", "NO PLAY"
   spreadConfidence: integer("spread_confidence").notNull().default(50), // 1-100
   totalPick: varchar("total_pick", { length: 50 }), // "OVER 45.5", "UNDER 52", "NO PLAY"
   totalConfidence: integer("total_confidence").notNull().default(50), // 1-100
-  
+
   // Rick's personal notes and reasoning
   personalNotes: text("personal_notes"),
   keyFactors: text("key_factors").array().default([]), // ["Weather advantage", "Revenge game", etc.]
-  
+
   // Pick metadata
   isLocked: boolean("is_locked").default(false), // Can't edit after game starts
   expectedValue: real("expected_value").default(0), // Rick's expected betting value
-  
+
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
 });

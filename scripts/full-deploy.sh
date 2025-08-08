@@ -1,42 +1,32 @@
 #!/bin/bash
+# Complete deployment script for Rick's Picks production environment
 
-echo "🚀 Starting full Rick's Picks production deployment..."
+echo "🚀 Starting Rick's Picks production deployment..."
 
-# Exit on any error
-set -e
-
-# Stop any running containers
-echo "🛑 Stopping existing containers..."
-docker-compose --env-file .env.production down 2>/dev/null || true
-
-# Pull latest code from main branch (production-ready)
-echo "📥 Pulling latest code from main..."
-git checkout main 2>/dev/null || git switch main 2>/dev/null || echo "Already on main"
-git pull origin main
-
-# Initialize database schema
-echo "🔧 Initializing database schema..."
-npm run db:push
+# Stop any existing containers
+echo "Stopping existing containers..."
+docker-compose --env-file .env.production down
 
 # Build and start containers
-echo "🏗️ Building and starting containers..."
-docker-compose --env-file .env.production up --build -d
+echo "Building and starting containers..."
+docker-compose --env-file .env.production up -d --build
 
-# Wait for services to be ready
-echo "⏳ Waiting for services to start..."
+# Wait for containers to be ready
+echo "Waiting for containers to initialize..."
 sleep 30
 
-# Check if containers are running
-echo "🔍 Checking container status..."
+# Check container status
+echo "Checking container status..."
 docker-compose --env-file .env.production ps
 
-# Test the deployment
-echo "🧪 Testing deployment..."
-echo "Checking health endpoint..."
-curl -f https://ricks-picks.football/api/health || echo "Health check failed"
+# Deploy frontend
+echo "Deploying frontend..."
+./scripts/deploy-frontend.sh
 
-echo "Checking main site..."
-curl -f https://ricks-picks.football || echo "Main site check failed"
+# Test platform
+echo "Testing platform connectivity..."
+curl -I http://localhost/health
 
 echo "✅ Deployment complete!"
-echo "🌐 Site available at: https://ricks-picks.football"
+echo "Platform accessible at: http://ricks-picks.football"
+echo "To add SSL: sudo certbot --nginx -d ricks-picks.football"
