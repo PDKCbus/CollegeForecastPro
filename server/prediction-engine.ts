@@ -25,6 +25,8 @@ interface PredictionFactors {
   playerEfficiency: number;
   teamEfficiency: number;
   momentum: number;
+  largeFavoriteRisk: number;
+  seasonalPattern: number;
 }
 
 interface PredictionResult {
@@ -62,6 +64,88 @@ export class RicksPicksPredictionEngine {
   };
 
   private readonly power5Conferences = ['SEC', 'Big Ten', 'Big 12', 'ACC', 'Pac-12', 'PAC-12'];
+
+  /**
+   * Large Favorite Risk Factor - Based on Historical Analysis
+   * Data from 9,771 games (2009-2024):
+   * - Double digit home favorites: 45.61% cover rate
+   * - Double digit away favorites: 49.63% cover rate
+   * - Three score favorites (>14pt): 46.13% cover rate
+   */
+  private calculateLargeFavoriteRisk(
+    predictedSpread: number, 
+    vegasSpread: number | null,
+    isHomeTeam: boolean
+  ): { score: number; impact: string[] } {
+    if (!vegasSpread) {
+      return { score: 0, impact: [] };
+    }
+
+    const absVegasSpread = Math.abs(vegasSpread);
+    let factorScore = 0;
+    const impactDescription: string[] = [];
+    
+    // Three score favorites (>14 points) - 46.13% cover rate
+    if (absVegasSpread > 14) {
+      factorScore -= 2.0; // Significant penalty for large favorites
+      impactDescription.push(`Three score favorite (${absVegasSpread}pt): Historical 46.1% cover rate (-2.0)`);
+    }
+    // Double digit favorites - Home: 45.61%, Away: 49.63%
+    else if (absVegasSpread >= 10) {
+      if (vegasSpread < 0) { // Home team favored
+        factorScore -= 1.5;
+        impactDescription.push(`Double digit home favorite (${absVegasSpread}pt): Historical 45.6% cover rate (-1.5)`);
+      } else { // Away team favored
+        factorScore -= 1.0; 
+        impactDescription.push(`Double digit away favorite (${absVegasSpread}pt): Historical 49.6% cover rate (-1.0)`);
+      }
+    }
+    // Moderate favorites (7-9.5 points) - slight penalty
+    else if (absVegasSpread >= 7) {
+      factorScore -= 0.5;
+      impactDescription.push(`Large favorite (${absVegasSpread}pt): Favorites tend to underperform (-0.5)`);
+    }
+
+    return { score: factorScore, impact: impactDescription };
+  }
+
+  /**
+   * Seasonal Pattern Factor - Based on Week Analysis
+   * Early season weeks (1-10): 43-48% favorite covering
+   * Late season weeks (11-12): 50-51% favorite covering
+   * Vegas has less data early in season
+   */
+  private calculateSeasonalPattern(week: number | null): { score: number; impact: string[] } {
+    if (!week || week < 1 || week > 17) {
+      return { score: 0, impact: [] };
+    }
+
+    let factorScore = 0;
+    const impactDescription: string[] = [];
+    
+    // Early season (weeks 1-4) - Vegas has least data
+    if (week <= 4) {
+      factorScore += 1.0; // Fade favorites more aggressively
+      impactDescription.push(`Early season (Week ${week}): Vegas less accurate, favorites cover only 44-46% (+1.0)`);
+    }
+    // Mid-early season (weeks 5-10)
+    else if (week <= 10) {
+      factorScore += 0.5;
+      impactDescription.push(`Mid-season (Week ${week}): Continued favorite underperformance 45-47% (+0.5)`);
+    }
+    // Late season (weeks 11-12) - Favorites perform better
+    else if (week >= 11 && week <= 12) {
+      factorScore -= 0.5; // Slight boost to favorites
+      impactDescription.push(`Late season (Week ${week}): Favorites improve to 50-51% cover rate (-0.5)`);
+    }
+    // Bowl/Playoff season - Return to neutral
+    else if (week >= 13) {
+      factorScore += 0.0;
+      impactDescription.push(`Bowl/Playoff season (Week ${week}): Mixed patterns, neutral adjustment`);
+    }
+
+    return { score: factorScore, impact: impactDescription };
+  }
 
   /**
    * Calculate weather impact factor
@@ -211,7 +295,7 @@ export class RicksPicksPredictionEngine {
   }
 
   /**
-   * Generate comprehensive prediction using advanced analytics
+   * Generate comprehensive prediction using advanced analytics + betting patterns
    */
   async generatePrediction(
     homeTeam: string,
@@ -220,7 +304,8 @@ export class RicksPicksPredictionEngine {
     awayConference: string,
     weather: WeatherConditions,
     vegasSpread: number | null = null,
-    isNeutralSite: boolean = false
+    isNeutralSite: boolean = false,
+    week: number | null = null
   ): Promise<PredictionResult> {
     
     // Get team IDs for advanced analytics
@@ -235,6 +320,13 @@ export class RicksPicksPredictionEngine {
     
     // Base prediction (home team perspective)
     let basePrediction = homeFieldFactor.score + conferenceFactor.score + weatherFactor.score;
+    
+    // Calculate NEW betting pattern factors
+    const largeFavoriteRisk = this.calculateLargeFavoriteRisk(basePrediction, vegasSpread, true);
+    const seasonalPattern = this.calculateSeasonalPattern(week);
+    
+    // Apply betting pattern adjustments to base prediction
+    basePrediction += largeFavoriteRisk.score + seasonalPattern.score;
     
     // Calculate advanced analytics if team data available
     let advancedAnalytics = null;
@@ -290,12 +382,14 @@ export class RicksPicksPredictionEngine {
       confidence = "Low";
     }
     
-    // Compile all key factors including advanced analytics
+    // Compile all key factors including NEW betting patterns
     const allFactors: string[] = [
       ...weatherFactor.impact,
       ...conferenceFactor.impact,
       ...homeFieldFactor.impact,
       ...bettingValue.impact,
+      ...largeFavoriteRisk.impact,  // NEW: Large favorite risk analysis
+      ...seasonalPattern.impact,    // NEW: Seasonal betting patterns
       ...(advancedAnalytics ? advancedAnalytics.keyInsights : [])
     ].filter(impact => impact.length > 0);
     
@@ -386,7 +480,9 @@ export class RicksPicksPredictionEngine {
         bettingValue: bettingValue.score,
         playerEfficiency: advancedAnalytics?.playerEfficiencyAdj || 0,
         teamEfficiency: advancedAnalytics?.teamEfficiencyAdj || 0,
-        momentum: advancedAnalytics?.momentumAdj || 0
+        momentum: advancedAnalytics?.momentumAdj || 0,
+        largeFavoriteRisk: largeFavoriteRisk.score,  // NEW betting pattern factor
+        seasonalPattern: seasonalPattern.score       // NEW seasonal factor
       }
     };
   }

@@ -27,7 +27,7 @@ export async function applyRicksPicksToUpcomingGames(): Promise<void> {
           continue;
         }
         
-        // Generate prediction using Rick's algorithm
+        // Generate prediction using Rick's algorithm + NEW betting patterns
         const prediction = await ricksPicksEngine.generatePrediction(
           homeTeam.name,
           awayTeam.name,
@@ -41,7 +41,8 @@ export async function applyRicksPicksToUpcomingGames(): Promise<void> {
             weatherCondition: game.weatherCondition
           },
           game.spread,
-          false // assuming not neutral site
+          false, // assuming not neutral site
+          game.week  // NEW: Pass week for seasonal betting patterns
         );
         
         // Create/update prediction record
