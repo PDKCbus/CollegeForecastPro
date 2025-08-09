@@ -569,3 +569,19 @@
 [2025-08-09T19:12:08.486Z] - SYNC_START: CURRENT_WEEK_SYNC Latest completed games from 2024 season
 [2025-08-09T19:12:09.932Z] - SYNC_ERROR: CURRENT_WEEK_SYNC - duplicate key value violates unique constraint "games_unique_matchup"
 [2025-08-09T19:12:09.932Z] - SYNC_COMPLETE: AUTO_SYNC_4H Regular scheduled sync completed
+[2025-08-09T19:16:56.628Z] - AUTO_SYNC: Triggered - Regular 4-hour scheduled update
+[2025-08-09T19:16:56.629Z] - SYNC_START: CURRENT_WEEK_SYNC Latest completed games from 2024 season
+[2025-08-09T19:16:57.698Z] - SYNC_ERROR: CURRENT_WEEK_SYNC - duplicate key value violates unique constraint "games_unique_matchup"
+[2025-08-09T19:16:57.698Z] - SYNC_COMPLETE: AUTO_SYNC_4H Regular scheduled sync completed
+[2025-08-09T19:21:25.003Z] - AUTO_SYNC: Triggered - Regular 4-hour scheduled update
+[2025-08-09T19:21:25.004Z] - SYNC_START: CURRENT_WEEK_SYNC Latest completed games from 2024 season
+[2025-08-09T19:21:26.049Z] - SYNC_ERROR: CURRENT_WEEK_SYNC - duplicate key value violates unique constraint "games_unique_matchup"
+[2025-08-09T19:21:26.049Z] - SYNC_COMPLETE: AUTO_SYNC_4H Regular scheduled sync completed
+[2025-08-09T19:22:21.975Z] - AUTO_SYNC: Triggered - Regular 4-hour scheduled update
+[2025-08-09T19:22:21.976Z] - SYNC_START: CURRENT_WEEK_SYNC Latest completed games from 2024 season
+[2025-08-09T19:22:23.470Z] - SYNC_ERROR: CURRENT_WEEK_SYNC - duplicate key value violates unique constraint "games_unique_matchup"
+[2025-08-09T19:22:23.470Z] - SYNC_COMPLETE: AUTO_SYNC_4H Regular scheduled sync completed
+[2025-08-09T19:23:35.073Z] - AUTO_SYNC: Triggered - Regular 4-hour scheduled update
+[2025-08-09T19:23:35.074Z] - SYNC_START: CURRENT_WEEK_SYNC Latest completed games from 2024 season
+[2025-08-09T19:23:36.602Z] - SYNC_ERROR: CURRENT_WEEK_SYNC - duplicate key value violates unique constraint "games_unique_matchup"
+[2025-08-09T19:23:36.603Z] - SYNC_COMPLETE: AUTO_SYNC_4H Regular scheduled sync completed

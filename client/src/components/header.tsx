@@ -19,6 +19,8 @@ export function Header() {
         return "game-analysis";
       case "/sentiment":
         return "sentiment";
+      case "/multi-sentiment":
+        return "multi-sentiment";
       case "/faq":
         return "faq";
       default:
@@ -51,6 +53,9 @@ export function Header() {
             </Link>
             <Link href="/sentiment" className={`px-4 py-2 font-medium rounded-md hover:bg-surface transition-colors ${currentTab === "sentiment" ? "text-white" : "text-white/60"}`}>
               Sentiment
+            </Link>
+            <Link href="/multi-sentiment" className={`px-4 py-2 font-medium rounded-md hover:bg-surface transition-colors ${currentTab === "multi-sentiment" ? "text-white" : "text-white/60"}`}>
+              Multi-Source
             </Link>
             <Link href="/faq" className={`px-4 py-2 font-medium rounded-md hover:bg-surface transition-colors ${currentTab === "faq" ? "text-white" : "text-white/60"}`}>
               FAQ

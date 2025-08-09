@@ -1449,6 +1449,127 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Multi-source sentiment analysis by team name
+  app.get('/api/sentiment/multi-source/:teamName', async (req, res) => {
+    const { teamName } = req.params;
+    console.log(`🔍 Multi-source sentiment analysis requested for: ${teamName}`);
+    
+    try {
+      const { multiSourceSentiment } = await import('./multiSourceSentiment');
+      const analysis = await multiSourceSentiment.aggregateMultiSourceSentiment(teamName);
+      
+      console.log(`✅ Multi-source analysis complete for ${teamName}:`, {
+        overall: analysis.overall_sentiment.toFixed(3),
+        confidence: analysis.confidence.toFixed(3),
+        sources: Object.keys(analysis.source_breakdown).length
+      });
+      
+      res.json(analysis);
+    } catch (error: any) {
+      console.error('❌ Multi-source sentiment analysis failed:', error);
+      res.status(500).json({ 
+        error: 'Failed to analyze multi-source sentiment',
+        details: error.message || 'Unknown error'
+      });
+    }
+  });
+
+  // ESPN specific sentiment analysis
+  app.get('/api/sentiment/espn/:teamName', async (req, res) => {
+    const { teamName } = req.params;
+    console.log(`📺 ESPN sentiment analysis requested for: ${teamName}`);
+    
+    try {
+      const { multiSourceSentiment } = await import('./multiSourceSentiment');
+      const results = await multiSourceSentiment.scrapeESPNSentiment(teamName);
+      
+      const avgSentiment = results.length > 0 
+        ? results.reduce((sum, r) => sum + r.sentiment, 0) / results.length 
+        : 0;
+      
+      res.json({
+        team: teamName,
+        source: 'ESPN',
+        average_sentiment: avgSentiment,
+        total_articles: results.length,
+        recent_headlines: results.slice(0, 5),
+        confidence: results.length > 0 ? 0.8 : 0.1
+      });
+    } catch (error: any) {
+      console.error('❌ ESPN sentiment analysis failed:', error);
+      res.status(500).json({ 
+        error: 'Failed to analyze ESPN sentiment',
+        details: error.message || 'Unknown error'
+      });
+    }
+  });
+
+  // 247Sports specific sentiment analysis  
+  app.get('/api/sentiment/247sports/:teamName', async (req, res) => {
+    const { teamName } = req.params;
+    console.log(`🎯 247Sports sentiment analysis requested for: ${teamName}`);
+    
+    try {
+      const { multiSourceSentiment } = await import('./multiSourceSentiment');
+      const results = await multiSourceSentiment.scrape247SportsSentiment(teamName);
+      
+      const avgSentiment = results.length > 0 
+        ? results.reduce((sum, r) => sum + r.sentiment, 0) / results.length 
+        : 0;
+      
+      res.json({
+        team: teamName,
+        source: '247Sports',
+        average_sentiment: avgSentiment,
+        total_headlines: results.length,
+        recent_headlines: results.slice(0, 5),
+        confidence: results.length > 0 ? 0.7 : 0.1
+      });
+    } catch (error: any) {
+      console.error('❌ 247Sports sentiment analysis failed:', error);
+      res.status(500).json({ 
+        error: 'Failed to analyze 247Sports sentiment',
+        details: error.message || 'Unknown error'
+      });
+    }
+  });
+
+  // Sports news aggregated sentiment analysis
+  app.get('/api/sentiment/sports-news/:teamName', async (req, res) => {
+    const { teamName } = req.params;
+    console.log(`📰 Sports news sentiment analysis requested for: ${teamName}`);
+    
+    try {
+      const { multiSourceSentiment } = await import('./multiSourceSentiment');
+      const results = await multiSourceSentiment.scrapeSportsNewsSentiment(teamName);
+      
+      const avgSentiment = results.length > 0 
+        ? results.reduce((sum, r) => sum + r.sentiment, 0) / results.length 
+        : 0;
+      
+      const sourceBreakdown: Record<string, number> = {};
+      results.forEach(r => {
+        sourceBreakdown[r.source] = (sourceBreakdown[r.source] || 0) + 1;
+      });
+      
+      res.json({
+        team: teamName,
+        source: 'Sports News Aggregated',
+        average_sentiment: avgSentiment,
+        total_articles: results.length,
+        source_breakdown: sourceBreakdown,
+        recent_headlines: results.slice(0, 8),
+        confidence: results.length > 0 ? 0.6 : 0.1
+      });
+    } catch (error: any) {
+      console.error('❌ Sports news sentiment analysis failed:', error);
+      res.status(500).json({ 
+        error: 'Failed to analyze sports news sentiment',
+        details: error.message || 'Unknown error'
+      });
+    }
+  });
+
   // Auto-sync scheduler with smart caching
   let lastSyncTime = 0;
   let lastGameCheckTime = 0;

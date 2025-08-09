@@ -10,6 +10,7 @@ import Home from "@/pages/home";
 import Historical from "@/pages/historical";
 import Analysis from "@/pages/analysis";
 import Sentiment from "@/pages/sentiment";
+import MultiSentiment from "@/pages/multi-sentiment";
 import DataAnalysis from "@/pages/data-analysis";
 import GameAnalysis from "@/pages/game-analysis";
 import SeasonStats from "@/pages/season-stats";
@@ -29,6 +30,7 @@ function Router() {
       <Route path="/analysis" component={Analysis} />
       <Route path="/game-analysis" component={GameAnalysis} />
       <Route path="/sentiment" component={Sentiment} />
+      <Route path="/multi-sentiment" component={MultiSentiment} />
       <Route path="/season-stats" component={SeasonStats} />
       <Route path="/admin" component={AdminPanel} />
       <Route path="/faq" component={FAQ} />
