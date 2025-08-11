@@ -1,97 +1,218 @@
-import { getRankingsSync } from "./rankings-sync";
-import { dataSyncLogger } from "./data-sync-logger";
+import { syncRankingsToProduction } from './simple-rankings-sync';
+import { getBettingLinesSync } from './betting-lines-sync';
+import { getWeatherSync } from './weather-sync';
+import { dataSyncLogger } from './data-sync-logger';
 
-export class WeeklySyncScheduler {
-  private static instance: WeeklySyncScheduler | null = null;
+export class WeeklyScheduleSync {
+  private static instance: WeeklyScheduleSync | null = null;
   private isRunning: boolean = false;
-  private rankingsSync = getRankingsSync();
+  private bettingSync = getBettingLinesSync();
+  private weatherSync = getWeatherSync();
 
   private constructor() {}
 
-  static getInstance(): WeeklySyncScheduler {
-    if (!WeeklySyncScheduler.instance) {
-      WeeklySyncScheduler.instance = new WeeklySyncScheduler();
+  static getInstance(): WeeklyScheduleSync {
+    if (!WeeklyScheduleSync.instance) {
+      WeeklyScheduleSync.instance = new WeeklyScheduleSync();
     }
-    return WeeklySyncScheduler.instance;
+    return WeeklyScheduleSync.instance;
   }
 
-  async startScheduler(): Promise<void> {
+  async startWeeklyScheduler(): Promise<void> {
     if (this.isRunning) {
-      console.log('📅 Weekly sync scheduler already running');
+      console.log('📅 Weekly schedule sync already running');
       return;
     }
 
     this.isRunning = true;
-    console.log('📅 Starting weekly sync scheduler...');
+    console.log('📅 Starting weekly schedule sync system...');
 
-    // Initial sync on startup
-    setTimeout(async () => {
-      await this.performWeeklySync();
-    }, 30000); // Wait 30 seconds after startup
-
-    // Schedule daily rankings sync at 6 AM
-    const dailyInterval = setInterval(async () => {
+    // Check every hour for scheduled syncs
+    const checkInterval = setInterval(async () => {
       const now = new Date();
-      if (now.getHours() === 6 && now.getMinutes() === 0) {
-        await this.performWeeklySync();
-      }
-    }, 60000); // Check every minute
+      const dayOfWeek = now.getDay(); // 0 = Sunday, 1 = Monday, etc.
+      const hour = now.getHours();
+      const minute = now.getMinutes();
 
-    // Sunday night comprehensive sync (9 PM)
-    const sundayInterval = setInterval(async () => {
-      const now = new Date();
-      if (now.getDay() === 0 && now.getHours() === 21 && now.getMinutes() === 0) {
-        await this.performComprehensiveSync();
-      }
-    }, 60000); // Check every minute
+      // Only run at the top of specific hours to avoid multiple triggers
+      if (minute !== 0) return;
 
-    console.log('✅ Weekly sync scheduler initialized');
+      try {
+        switch (dayOfWeek) {
+          case 1: // Monday
+            if (hour === 6) { // 6 AM Monday
+              await this.mondaySync();
+            }
+            break;
+
+          case 4: // Thursday
+            if (hour === 18) { // 6 PM Thursday
+              await this.thursdaySync();
+            }
+            break;
+
+          case 5: // Friday
+            if (hour === 12) { // 12 PM Friday
+              await this.fridaySync();
+            }
+            break;
+
+          case 6: // Saturday
+            if (hour === 8) { // 8 AM Saturday
+              await this.saturdaySync();
+            }
+            break;
+
+          case 0: // Sunday
+            if (hour === 21) { // 9 PM Sunday
+              await this.sundayComprehensiveSync();
+            }
+            break;
+        }
+      } catch (error) {
+        console.error('❌ Weekly schedule sync error:', error);
+        dataSyncLogger.logSyncError('WEEKLY_SCHEDULE', error instanceof Error ? error.message : String(error));
+      }
+    }, 60 * 60 * 1000); // Check every hour
+
+    console.log('✅ Weekly schedule sync system initialized');
+    console.log('📅 Schedule:');
+    console.log('   Monday 6 AM: Rankings + Betting Lines');
+    console.log('   Thursday 6 PM: Mid-week Betting Adjustments');
+    console.log('   Friday 12 PM: Final Lines + Weather');
+    console.log('   Saturday 8 AM: Game Day Updates');
+    console.log('   Sunday 9 PM: Comprehensive Weekly Sync');
   }
 
-  private async performWeeklySync(): Promise<void> {
+  private async mondaySync(): Promise<void> {
     try {
-      console.log('🔄 Performing weekly sync...');
-      dataSyncLogger.logWeeklySync(1, 2025);
+      console.log('📅 MONDAY SYNC: Rankings + Opening Lines');
+      dataSyncLogger.logAutoSyncTrigger('Monday weekly sync started');
 
-      // Sync current rankings
-      await this.rankingsSync.autoSyncCurrentWeekRankings();
+      // 1. Sync current rankings
+      console.log('🏆 Monday: Syncing current rankings...');
+      await syncRankingsToProduction();
 
-      dataSyncLogger.logSyncComplete('WEEKLY_SYNC', 'Weekly rankings sync completed');
-      console.log('✅ Weekly sync completed');
+      // 2. Get opening betting lines for the week
+      console.log('💰 Monday: Syncing opening betting lines...');
+      await this.bettingSync.mondayBettingLinesRefresh();
+
+      dataSyncLogger.logSyncComplete('MONDAY_SYNC', 'Monday sync completed: rankings + opening lines');
+      console.log('✅ Monday sync completed successfully');
+
     } catch (error) {
-      console.error('❌ Weekly sync failed:', error);
-      dataSyncLogger.logSyncError('WEEKLY_SYNC', error instanceof Error ? error.message : String(error));
+      console.error('❌ Monday sync failed:', error);
+      dataSyncLogger.logSyncError('MONDAY_SYNC', error instanceof Error ? error.message : String(error));
     }
   }
 
-  private async performComprehensiveSync(): Promise<void> {
+  private async thursdaySync(): Promise<void> {
     try {
-      console.log('🔄 Performing comprehensive Sunday sync...');
-      dataSyncLogger.logAutoSyncTrigger('Sunday comprehensive sync');
+      console.log('📅 THURSDAY SYNC: Mid-week Betting Adjustments');
+      dataSyncLogger.logAutoSyncTrigger('Thursday mid-week sync started');
 
-      // Sync rankings
-      await this.rankingsSync.autoSyncCurrentWeekRankings();
+      // Update betting lines with mid-week adjustments
+      console.log('💰 Thursday: Syncing mid-week betting adjustments...');
+      await this.bettingSync.thursdayBettingLinesRefresh();
 
-      // TODO: Add betting lines sync
-      // TODO: Add games data sync
-      // TODO: Add injury reports sync
+      dataSyncLogger.logSyncComplete('THURSDAY_SYNC', 'Thursday sync completed: mid-week betting adjustments');
+      console.log('✅ Thursday sync completed successfully');
 
-      dataSyncLogger.logSyncComplete('COMPREHENSIVE_SYNC', 'Sunday comprehensive sync completed');
-      console.log('✅ Comprehensive sync completed');
     } catch (error) {
-      console.error('❌ Comprehensive sync failed:', error);
-      dataSyncLogger.logSyncError('COMPREHENSIVE_SYNC', error instanceof Error ? error.message : String(error));
+      console.error('❌ Thursday sync failed:', error);
+      dataSyncLogger.logSyncError('THURSDAY_SYNC', error instanceof Error ? error.message : String(error));
     }
   }
 
-  getCurrentWeek(): number {
-    // For now, return week 1 as we're in preseason
-    // This should be calculated based on current date and season start
-    return 1;
+  private async fridaySync(): Promise<void> {
+    try {
+      console.log('📅 FRIDAY SYNC: Final Lines + Weather');
+      dataSyncLogger.logAutoSyncTrigger('Friday final prep sync started');
+
+      // 1. Get final betting lines before weekend
+      console.log('💰 Friday: Syncing final betting lines...');
+      await this.bettingSync.fridayBettingLinesRefresh();
+
+      // 2. Get weather forecasts for weekend games
+      console.log('🌤️ Friday: Syncing weather forecasts...');
+      await this.weatherSync.fridayWeatherSync();
+
+      dataSyncLogger.logSyncComplete('FRIDAY_SYNC', 'Friday sync completed: final lines + weather forecasts');
+      console.log('✅ Friday sync completed successfully');
+
+    } catch (error) {
+      console.error('❌ Friday sync failed:', error);
+      dataSyncLogger.logSyncError('FRIDAY_SYNC', error instanceof Error ? error.message : String(error));
+    }
+  }
+
+  private async saturdaySync(): Promise<void> {
+    try {
+      console.log('📅 SATURDAY SYNC: Game Day Updates');
+      dataSyncLogger.logAutoSyncTrigger('Saturday game day sync started');
+
+      // 1. Final betting line updates
+      console.log('💰 Saturday: Game day betting updates...');
+      await this.bettingSync.saturdayBettingLinesRefresh();
+
+      // 2. Current weather conditions
+      console.log('🌤️ Saturday: Game day weather updates...');
+      await this.weatherSync.saturdayWeatherSync();
+
+      dataSyncLogger.logSyncComplete('SATURDAY_SYNC', 'Saturday sync completed: game day updates');
+      console.log('✅ Saturday sync completed successfully');
+
+    } catch (error) {
+      console.error('❌ Saturday sync failed:', error);
+      dataSyncLogger.logSyncError('SATURDAY_SYNC', error instanceof Error ? error.message : String(error));
+    }
+  }
+
+  private async sundayComprehensiveSync(): Promise<void> {
+    try {
+      console.log('📅 SUNDAY SYNC: Comprehensive Weekly Review');
+      dataSyncLogger.logAutoSyncTrigger('Sunday comprehensive sync started');
+
+      // Run full comprehensive sync to clean up and prepare for next week
+      const { runComprehensiveSync } = await import('./comprehensive-sync');
+      await runComprehensiveSync();
+
+      dataSyncLogger.logSyncComplete('SUNDAY_COMPREHENSIVE', 'Sunday comprehensive sync completed');
+      console.log('✅ Sunday comprehensive sync completed successfully');
+
+    } catch (error) {
+      console.error('❌ Sunday comprehensive sync failed:', error);
+      dataSyncLogger.logSyncError('SUNDAY_COMPREHENSIVE', error instanceof Error ? error.message : String(error));
+    }
   }
 
   stopScheduler(): void {
     this.isRunning = false;
-    console.log('⏹️ Weekly sync scheduler stopped');
+    console.log('⏹️ Weekly schedule sync stopped');
   }
+
+  // Manual trigger methods for admin endpoints
+  async triggerMondaySync(): Promise<void> {
+    console.log('🔧 Manual trigger: Monday sync');
+    await this.mondaySync();
+  }
+
+  async triggerThursdaySync(): Promise<void> {
+    console.log('🔧 Manual trigger: Thursday sync');
+    await this.thursdaySync();
+  }
+
+  async triggerFridaySync(): Promise<void> {
+    console.log('🔧 Manual trigger: Friday sync');
+    await this.fridaySync();
+  }
+
+  async triggerSaturdaySync(): Promise<void> {
+    console.log('🔧 Manual trigger: Saturday sync');
+    await this.saturdaySync();
+  }
+}
+
+export function getWeeklyScheduleSync(): WeeklyScheduleSync {
+  return WeeklyScheduleSync.getInstance();
 }
