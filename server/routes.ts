@@ -32,6 +32,7 @@ import { advancedAnalyticsEngine } from './advanced-analytics-engine';
 import { z } from "zod";
 import { insertGameSchema, insertTeamSchema, insertPredictionSchema, insertSentimentAnalysisSchema } from "@shared/schema";
 import { dataSyncLogger } from "./data-sync-logger";
+import { getRankingsSync } from "./rankings-sync";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Health check endpoint
@@ -1449,6 +1450,127 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Multi-source sentiment analysis by team name
+  app.get('/api/sentiment/multi-source/:teamName', async (req, res) => {
+    const { teamName } = req.params;
+    console.log(`🔍 Multi-source sentiment analysis requested for: ${teamName}`);
+
+    try {
+      const { multiSourceSentiment } = await import('./multiSourceSentiment');
+      const analysis = await multiSourceSentiment.aggregateMultiSourceSentiment(teamName);
+
+      console.log(`✅ Multi-source analysis complete for ${teamName}:`, {
+        overall: analysis.overall_sentiment.toFixed(3),
+        confidence: analysis.confidence.toFixed(3),
+        sources: Object.keys(analysis.source_breakdown).length
+      });
+
+      res.json(analysis);
+    } catch (error: any) {
+      console.error('❌ Multi-source sentiment analysis failed:', error);
+      res.status(500).json({
+        error: 'Failed to analyze multi-source sentiment',
+        details: error.message || 'Unknown error'
+      });
+    }
+  });
+
+  // ESPN specific sentiment analysis
+  app.get('/api/sentiment/espn/:teamName', async (req, res) => {
+    const { teamName } = req.params;
+    console.log(`📺 ESPN sentiment analysis requested for: ${teamName}`);
+
+    try {
+      const { multiSourceSentiment } = await import('./multiSourceSentiment');
+      const results = await multiSourceSentiment.scrapeESPNSentiment(teamName);
+
+      const avgSentiment = results.length > 0
+        ? results.reduce((sum, r) => sum + r.sentiment, 0) / results.length
+        : 0;
+
+      res.json({
+        team: teamName,
+        source: 'ESPN',
+        average_sentiment: avgSentiment,
+        total_articles: results.length,
+        recent_headlines: results.slice(0, 5),
+        confidence: results.length > 0 ? 0.8 : 0.1
+      });
+    } catch (error: any) {
+      console.error('❌ ESPN sentiment analysis failed:', error);
+      res.status(500).json({
+        error: 'Failed to analyze ESPN sentiment',
+        details: error.message || 'Unknown error'
+      });
+    }
+  });
+
+  // 247Sports specific sentiment analysis
+  app.get('/api/sentiment/247sports/:teamName', async (req, res) => {
+    const { teamName } = req.params;
+    console.log(`🎯 247Sports sentiment analysis requested for: ${teamName}`);
+
+    try {
+      const { multiSourceSentiment } = await import('./multiSourceSentiment');
+      const results = await multiSourceSentiment.scrape247SportsSentiment(teamName);
+
+      const avgSentiment = results.length > 0
+        ? results.reduce((sum, r) => sum + r.sentiment, 0) / results.length
+        : 0;
+
+      res.json({
+        team: teamName,
+        source: '247Sports',
+        average_sentiment: avgSentiment,
+        total_headlines: results.length,
+        recent_headlines: results.slice(0, 5),
+        confidence: results.length > 0 ? 0.7 : 0.1
+      });
+    } catch (error: any) {
+      console.error('❌ 247Sports sentiment analysis failed:', error);
+      res.status(500).json({
+        error: 'Failed to analyze 247Sports sentiment',
+        details: error.message || 'Unknown error'
+      });
+    }
+  });
+
+  // Sports news aggregated sentiment analysis
+  app.get('/api/sentiment/sports-news/:teamName', async (req, res) => {
+    const { teamName } = req.params;
+    console.log(`📰 Sports news sentiment analysis requested for: ${teamName}`);
+
+    try {
+      const { multiSourceSentiment } = await import('./multiSourceSentiment');
+      const results = await multiSourceSentiment.scrapeSportsNewsSentiment(teamName);
+
+      const avgSentiment = results.length > 0
+        ? results.reduce((sum, r) => sum + r.sentiment, 0) / results.length
+        : 0;
+
+      const sourceBreakdown: Record<string, number> = {};
+      results.forEach(r => {
+        sourceBreakdown[r.source] = (sourceBreakdown[r.source] || 0) + 1;
+      });
+
+      res.json({
+        team: teamName,
+        source: 'Sports News Aggregated',
+        average_sentiment: avgSentiment,
+        total_articles: results.length,
+        source_breakdown: sourceBreakdown,
+        recent_headlines: results.slice(0, 8),
+        confidence: results.length > 0 ? 0.6 : 0.1
+      });
+    } catch (error: any) {
+      console.error('❌ Sports news sentiment analysis failed:', error);
+      res.status(500).json({
+        error: 'Failed to analyze sports news sentiment',
+        details: error.message || 'Unknown error'
+      });
+    }
+  });
+
   // Auto-sync scheduler with smart caching
   let lastSyncTime = 0;
   let lastGameCheckTime = 0;
@@ -2253,6 +2375,127 @@ export async function registerRoutes(app: Express): Promise<Server> {
       console.error('❌ Failed to initialize betting lines scheduler:', error);
     }
   }, 10000); // Start after 10 seconds to allow server to fully initialize
+
+  // Sync rankings endpoint
+  app.post("/api/admin/sync-rankings", requireAdminAuth, async (req, res) => {
+    try {
+      const { syncRankingsToProduction } = await import('./simple-rankings-sync');
+
+      console.log('🏆 Starting simple rankings sync...');
+      await syncRankingsToProduction();
+
+      res.json({
+        message: "Rankings sync completed successfully",
+        status: "success",
+        timestamp: new Date().toISOString()
+      });
+    } catch (error) {
+      console.error('Rankings sync error:', error);
+      res.status(500).json({
+        message: "Rankings sync failed",
+        error: error instanceof Error ? error.message : String(error)
+      });
+    }
+  });
+
+  // Sync 2025 games endpoint
+  app.post("/api/admin/sync-games", requireAdminAuth, async (req, res) => {
+    try {
+      const { sync2025Games } = await import('./sync-2025-games');
+
+      console.log('🏈 Starting 2025 games sync...');
+      const result = await sync2025Games();
+
+      res.json({
+        message: "2025 games sync completed",
+        ...result
+      });
+    } catch (error) {
+      console.error('Games sync error:', error);
+      res.status(500).json({
+        message: "Games sync failed",
+        error: error instanceof Error ? error.message : String(error)
+      });
+    }
+  });
+
+  // Comprehensive sync endpoint
+  app.post("/api/admin/comprehensive-sync", requireAdminAuth, async (req, res) => {
+    try {
+      const { runComprehensiveSync } = await import('./comprehensive-sync');
+
+      console.log('🚀 Starting comprehensive sync...');
+      const result = await runComprehensiveSync();
+
+      res.json({
+        message: "Comprehensive sync completed",
+        ...result
+      });
+    } catch (error) {
+      console.error('Comprehensive sync error:', error);
+      res.status(500).json({
+        message: "Comprehensive sync failed",
+        error: error instanceof Error ? error.message : String(error)
+      });
+    }
+  });
+
+  // Initialize weekly schedule sync system
+  setTimeout(async () => {
+    try {
+      console.log('📅 Initializing weekly schedule sync system...');
+      const { getWeeklyScheduleSync } = await import('./weekly-schedule-sync');
+      const scheduler = getWeeklyScheduleSync();
+      await scheduler.startWeeklyScheduler();
+    } catch (error) {
+      console.error('❌ Failed to initialize weekly schedule sync:', error);
+    }
+  }, 30000); // Start after 30 seconds
+
+  // Manual weekly sync triggers
+  app.post("/api/admin/sync-monday", requireAdminAuth, async (req, res) => {
+    try {
+      const { getWeeklyScheduleSync } = await import('./weekly-schedule-sync');
+      const scheduler = getWeeklyScheduleSync();
+      await scheduler.triggerMondaySync();
+      res.json({ message: "Monday sync completed", timestamp: new Date().toISOString() });
+    } catch (error) {
+      res.status(500).json({ message: "Monday sync failed", error: error.message });
+    }
+  });
+
+  app.post("/api/admin/sync-thursday", requireAdminAuth, async (req, res) => {
+    try {
+      const { getWeeklyScheduleSync } = await import('./weekly-schedule-sync');
+      const scheduler = getWeeklyScheduleSync();
+      await scheduler.triggerThursdaySync();
+      res.json({ message: "Thursday sync completed", timestamp: new Date().toISOString() });
+    } catch (error) {
+      res.status(500).json({ message: "Thursday sync failed", error: error.message });
+    }
+  });
+
+  app.post("/api/admin/sync-friday", requireAdminAuth, async (req, res) => {
+    try {
+      const { getWeeklyScheduleSync } = await import('./weekly-schedule-sync');
+      const scheduler = getWeeklyScheduleSync();
+      await scheduler.triggerFridaySync();
+      res.json({ message: "Friday sync completed", timestamp: new Date().toISOString() });
+    } catch (error) {
+      res.status(500).json({ message: "Friday sync failed", error: error.message });
+    }
+  });
+
+  app.post("/api/admin/sync-saturday", requireAdminAuth, async (req, res) => {
+    try {
+      const { getWeeklyScheduleSync } = await import('./weekly-schedule-sync');
+      const scheduler = getWeeklyScheduleSync();
+      await scheduler.triggerSaturdaySync();
+      res.json({ message: "Saturday sync completed", timestamp: new Date().toISOString() });
+    } catch (error) {
+      res.status(500).json({ message: "Saturday sync failed", error: error.message });
+    }
+  });
 
   // Fill missing scores for existing games
   app.post('/api/historical/fill-scores', requireAdminAuth, async (req, res) => {

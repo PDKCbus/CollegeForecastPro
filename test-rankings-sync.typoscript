@@ -1,0 +1,35 @@
+#!/usr/bin/env npx tsx
+
+import { getRankingsSync } from './server/rankings-sync';
+
+async function testRankingsSync() {
+  try {
+    console.log('🏆 Testing Rankings Sync...');
+
+    const rankingsSync = getRankingsSync();
+
+    // Sync current 2025 preseason rankings
+    await rankingsSync.syncCurrentRankings(2025, 1);
+
+    // Test specific team rankings
+    const ksuRanking = await rankingsSync.getTeamRanking('Kansas State');
+    const isuRanking = await rankingsSync.getTeamRanking('Iowa State');
+
+    console.log(`✅ Kansas State ranking: #${ksuRanking || 'Unranked'}`);
+    console.log(`✅ Iowa State ranking: #${isuRanking || 'Unranked'}`);
+
+    if (ksuRanking === 17 && isuRanking === 22) {
+      console.log('🎉 Rankings sync successful! Both teams have correct preseason rankings.');
+    } else {
+      console.log('⚠️  Rankings may need adjustment or teams not found in database.');
+    }
+
+  } catch (error) {
+    console.error('❌ Rankings sync test failed:', error);
+    process.exit(1);
+  }
+}
+
+if (import.meta.url === `file://${process.argv[1]}`) {
+  testRankingsSync();
+}
