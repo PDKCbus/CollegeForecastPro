@@ -1,24 +1,46 @@
 # Use Node.js 20 LTS as base image
 FROM node:20-alpine AS base
 
-# Single stage build
-FROM base AS production
+# Install dependencies only when needed
+FROM base AS deps
 WORKDIR /app
 
-# Copy package files and install dependencies
+# Copy package files
 COPY package*.json ./
-RUN npm install && npm cache clean --force
+RUN npm ci --only=production && npm cache clean --force
+
+# Build the application
+FROM base AS builder
+WORKDIR /app
+
+# Copy package files and install all dependencies (including dev)
+COPY package*.json ./
+RUN npm ci
 
 # Copy source code
 COPY . .
 
-# Build frontend only
+# Build the backend
 ENV NODE_ENV=production
-RUN npx vite build
+RUN npm run build
 
-# Copy frontend build to server public directory
-RUN mkdir -p server/public
-RUN if [ -d "dist/public" ]; then cp -r dist/public/* server/public/; else echo "Frontend build failed - checking client/dist"; if [ -d "client/dist" ]; then cp -r client/dist/* server/public/; else echo "No frontend build found"; exit 1; fi; fi
+# Build the frontend
+WORKDIR /app/client
+RUN npm ci
+RUN npm run build
+
+# Production runtime
+FROM base AS runner
+WORKDIR /app
+
+# Install curl for health checks
+RUN apk add --no-cache curl
+
+# Copy built application
+COPY --from=builder /app/dist ./dist
+COPY --from=builder /app/client/dist ./client/dist
+COPY --from=deps /app/node_modules ./node_modules
+COPY package*.json ./
 
 # Create logs directory and set permissions
 RUN mkdir -p logs && chmod 755 logs
@@ -41,4 +63,4 @@ HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
   CMD curl -f http://localhost:5000/api/health || exit 1
 
 # Start the application
-CMD ["npx", "tsx", "server/index.ts"]
+CMD ["node", "dist/index.js"]
