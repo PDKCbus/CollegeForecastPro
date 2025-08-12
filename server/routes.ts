@@ -2444,6 +2444,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+
+
   // Initialize weekly schedule sync system
   setTimeout(async () => {
     try {

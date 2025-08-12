@@ -8,13 +8,13 @@ services:
     ports:
       - "5000:5000"
     environment:
+      - ADMIN_API_KEY=${ADMIN_API_KEY}
       - NODE_ENV=production
       - DATABASE_URL=${DATABASE_URL}
       - CFBD_API_KEY=${CFBD_API_KEY}
       - OPENWEATHER_API_KEY=${OPENWEATHER_API_KEY}
       - VITE_GOOGLE_ADSENSE_CLIENT_ID=${VITE_GOOGLE_ADSENSE_CLIENT_ID}
       - SESSION_SECRET=${SESSION_SECRET}
-      - ADMIN_API_KEY=${ADMIN_API_KEY}
     restart: unless-stopped
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:5000/api/health"]
