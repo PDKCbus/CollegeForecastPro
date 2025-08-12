@@ -2380,7 +2380,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Sync rankings endpoint
   app.post("/api/admin/sync-rankings", requireAdminAuth, async (req, res) => {
     try {
-      const { syncRankingsToProduction } = await import('./simple-rankings-sync');
+      // Use static import for production compatibility
+      const { syncRankingsToProduction } = require('./simple-rankings-sync');
 
       console.log('🏆 Starting simple rankings sync...');
       await syncRankingsToProduction();
@@ -2402,7 +2403,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Sync 2025 games endpoint
   app.post("/api/admin/sync-games", requireAdminAuth, async (req, res) => {
     try {
-      const { sync2025Games } = await import('./sync-2025-games');
+      // Use static import for production compatibility
+      const { sync2025Games } = require('./sync-2025-games');
 
       console.log('🏈 Starting 2025 games sync...');
       const result = await sync2025Games();
@@ -2423,7 +2425,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Comprehensive sync endpoint
   app.post("/api/admin/comprehensive-sync", requireAdminAuth, async (req, res) => {
     try {
-      const { runComprehensiveSync } = await import('./comprehensive-sync');
+      // Use static import for production compatibility
+      const { runComprehensiveSync } = require('./comprehensive-sync');
 
       console.log('🚀 Starting comprehensive sync...');
       const result = await runComprehensiveSync();
