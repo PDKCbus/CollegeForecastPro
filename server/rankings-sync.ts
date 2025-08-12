@@ -73,32 +73,32 @@ export class RankingsSync {
       for (const weekRankings of rankings) {
         console.log(`🔄 Processing rankings for week ${weekRankings.week}...`);
 
-        // Process AP Poll (most commonly used)
+        // Process AP Poll ONLY (site policy: only show AP rankings)
         const apPoll = weekRankings.polls.find(poll => poll.poll === 'AP Top 25');
         if (apPoll && apPoll.ranks) {
           console.log(`📈 Found AP Poll with ${apPoll.ranks.length} ranked teams`);
 
           // Clear existing rankings for this week (reset all teams to unranked)
           await db.update(teams)
-            .set({ ranking: null, lastUpdated: new Date() })
+            .set({ rank: null, lastUpdated: new Date() })
             .where(sql`1=1`); // Add WHERE clause for valid SQL
 
           // Update rankings for ranked teams
-          for (const rank of apPoll.ranks) {
+          for (const rankEntry of apPoll.ranks) {
             try {
               // Try to find team by exact name match first
               let team = await db.select()
                 .from(teams)
-                .where(eq(teams.displayName, rank.school))
+                .where(eq(teams.name, rankEntry.school))
                 .limit(1);
 
               // If not found, try alternate names
               if (team.length === 0) {
-                const alternateNames = this.getAlternateTeamNames(rank.school);
+                const alternateNames = this.getAlternateTeamNames(rankEntry.school);
                 for (const altName of alternateNames) {
                   team = await db.select()
                     .from(teams)
-                    .where(eq(teams.displayName, altName))
+                    .where(eq(teams.name, altName))
                     .limit(1);
 
                   if (team.length > 0) break;
@@ -108,17 +108,17 @@ export class RankingsSync {
               if (team.length > 0) {
                 await db.update(teams)
                   .set({
-                    ranking: rank.rank,
+                    rank: rankEntry.rank,
                     lastUpdated: new Date()
                   })
                   .where(eq(teams.id, team[0].id));
 
-                console.log(`✅ Updated ${rank.school} to rank #${rank.rank}`);
+                console.log(`✅ Updated ${rankEntry.school} to rank #${rankEntry.rank}`);
               } else {
-                console.warn(`⚠️  Could not find team: ${rank.school}`);
+                console.warn(`⚠️  Could not find team: ${rankEntry.school}`);
               }
             } catch (error) {
-              console.error(`❌ Error updating ranking for ${rank.school}:`, error);
+              console.error(`❌ Error updating ranking for ${rankEntry.school}:`, error);
             }
           }
         }
