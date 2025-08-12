@@ -2444,6 +2444,138 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Monday sync endpoint - Weekly schedule and betting lines
+  app.post("/api/admin/monday-sync", requireAdminAuth, async (req, res) => {
+    try {
+      console.log('📅 Starting Monday sync...');
+      const { getWeeklyScheduleSync } = await import('./weekly-schedule-sync');
+      const result = await getWeeklyScheduleSync().mondaySync();
+
+      res.json({
+        message: "Monday sync completed successfully",
+        status: "success",
+        timestamp: new Date().toISOString(),
+        ...result
+      });
+    } catch (error) {
+      console.error('Monday sync error:', error);
+      res.status(500).json({
+        message: "Monday sync failed",
+        error: error instanceof Error ? error.message : String(error)
+      });
+    }
+  });
+
+  // Thursday sync endpoint - Mid-week betting lines refresh
+  app.post("/api/admin/thursday-sync", requireAdminAuth, async (req, res) => {
+    try {
+      console.log('📊 Starting Thursday sync...');
+      const { getWeeklyScheduleSync } = await import('./weekly-schedule-sync');
+      const result = await getWeeklyScheduleSync().thursdaySync();
+
+      res.json({
+        message: "Thursday sync completed successfully",
+        status: "success",
+        timestamp: new Date().toISOString(),
+        ...result
+      });
+    } catch (error) {
+      console.error('Thursday sync error:', error);
+      res.status(500).json({
+        message: "Thursday sync failed",
+        error: error instanceof Error ? error.message : String(error)
+      });
+    }
+  });
+
+  // Friday sync endpoint - Final betting lines before weekend
+  app.post("/api/admin/friday-sync", requireAdminAuth, async (req, res) => {
+    try {
+      console.log('🎯 Starting Friday sync...');
+      const { getWeeklyScheduleSync } = await import('./weekly-schedule-sync');
+      const result = await getWeeklyScheduleSync().fridaySync();
+
+      res.json({
+        message: "Friday sync completed successfully",
+        status: "success",
+        timestamp: new Date().toISOString(),
+        ...result
+      });
+    } catch (error) {
+      console.error('Friday sync error:', error);
+      res.status(500).json({
+        message: "Friday sync failed",
+        error: error instanceof Error ? error.message : String(error)
+      });
+    }
+  });
+
+  // Saturday sync endpoint - Game day updates
+  app.post("/api/admin/saturday-sync", requireAdminAuth, async (req, res) => {
+    try {
+      console.log('🏈 Starting Saturday sync...');
+      const { getWeeklyScheduleSync } = await import('./weekly-schedule-sync');
+      const result = await getWeeklyScheduleSync().saturdaySync();
+
+      res.json({
+        message: "Saturday sync completed successfully",
+        status: "success",
+        timestamp: new Date().toISOString(),
+        ...result
+      });
+    } catch (error) {
+      console.error('Saturday sync error:', error);
+      res.status(500).json({
+        message: "Saturday sync failed",
+        error: error instanceof Error ? error.message : String(error)
+      });
+    }
+  });
+
+  // ELO initialization endpoint
+  app.post("/api/admin/init-elo", requireAdminAuth, async (req, res) => {
+    try {
+      console.log('📊 Starting ELO initialization...');
+      const eloService = new CFBDELOService();
+      const result = await eloService.collectCurrentELORatings();
+
+      res.json({
+        message: "ELO initialization completed successfully",
+        status: "success",
+        timestamp: new Date().toISOString(),
+        teamsProcessed: result.teamsProcessed || 0
+      });
+    } catch (error) {
+      console.error('ELO initialization error:', error);
+      res.status(500).json({
+        message: "ELO initialization failed",
+        error: error instanceof Error ? error.message : String(error)
+      });
+    }
+  });
+
+  // Team analytics collection endpoint
+  app.post("/api/admin/collect-team-analytics", requireAdminAuth, async (req, res) => {
+    try {
+      console.log('📈 Starting team analytics collection...');
+      const rankingsCollector = new RankingsCollector();
+      const result = await rankingsCollector.collectTeamAnalytics();
+
+      res.json({
+        message: "Team analytics collection completed successfully",
+        status: "success",
+        timestamp: new Date().toISOString(),
+        teamsProcessed: result.teamsProcessed || 0
+      });
+    } catch (error) {
+      console.error('Team analytics collection error:', error);
+      res.status(500).json({
+        message: "Team analytics collection failed",
+        error: error instanceof Error ? error.message : String(error)
+      });
+    }
+  });
+
 
 
   // Initialize weekly schedule sync system
