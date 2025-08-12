@@ -80,12 +80,12 @@ export class BettingLinesSync {
               .map((line: any) => parseFloat(line.overUnder));
 
             if (validSpreads.length > 0) {
-              spread = validSpreads.reduce((sum, val) => sum + val, 0) / validSpreads.length;
+              spread = validSpreads.reduce((sum: number, val: number) => sum + val, 0) / validSpreads.length;
               spread = Math.round(spread * 2) / 2; // Round to nearest 0.5
             }
 
             if (validTotals.length > 0) {
-              overUnder = validTotals.reduce((sum, val) => sum + val, 0) / validTotals.length;
+              overUnder = validTotals.reduce((sum: number, val: number) => sum + val, 0) / validTotals.length;
               overUnder = Math.round(overUnder * 2) / 2; // Round to nearest 0.5
             }
           }
@@ -95,8 +95,7 @@ export class BettingLinesSync {
             await db.update(games)
               .set({
                 spread: spread,
-                overUnder: overUnder,
-                lastUpdated: new Date()
+                overUnder: overUnder
               })
               .where(eq(games.id, gameId));
 
@@ -149,7 +148,7 @@ export class BettingLinesSync {
       }
 
       // Sync betting lines for each week
-      for (const [weekKey, weekGames] of gamesByWeek) {
+      for (const [weekKey, weekGames] of Array.from(gamesByWeek.entries())) {
         const [season, week] = weekKey.split('-').map(Number);
 
         try {
