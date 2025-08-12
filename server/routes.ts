@@ -29,6 +29,7 @@ import RankingsCollector from "./rankings-collector";
 import { EnhancedPredictionEngine } from "./enhanced-prediction-engine";
 import { SPPlusIntegration } from "./sp-plus-integration";
 import { advancedAnalyticsEngine } from './advanced-analytics-engine';
+import { getWeeklyScheduleSync } from "./weekly-schedule-sync";
 import { z } from "zod";
 import { insertGameSchema, insertTeamSchema, insertPredictionSchema, insertSentimentAnalysisSchema } from "@shared/schema";
 import { dataSyncLogger } from "./data-sync-logger";
@@ -2444,7 +2445,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
   setTimeout(async () => {
     try {
       console.log('📅 Initializing weekly schedule sync system...');
-      const { getWeeklyScheduleSync } = await import('./weekly-schedule-sync');
       const scheduler = getWeeklyScheduleSync();
       await scheduler.startWeeklyScheduler();
     } catch (error) {
@@ -2455,7 +2455,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Manual weekly sync triggers
   app.post("/api/admin/sync-monday", requireAdminAuth, async (req, res) => {
     try {
-      const { getWeeklyScheduleSync } = await import('./weekly-schedule-sync');
       const scheduler = getWeeklyScheduleSync();
       await scheduler.triggerMondaySync();
       res.json({ message: "Monday sync completed", timestamp: new Date().toISOString() });
@@ -2466,7 +2465,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post("/api/admin/sync-thursday", requireAdminAuth, async (req, res) => {
     try {
-      const { getWeeklyScheduleSync } = await import('./weekly-schedule-sync');
       const scheduler = getWeeklyScheduleSync();
       await scheduler.triggerThursdaySync();
       res.json({ message: "Thursday sync completed", timestamp: new Date().toISOString() });
@@ -2477,7 +2475,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post("/api/admin/sync-friday", requireAdminAuth, async (req, res) => {
     try {
-      const { getWeeklyScheduleSync } = await import('./weekly-schedule-sync');
       const scheduler = getWeeklyScheduleSync();
       await scheduler.triggerFridaySync();
       res.json({ message: "Friday sync completed", timestamp: new Date().toISOString() });
@@ -2488,7 +2485,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post("/api/admin/sync-saturday", requireAdminAuth, async (req, res) => {
     try {
-      const { getWeeklyScheduleSync } = await import('./weekly-schedule-sync');
       const scheduler = getWeeklyScheduleSync();
       await scheduler.triggerSaturdaySync();
       res.json({ message: "Saturday sync completed", timestamp: new Date().toISOString() });
