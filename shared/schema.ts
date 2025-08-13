@@ -59,6 +59,26 @@ export const teams = pgTable("teams", {
   lastUpdated: timestamp("last_updated").defaultNow(),
 });
 
+export const blogPosts = pgTable("blog_posts", {
+  id: serial("id").primaryKey(),
+  title: text("title").notNull(),
+  slug: text("slug").notNull().unique(),
+  excerpt: text("excerpt").notNull(),
+  content: text("content").notNull(),
+  author: text("author").default("Rick's Picks Editorial Team"),
+  category: text("category").notNull(), // "Analysis", "Strategy", "Previews", "News"
+  tags: text("tags").array(),
+  featuredImageUrl: text("featured_image_url"),
+  published: boolean("published").default(false),
+  featured: boolean("featured").default(false), // For homepage featured posts
+  viewCount: integer("view_count").default(0),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+  publishedAt: timestamp("published_at"),
+  seoTitle: text("seo_title"),
+  seoDescription: text("seo_description"),
+});
+
 export const games = pgTable("games", {
   id: serial("id").primaryKey(),
   homeTeamId: integer("home_team_id").notNull(),
