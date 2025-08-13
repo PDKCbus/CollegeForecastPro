@@ -17,7 +17,7 @@ const requireAdminAuth = (req: Request, res: Response, next: NextFunction) => {
 
   next();
 };
-import { games, teams, ricksPicks } from "@shared/schema";
+import { games, teams, ricksPicks, blogPosts } from "@shared/schema";
 import { eq, and, desc, lt, or, gte, sql, isNotNull } from "drizzle-orm";
 import { sentimentService } from "./sentiment";
 import { historicalSync } from "./historical-sync";
@@ -3169,11 +3169,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
                 homeTeamLogo: homeTeam[0]?.logoUrl || null,
                 homeTeamWins: homeTeam[0]?.wins || 0,
                 homeTeamLosses: homeTeam[0]?.losses || 0,
+                homeTeamRank: homeTeam[0]?.rank || null,
                 awayTeamName: awayTeam[0]?.name || 'Unknown',
                 awayTeamAbbr: awayTeam[0]?.abbreviation || 'UNK',
                 awayTeamLogo: awayTeam[0]?.logoUrl || null,
                 awayTeamWins: awayTeam[0]?.wins || 0,
                 awayTeamLosses: awayTeam[0]?.losses || 0,
+                awayTeamRank: awayTeam[0]?.rank || null,
               };
             })
           );
@@ -3194,7 +3196,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
             weatherCondition: game.weatherCondition,
             precipitation: game.precipitation,
             isDome: game.isDome,
-            // Team objects
+            // Team objects with current data
             homeTeam: {
               id: game.homeTeamId,
               name: game.homeTeamName,
@@ -3628,6 +3630,65 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error('Error checking pipeline status:', error);
       res.status(500).json({ message: "Status check failed", error: error.message });
+    }
+  });
+
+  // Blog routes
+  app.get("/api/blog/posts", async (_req, res) => {
+    try {
+      const posts = await db
+        .select()
+        .from(blogPosts)
+        .where(eq(blogPosts.published, true))
+        .orderBy(desc(blogPosts.publishedAt));
+
+      res.json(posts);
+    } catch (error) {
+      console.error('Failed to fetch blog posts:', error);
+      res.status(500).json({ error: 'Failed to fetch blog posts' });
+    }
+  });
+
+  app.get("/api/blog/featured", async (_req, res) => {
+    try {
+      const posts = await db
+        .select()
+        .from(blogPosts)
+        .where(and(eq(blogPosts.published, true), eq(blogPosts.featured, true)))
+        .orderBy(desc(blogPosts.publishedAt))
+        .limit(3);
+
+      res.json(posts);
+    } catch (error) {
+      console.error('Failed to fetch featured posts:', error);
+      res.status(500).json({ error: 'Failed to fetch featured posts' });
+    }
+  });
+
+  app.get("/api/blog/:slug", async (req, res) => {
+    try {
+      const { slug } = req.params;
+
+      const [post] = await db
+        .select()
+        .from(blogPosts)
+        .where(and(eq(blogPosts.slug, slug), eq(blogPosts.published, true)))
+        .limit(1);
+
+      if (!post) {
+        return res.status(404).json({ error: 'Post not found' });
+      }
+
+      // Increment view count
+      await db
+        .update(blogPosts)
+        .set({ viewCount: post.viewCount + 1 })
+        .where(eq(blogPosts.id, post.id));
+
+      res.json(post);
+    } catch (error) {
+      console.error('Failed to fetch blog post:', error);
+      res.status(500).json({ error: 'Failed to fetch blog post' });
     }
   });
 
