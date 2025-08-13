@@ -206,8 +206,7 @@ export class MemStorage implements IStorage {
     const upcomingGames = Array.from(this.games.values())
       .filter(game => 
         new Date(game.startDate) > now && 
-        !game.completed &&
-        (game.spread !== null || game.overUnder !== null)
+        !game.completed
       )
       .sort((a, b) => new Date(a.startDate).getTime() - new Date(b.startDate).getTime());
     

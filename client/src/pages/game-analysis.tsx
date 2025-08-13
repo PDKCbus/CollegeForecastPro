@@ -11,6 +11,8 @@ import { GameWithTeams } from "@/lib/types";
 import { Link } from "wouter";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { PlayerInjuryPanel } from "@/components/player-injury-panel";
+import { GameNarrative } from "@/components/game-narrative";
+import { SentimentDisplay } from "@/components/sentiment-display";
 
 interface PredictiveMetrics {
   winProbability: number;
@@ -143,9 +145,9 @@ export default function GameAnalysis() {
                 {value}{unit}
               </p>
               {teamLogo && (
-                <img 
-                  src={teamLogo} 
-                  alt="Favored team" 
+                <img
+                  src={teamLogo}
+                  alt="Favored team"
                   className="w-8 h-8 object-contain"
                 />
               )}
@@ -154,9 +156,9 @@ export default function GameAnalysis() {
           <div className="flex items-center space-x-2">
             <Icon className="h-4 w-4 text-muted-foreground" />
             {trend && (
-              trend === 'up' ? 
+              trend === 'up' ?
                 <TrendingUp className="h-4 w-4 text-green-600" /> :
-              trend === 'down' ? 
+              trend === 'down' ?
                 <TrendingDown className="h-4 w-4 text-red-600" /> :
                 <Activity className="h-4 w-4 text-gray-600" />
             )}
@@ -204,7 +206,7 @@ export default function GameAnalysis() {
             </button>
           </Link>
         </div>
-        
+
         <div className="flex items-center space-x-4">
           <Select value={selectedGameId} onValueChange={setSelectedGameId}>
             <SelectTrigger className="w-full sm:w-80">
@@ -296,7 +298,7 @@ export default function GameAnalysis() {
                       <div className="text-sm text-muted-foreground">Vegas Line</div>
                       <div className="font-medium">
                         {selectedGame.spread ? (
-                          selectedGame.spread < 0 
+                          selectedGame.spread < 0
                             ? `${selectedGame.homeTeam?.name} ${formatSpread(selectedGame.spread)}`
                             : `${selectedGame.awayTeam?.name} -${formatSpread(selectedGame.spread)}`
                         ) : 'No line'}
@@ -305,7 +307,7 @@ export default function GameAnalysis() {
                     <div>
                       <div className="text-sm text-muted-foreground">Our Prediction</div>
                       <div className="font-medium">
-                        {analysis.predictiveMetrics.spreadPrediction > 0 
+                        {analysis.predictiveMetrics.spreadPrediction > 0
                           ? `${selectedGame.homeTeam?.name} -${formatSpread(analysis.predictiveMetrics.spreadPrediction)}`
                           : `${selectedGame.awayTeam?.name} -${formatSpread(Math.abs(analysis.predictiveMetrics.spreadPrediction))}`
                         }
@@ -357,12 +359,31 @@ export default function GameAnalysis() {
             </CardContent>
           </Card>
 
+          {/* Game Narrative */}
+          <GameNarrative
+            game={selectedGame}
+            prediction={analysis?.predictiveMetrics}
+            weather={{
+              temperature: 72,
+              condition: "Clear",
+              windSpeed: 8,
+              humidity: 45,
+              precipitation: 0
+            }}
+            injuries={{
+              homeTeamInjuries: 2,
+              awayTeamInjuries: 1,
+              keyPlayersOut: []
+            }}
+          />
+
           <div className="mt-8">
             <Tabs defaultValue="analytics" className="w-full">
-              <TabsList className="grid w-full grid-cols-2 lg:grid-cols-5 h-auto">
+              <TabsList className="grid w-full grid-cols-2 lg:grid-cols-6 h-auto">
                 <TabsTrigger value="analytics" className="text-xs sm:text-sm">Team Analytics</TabsTrigger>
                 <TabsTrigger value="stats" className="text-xs sm:text-sm">Advanced Stats</TabsTrigger>
                 <TabsTrigger value="players" className="text-xs sm:text-sm">Player Impact</TabsTrigger>
+                <TabsTrigger value="sentiment" className="text-xs sm:text-sm">Sentiment</TabsTrigger>
                 <TabsTrigger value="factors" className="text-xs sm:text-sm">Key Factors</TabsTrigger>
                 <TabsTrigger value="recommendation" className="text-xs sm:text-sm">Recommendation</TabsTrigger>
               </TabsList>
@@ -400,7 +421,7 @@ export default function GameAnalysis() {
                       <h4 className="font-semibold text-red-600 text-sm sm:text-base">{selectedGame.awayTeam?.name} (Away)</h4>
                     </div>
                   </div>
-                  
+
                   {/* Analytics Bars */}
                   <div className="space-y-4">
                     <AnalyticsBar
@@ -532,6 +553,42 @@ export default function GameAnalysis() {
                 homeTeamName={selectedGame.homeTeam?.name || 'Home Team'}
                 awayTeamName={selectedGame.awayTeam?.name || 'Away Team'}
               />
+            </TabsContent>
+
+            <TabsContent value="sentiment" className="space-y-6">
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Activity className="h-5 w-5 text-blue-400" />
+                    Social Sentiment Analysis
+                  </CardTitle>
+                  <CardDescription>
+                    Reddit community sentiment for both teams
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div className="space-y-4">
+                      <h4 className="font-semibold text-blue-600">{selectedGame.homeTeam?.name}</h4>
+                      <SentimentDisplay
+                        gameId={selectedGame.id}
+                        teamId={selectedGame.homeTeamId}
+                        teamName={selectedGame.homeTeam?.name || 'Home Team'}
+                        isCompact={true}
+                      />
+                    </div>
+                    <div className="space-y-4">
+                      <h4 className="font-semibold text-red-600">{selectedGame.awayTeam?.name}</h4>
+                      <SentimentDisplay
+                        gameId={selectedGame.id}
+                        teamId={selectedGame.awayTeamId}
+                        teamName={selectedGame.awayTeam?.name || 'Away Team'}
+                        isCompact={true}
+                      />
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
             </TabsContent>
 
             <TabsContent value="factors" className="space-y-6">

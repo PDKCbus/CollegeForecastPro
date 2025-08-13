@@ -3144,11 +3144,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
                 eq(games.season, parseInt(season as string)),
                 eq(games.week, currentWeek),
                 eq(games.completed, false),
-                // Prioritize games with betting data for Rick's picks
-                or(
+                // REQUIRE betting data for Rick's picks - both spread AND total
+                and(
                   isNotNull(games.spread),
                   isNotNull(games.overUnder)
-                )
+                ),
+                // Filter out old/invalid games by date
+                gte(games.startDate, new Date('2025-08-20'))
               )
             )
             .orderBy(games.startDate)

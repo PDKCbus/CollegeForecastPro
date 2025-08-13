@@ -10,6 +10,7 @@ import Home from "@/pages/home";
 import Historical from "@/pages/historical";
 import Analysis from "@/pages/analysis";
 import Sentiment from "@/pages/sentiment";
+import MultiSentiment from "@/pages/multi-sentiment";
 import DataAnalysis from "@/pages/data-analysis";
 import GameAnalysis from "@/pages/game-analysis";
 import SeasonStats from "@/pages/season-stats";
@@ -19,6 +20,7 @@ import { Contact } from "@/pages/Contact";
 import PrivacyPolicy from "@/pages/privacy-policy";
 import TermsOfService from "@/pages/terms-of-service";
 import CookiePolicy from "@/pages/cookie-policy";
+import Blog from "@/pages/blog";
 import NotFound from "@/pages/not-found";
 
 function Router() {
@@ -29,6 +31,7 @@ function Router() {
       <Route path="/analysis" component={Analysis} />
       <Route path="/game-analysis" component={GameAnalysis} />
       <Route path="/sentiment" component={Sentiment} />
+      <Route path="/multi-sentiment" component={MultiSentiment} />
       <Route path="/season-stats" component={SeasonStats} />
       <Route path="/admin" component={AdminPanel} />
       <Route path="/faq" component={FAQ} />
@@ -36,6 +39,8 @@ function Router() {
       <Route path="/privacy-policy" component={PrivacyPolicy} />
       <Route path="/terms-of-service" component={TermsOfService} />
       <Route path="/cookie-policy" component={CookiePolicy} />
+      <Route path="/blog" component={Blog} />
+      <Route path="/blog/:slug" component={Blog} />
       <Route component={NotFound} />
     </Switch>
   );

@@ -9,10 +9,12 @@ import type { SentimentAnalysis } from "@shared/schema";
 interface SentimentDisplayProps {
   gameId?: number;
   teamId?: number;
+  teamName?: string;
   title?: string;
+  isCompact?: boolean;
 }
 
-export function SentimentDisplay({ gameId, teamId, title }: SentimentDisplayProps) {
+export function SentimentDisplay({ gameId, teamId, teamName, title, isCompact = false }: SentimentDisplayProps) {
   const endpoint = gameId ? `/api/sentiment/game/${gameId}` : `/api/sentiment/team/${teamId}`;
   const analyzeEndpoint = gameId ? `/api/sentiment/analyze-game/${gameId}` : `/api/sentiment/analyze-team/${teamId}`;
 
@@ -125,6 +127,44 @@ export function SentimentDisplay({ gameId, teamId, title }: SentimentDisplayProp
 
   const sentimentScore = sentiment.sentimentScore || 0;
   const totalPosts = sentiment.totalTweets || 0;
+
+  // Compact version for game analysis tabs
+  if (isCompact) {
+    return (
+      <div className="space-y-3">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            {getSentimentIcon(sentimentScore)}
+            <span className={`font-semibold ${getSentimentColor(sentimentScore)}`}>
+              {getSentimentLabel(sentimentScore)}
+            </span>
+          </div>
+          <Badge variant="outline" className="text-xs">
+            {(sentimentScore > 0 ? '+' : '')}{(sentimentScore * 100).toFixed(1)}%
+          </Badge>
+        </div>
+
+        <div className="grid grid-cols-3 gap-2 text-xs">
+          <div className="text-center p-2 bg-surface-light rounded">
+            <div className="text-green-500 font-semibold">{sentiment.positiveCount || 0}</div>
+            <div className="text-white/60">Positive</div>
+          </div>
+          <div className="text-center p-2 bg-surface-light rounded">
+            <div className="text-yellow-500 font-semibold">{sentiment.neutralCount || 0}</div>
+            <div className="text-white/60">Neutral</div>
+          </div>
+          <div className="text-center p-2 bg-surface-light rounded">
+            <div className="text-red-500 font-semibold">{sentiment.negativeCount || 0}</div>
+            <div className="text-white/60">Negative</div>
+          </div>
+        </div>
+
+        <div className="text-xs text-white/60 text-center">
+          Based on {totalPosts} r/CFB posts {sentiment.analysisTime ? `• ${formatLastUpdated(sentiment.analysisTime)}` : ''}
+        </div>
+      </div>
+    );
+  }
 
   return (
     <Card className="bg-surface border-surface-light">

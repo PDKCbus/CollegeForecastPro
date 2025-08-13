@@ -72,16 +72,25 @@ export function Footer() {
                     Analysis
                   </Link>
                 </li>
+                <li>
+                  <Link
+                    href="/blog"
+                    className="text-white/70 hover:text-white transition-colors"
+                    onClick={() => window.scrollTo(0, 0)}
+                  >
+                    Blog
+                  </Link>
+                </li>
               </ul>
             </div>
-            
+
             <div>
               <h4 className="text-white font-bold mb-4">Resources</h4>
               <ul className="space-y-2">
                 <li><a href="https://collegefootballdata.com" target="_blank" rel="noopener noreferrer" className="text-white/70 hover:text-white transition-colors">College Football Data</a></li>
                 <li>
-                  <Link 
-                    href="/faq" 
+                  <Link
+                    href="/faq"
                     className="text-white/70 hover:text-white transition-colors"
                     onClick={() => window.scrollTo(0, 0)}
                   >
@@ -90,13 +99,13 @@ export function Footer() {
                 </li>
               </ul>
             </div>
-            
+
             <div>
               <h4 className="text-white font-bold mb-4">Contact</h4>
               <ul className="space-y-2">
                 <li>
-                  <Link 
-                    href="/contact" 
+                  <Link
+                    href="/contact"
                     className="text-white/70 hover:text-white transition-colors"
                     onClick={() => window.scrollTo(0, 0)}
                   >
@@ -104,8 +113,8 @@ export function Footer() {
                   </Link>
                 </li>
                 <li>
-                  <Link 
-                    href="/contact" 
+                  <Link
+                    href="/contact"
                     className="text-white/70 hover:text-white transition-colors"
                     onClick={() => window.scrollTo(0, 0)}
                   >
@@ -116,11 +125,11 @@ export function Footer() {
             </div>
           </div>
         </div>
-        
+
         <div className="border-t border-surface-light pt-8">
           <div className="text-center mb-4">
             <p className="text-white/50 text-xs">
-              Betting lines sourced from DraftKings, Bovada, and other major sportsbooks via College Football Data API. 
+              Betting lines sourced from DraftKings, Bovada, and other major sportsbooks via College Football Data API.
               Lines prioritize DraftKings, then Bovada, with averaging when multiple sources available.
             </p>
           </div>
@@ -129,9 +138,9 @@ export function Footer() {
               &copy; {new Date().getFullYear()} Rick's Picks. All rights reserved.
             </div>
             <div className="flex space-x-6">
-              <a href="#" className="text-white/60 hover:text-white text-sm transition-colors">Privacy Policy</a>
-              <a href="#" className="text-white/60 hover:text-white text-sm transition-colors">Terms of Service</a>
-              <a href="#" className="text-white/60 hover:text-white text-sm transition-colors">Cookie Policy</a>
+              <Link href="/privacy-policy" onClick={() => window.scrollTo(0, 0)} className="text-white/60 hover:text-white text-sm transition-colors">Privacy Policy</Link>
+              <Link href="/terms-of-service" onClick={() => window.scrollTo(0, 0)} className="text-white/60 hover:text-white text-sm transition-colors">Terms of Service</Link>
+              <Link href="/cookie-policy" onClick={() => window.scrollTo(0, 0)} className="text-white/60 hover:text-white text-sm transition-colors">Cookie Policy</Link>
             </div>
           </div>
         </div>

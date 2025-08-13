@@ -13,11 +13,10 @@ export function Header() {
     switch (path) {
       case "/historical":
         return "historical";
-      case "/analysis":
-        return "analysis";
-      case "/game-analysis":
-        return "game-analysis";
-
+      case "/blog":
+        return "blog";
+      case "/faq":
+        return "faq";
       default:
         return "upcoming";
     }
@@ -33,22 +32,22 @@ export function Header() {
             <div className="text-accent font-bold text-2xl">RICK'S</div>
             <div className="text-accent font-bold text-2xl">PICKS</div>
           </Link>
-          <div className="hidden md:flex ml-8 space-x-1">
-            <Link href="/" className={`px-4 py-2 font-medium rounded-md hover:bg-surface transition-colors ${currentTab === "upcoming" ? "text-white" : "text-white/60"}`}>
+          <div className="hidden md:flex ml-8 space-x-2">
+            <Link href="/" className={`px-3 py-2 font-medium rounded-md hover:bg-surface transition-colors ${currentTab === "upcoming" ? "text-white" : "text-white/60"}`}>
               Upcoming Games
             </Link>
-            <Link href="/historical" className={`px-4 py-2 font-medium rounded-md hover:bg-surface transition-colors ${currentTab === "historical" ? "text-white" : "text-white/60"}`}>
+            <Link href="/historical" className={`px-3 py-2 font-medium rounded-md hover:bg-surface transition-colors ${currentTab === "historical" ? "text-white" : "text-white/60"}`}>
               Historical Games
             </Link>
-            <Link href="/analysis" className={`px-4 py-2 font-medium rounded-md hover:bg-surface transition-colors ${currentTab === "analysis" ? "text-white" : "text-white/60"}`}>
-              Analysis
+            <Link href="/blog" className={`px-3 py-2 font-medium rounded-md hover:bg-surface transition-colors ${currentTab === "blog" ? "text-white" : "text-white/60"}`}>
+              Blog
             </Link>
-            <Link href="/game-analysis" className={`px-4 py-2 font-medium rounded-md hover:bg-surface transition-colors ${currentTab === "game-analysis" ? "text-white" : "text-white/60"}`}>
-              Game Analysis
+            <Link href="/faq" className={`px-3 py-2 font-medium rounded-md hover:bg-surface transition-colors ${currentTab === "faq" ? "text-white" : "text-white/60"}`}>
+              FAQ
             </Link>
           </div>
         </div>
-        
+
         <div className="flex items-center space-x-4">
           <button className="hidden md:flex text-white/80 hover:text-white p-2 rounded-full hover:bg-surface-light transition-colors">
             <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-search">
@@ -61,8 +60,8 @@ export function Header() {
               <path d="M20 13c0 5-3.5 7.5-8 10.5C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6-2 1.5.8 4 2 6 2a1 1 0 0 1 1 1v7z"/>
             </svg>
           </Link>
-          <button 
-            className="md:hidden text-white/80 hover:text-white p-2" 
+          <button
+            className="md:hidden text-white/80 hover:text-white p-2"
             onClick={toggleMobileMenu}
           >
             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-menu">
@@ -73,7 +72,7 @@ export function Header() {
           </button>
         </div>
       </div>
-      
+
       {/* Mobile navigation menu */}
       <div className={`md:hidden bg-gray-900 absolute w-full border-b border-gray-700 animate-fade-in z-50 ${isMobileMenuOpen ? 'block' : 'hidden'}`}>
         <div className="container mx-auto px-4 py-3 flex flex-col space-y-2">
@@ -83,11 +82,11 @@ export function Header() {
           <Link href="/historical" className={`px-4 py-3 font-medium text-left rounded-md hover:bg-gray-800 transition-colors ${currentTab === "historical" ? "text-white" : "text-white/60"}`} onClick={() => setIsMobileMenuOpen(false)}>
             Historical Games
           </Link>
-          <Link href="/analysis" className={`px-4 py-3 font-medium text-left rounded-md hover:bg-gray-800 transition-colors ${currentTab === "analysis" ? "text-white" : "text-white/60"}`} onClick={() => setIsMobileMenuOpen(false)}>
-            Analysis
+          <Link href="/blog" className={`px-4 py-3 font-medium text-left rounded-md hover:bg-gray-800 transition-colors ${currentTab === "blog" ? "text-white" : "text-white/60"}`} onClick={() => setIsMobileMenuOpen(false)}>
+            Blog
           </Link>
-          <Link href="/game-analysis" className={`px-4 py-3 font-medium text-left rounded-md hover:bg-gray-800 transition-colors ${currentTab === "game-analysis" ? "text-white" : "text-white/60"}`} onClick={() => setIsMobileMenuOpen(false)}>
-            Game Analysis
+          <Link href="/faq" className={`px-4 py-3 font-medium text-left rounded-md hover:bg-gray-800 transition-colors ${currentTab === "faq" ? "text-white" : "text-white/60"}`} onClick={() => setIsMobileMenuOpen(false)}>
+            FAQ
           </Link>
           <div className="flex items-center space-x-2 px-4 py-3">
             <button className="flex-1 bg-gray-800 text-white/80 p-2 rounded-md">
