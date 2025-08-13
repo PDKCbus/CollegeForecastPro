@@ -3,7 +3,7 @@
  * Run this with: docker-compose --env-file .env.production exec app node seed-production-blog.js
  */
 
-const { Client } = require('pg');
+import { Client } from 'pg';
 
 const blogPosts = [
   {
