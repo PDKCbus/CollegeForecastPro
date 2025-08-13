@@ -5,7 +5,7 @@ import { eq } from "drizzle-orm";
 // Get current week dynamically based on current date
 function getCurrentWeek(): number {
   const now = new Date();
-  const seasonStart = new Date('2025-08-23); // Typical CFB season start
+  const seasonStart = new Date('2025-08-23'); // Typical CFB season start
   const diffTime = Math.abs(now.getTime() - seasonStart.getTime());
   const diffWeeks = Math.ceil(diffTime / (1000 * 60 * 60 * 24 * 7));
 
