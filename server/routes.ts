@@ -3679,17 +3679,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Blog routes
   app.get("/api/blog/posts", async (_req, res) => {
     try {
-      const posts = await db.execute(sql`
-        SELECT
-          id, title, slug, excerpt, content,
-          COALESCE(author, 'Rick''s Picks Editorial Team') as author,
-          category, tags, featured_image_url, published, featured,
-          view_count, created_at, updated_at, published_at,
-          seo_title, seo_description
-        FROM blog_posts
-        WHERE published = true
-        ORDER BY created_at DESC
-      `);
+      const posts = await db
+        .select()
+        .from(blogPosts)
+        .where(eq(blogPosts.published, true))
+        .orderBy(desc(blogPosts.created_at));
 
       // Transform to camelCase for frontend compatibility
       const transformedPosts = posts.map(post => ({
@@ -3698,7 +3692,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         slug: post.slug,
         excerpt: post.excerpt,
         content: post.content,
-        author: post.author,
+        author: post.author || 'RP Editorial Team',
         category: post.category,
         tags: post.tags,
         featuredImageUrl: post.featured_image_url,
@@ -3721,18 +3715,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.get("/api/blog/featured", async (_req, res) => {
     try {
-      const posts = await db.execute(sql`
-        SELECT
-          id, title, slug, excerpt, content,
-          COALESCE(author, 'Rick''s Picks Editorial Team') as author,
-          category, tags, featured_image_url, published, featured,
-          view_count, created_at, updated_at, published_at,
-          seo_title, seo_description
-        FROM blog_posts
-        WHERE published = true AND featured = true
-        ORDER BY created_at DESC
-        LIMIT 3
-      `);
+      const posts = await db
+        .select()
+        .from(blogPosts)
+        .where(and(eq(blogPosts.published, true), eq(blogPosts.featured, true)))
+        .orderBy(desc(blogPosts.created_at))
+        .limit(3);
 
       // Transform to camelCase for frontend compatibility
       const transformedPosts = posts.map(post => ({
@@ -3741,7 +3729,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         slug: post.slug,
         excerpt: post.excerpt,
         content: post.content,
-        author: post.author,
+        author: post.author || 'Rick\'s Picks Editorial Team',
         category: post.category,
         tags: post.tags,
         featuredImageUrl: post.featured_image_url,
