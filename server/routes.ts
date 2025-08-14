@@ -3681,17 +3681,38 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const posts = await db.execute(sql`
         SELECT
-          id, title, slug, excerpt, content, author, category, tags,
-          featured_image_url as "featuredImageUrl", published, featured,
-          view_count as "viewCount", created_at as "createdAt",
-          updated_at as "updatedAt", published_at as "publishedAt",
-          seo_title as "seoTitle", seo_description as "seoDescription"
+          id, title, slug, excerpt, content,
+          COALESCE(author, 'Rick''s Picks Editorial Team') as author,
+          category, tags, featured_image_url, published, featured,
+          view_count, created_at, updated_at, published_at,
+          seo_title, seo_description
         FROM blog_posts
         WHERE published = true
         ORDER BY created_at DESC
       `);
 
-      res.json(posts);
+      // Transform to camelCase for frontend compatibility
+      const transformedPosts = posts.map(post => ({
+        id: post.id,
+        title: post.title,
+        slug: post.slug,
+        excerpt: post.excerpt,
+        content: post.content,
+        author: post.author,
+        category: post.category,
+        tags: post.tags,
+        featuredImageUrl: post.featured_image_url,
+        published: post.published,
+        featured: post.featured,
+        viewCount: post.view_count,
+        createdAt: post.created_at,
+        updatedAt: post.updated_at,
+        publishedAt: post.published_at,
+        seoTitle: post.seo_title,
+        seoDescription: post.seo_description
+      }));
+
+      res.json(transformedPosts);
     } catch (error) {
       console.error('Failed to fetch blog posts:', error);
       res.status(500).json({ error: 'Failed to fetch blog posts' });
@@ -3702,18 +3723,39 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const posts = await db.execute(sql`
         SELECT
-          id, title, slug, excerpt, content, author, category, tags,
-          featured_image_url as "featuredImageUrl", published, featured,
-          view_count as "viewCount", created_at as "createdAt",
-          updated_at as "updatedAt", published_at as "publishedAt",
-          seo_title as "seoTitle", seo_description as "seoDescription"
+          id, title, slug, excerpt, content,
+          COALESCE(author, 'Rick''s Picks Editorial Team') as author,
+          category, tags, featured_image_url, published, featured,
+          view_count, created_at, updated_at, published_at,
+          seo_title, seo_description
         FROM blog_posts
         WHERE published = true AND featured = true
         ORDER BY created_at DESC
         LIMIT 3
       `);
 
-      res.json(posts);
+      // Transform to camelCase for frontend compatibility
+      const transformedPosts = posts.map(post => ({
+        id: post.id,
+        title: post.title,
+        slug: post.slug,
+        excerpt: post.excerpt,
+        content: post.content,
+        author: post.author,
+        category: post.category,
+        tags: post.tags,
+        featuredImageUrl: post.featured_image_url,
+        published: post.published,
+        featured: post.featured,
+        viewCount: post.view_count,
+        createdAt: post.created_at,
+        updatedAt: post.updated_at,
+        publishedAt: post.published_at,
+        seoTitle: post.seo_title,
+        seoDescription: post.seo_description
+      }));
+
+      res.json(transformedPosts);
     } catch (error) {
       console.error('Failed to fetch featured posts:', error);
       res.status(500).json({ error: 'Failed to fetch featured posts' });
@@ -3726,11 +3768,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       const posts = await db.execute(sql`
         SELECT
-          id, title, slug, excerpt, content, author, category, tags,
-          featured_image_url as "featuredImageUrl", published, featured,
-          view_count as "viewCount", created_at as "createdAt",
-          updated_at as "updatedAt", published_at as "publishedAt",
-          seo_title as "seoTitle", seo_description as "seoDescription"
+          id, title, slug, excerpt, content,
+          COALESCE(author, 'Rick''s Picks Editorial Team') as author,
+          category, tags, featured_image_url, published, featured,
+          view_count, created_at, updated_at, published_at,
+          seo_title, seo_description
         FROM blog_posts
         WHERE slug = ${slug} AND published = true
         LIMIT 1
