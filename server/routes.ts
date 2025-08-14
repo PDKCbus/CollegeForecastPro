@@ -3812,16 +3812,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
         seoDescription: seoDescription || excerpt
       };
 
-      // Set publishedAt if publishing for first time
       if (published) {
-        const [existingPost] = await db
-          .select({ published: blogPosts.published })
-          .from(blogPosts)
-          .where(eq(blogPosts.id, parseInt(id)));
-
-        if (existingPost && !existingPost.published) {
-          updateData.publishedAt = new Date();
-        }
+        // Always set publishedAt when publishing (avoid ORM field mapping issues)
+        updateData.publishedAt = new Date();
       }
 
       const [updatedPost] = await db
