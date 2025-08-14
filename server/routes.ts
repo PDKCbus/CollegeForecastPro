@@ -3679,11 +3679,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Blog routes
   app.get("/api/blog/posts", async (_req, res) => {
     try {
-      const posts = await db
-        .select()
-        .from(blogPosts)
-        .where(eq(blogPosts.published, true))
-        .orderBy(desc(blogPosts.createdAt));
+      const posts = await db.execute(sql`
+        SELECT
+          id, title, slug, excerpt, content, author, category, tags,
+          featured_image_url as "featuredImageUrl", published, featured,
+          view_count as "viewCount", created_at as "createdAt",
+          updated_at as "updatedAt", published_at as "publishedAt",
+          seo_title as "seoTitle", seo_description as "seoDescription"
+        FROM blog_posts
+        WHERE published = true
+        ORDER BY created_at DESC
+      `);
 
       res.json(posts);
     } catch (error) {
@@ -3694,12 +3700,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.get("/api/blog/featured", async (_req, res) => {
     try {
-      const posts = await db
-        .select()
-        .from(blogPosts)
-        .where(and(eq(blogPosts.published, true), eq(blogPosts.featured, true)))
-        .orderBy(desc(blogPosts.createdAt))
-        .limit(3);
+      const posts = await db.execute(sql`
+        SELECT
+          id, title, slug, excerpt, content, author, category, tags,
+          featured_image_url as "featuredImageUrl", published, featured,
+          view_count as "viewCount", created_at as "createdAt",
+          updated_at as "updatedAt", published_at as "publishedAt",
+          seo_title as "seoTitle", seo_description as "seoDescription"
+        FROM blog_posts
+        WHERE published = true AND featured = true
+        ORDER BY created_at DESC
+        LIMIT 3
+      `);
 
       res.json(posts);
     } catch (error) {
@@ -3712,21 +3724,30 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const { slug } = req.params;
 
-      const [post] = await db
-        .select()
-        .from(blogPosts)
-        .where(and(eq(blogPosts.slug, slug), eq(blogPosts.published, true)))
-        .limit(1);
+      const posts = await db.execute(sql`
+        SELECT
+          id, title, slug, excerpt, content, author, category, tags,
+          featured_image_url as "featuredImageUrl", published, featured,
+          view_count as "viewCount", created_at as "createdAt",
+          updated_at as "updatedAt", published_at as "publishedAt",
+          seo_title as "seoTitle", seo_description as "seoDescription"
+        FROM blog_posts
+        WHERE slug = ${slug} AND published = true
+        LIMIT 1
+      `);
 
-      if (!post) {
+      if (posts.length === 0) {
         return res.status(404).json({ error: 'Post not found' });
       }
 
+      const post = posts[0];
+
       // Increment view count
-      await db
-        .update(blogPosts)
-        .set({ viewCount: post.viewCount + 1 })
-        .where(eq(blogPosts.id, post.id));
+      await db.execute(sql`
+        UPDATE blog_posts
+        SET view_count = view_count + 1
+        WHERE id = ${post.id}
+      `);
 
       res.json(post);
     } catch (error) {
