@@ -3692,7 +3692,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         slug: post.slug,
         excerpt: post.excerpt,
         content: post.content,
-        author: post.author || 'RP Editorial Team',
+        author: post.author || 'Rick\'s Picks Editorial Team',
         category: post.category,
         tags: post.tags,
         featuredImageUrl: post.featured_image_url,
@@ -3794,7 +3794,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const posts = await db
         .select()
         .from(blogPosts)
-        .orderBy(desc(blogPosts.createdAt));
+        .orderBy(desc(blogPosts.created_at));
 
       res.json(posts);
     } catch (error) {
@@ -3825,8 +3825,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
           tags: tags || [],
           featured: featured || false,
           published: published || false,
-          seoTitle: seoTitle || title,
-          seoDescription: seoDescription || excerpt
+          seo_title: seoTitle || title,
+          seo_description: seoDescription || excerpt
         })
         .returning();
 

@@ -68,15 +68,15 @@ export const blogPosts = pgTable("blog_posts", {
   author: text("author").default("Rick's Picks Editorial Team"),
   category: text("category").notNull(), // "Analysis", "Strategy", "Previews", "News"
   tags: text("tags").array(),
-  featuredImageUrl: text("featured_image_url"),
+  featured_image_url: text("featured_image_url"),
   published: boolean("published").default(false),
   featured: boolean("featured").default(false), // For homepage featured posts
-  viewCount: integer("view_count").default(0),
-  createdAt: timestamp("created_at").defaultNow(),
-  updatedAt: timestamp("updated_at").defaultNow(),
-  publishedAt: timestamp("published_at"),
-  seoTitle: text("seo_title"),
-  seoDescription: text("seo_description"),
+  view_count: integer("view_count").default(0),
+  created_at: timestamp("created_at").defaultNow(),
+  updated_at: timestamp("updated_at").defaultNow(),
+  published_at: timestamp("published_at"),
+  seo_title: text("seo_title"),
+  seo_description: text("seo_description"),
 });
 
 export const games = pgTable("games", {
