@@ -742,6 +742,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       const calculateGameImportance = (game: any) => {
         let score = 0;
+        let debugInfo = [];
 
         const homeRank = game.homeTeam?.rank || 999;
         const awayRank = game.awayTeam?.rank || 999;
@@ -749,28 +750,42 @@ export async function registerRoutes(app: Express): Promise<Server> {
         // Elite matchups get massive scores
         if (homeRank <= 25 && awayRank <= 25) {
           score += 1000;  // Both ranked = automatic contender
+          debugInfo.push('Both ranked ≤25: +1000');
 
           // Top 10 vs Top 10 = College GameDay material
           if (homeRank <= 10 && awayRank <= 10) {
             score += 500;
+            debugInfo.push('Both ranked ≤10: +500');
 
             // Top 5 vs Top 5 = Game of the Century
             if (homeRank <= 5 && awayRank <= 5) {
               score += 300;
+              debugInfo.push('Both ranked ≤5: +300');
             }
           }
 
           // Ranking differential matters - closer = better game
           const rankDiff = Math.abs(homeRank - awayRank);
-          score += Math.max(0, 50 - rankDiff * 2); // Closer ranks = more points
+          const rankBonus = Math.max(0, 50 - rankDiff * 2);
+          score += rankBonus; // Closer ranks = more points
+          debugInfo.push(`Rank diff ${rankDiff}: +${rankBonus}`);
         }
 
         // One team highly ranked
         const bestRank = Math.min(homeRank, awayRank);
-        if (bestRank <= 5) score += 400;
-        else if (bestRank <= 10) score += 200;
-        else if (bestRank <= 15) score += 100;
-        else if (bestRank <= 25) score += 50;
+        if (bestRank <= 5) {
+          score += 400;
+          debugInfo.push(`Best rank ≤5: +400`);
+        } else if (bestRank <= 10) {
+          score += 200;
+          debugInfo.push(`Best rank ≤10: +200`);
+        } else if (bestRank <= 15) {
+          score += 100;
+          debugInfo.push(`Best rank ≤15: +100`);
+        } else if (bestRank <= 25) {
+          score += 50;
+          debugInfo.push(`Best rank ≤25: +50`);
+        }
 
         // Conference championship implications
         if (game.isConferenceGame) {
@@ -805,7 +820,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
         if (hour >= 19 || hour <= 23) score += 25; // Evening games (7-11 PM)
 
         // Season timing - early season big games get extra attention
-        if (game.week <= 4) score += 30; // Early season hype
+        if (game.week <= 4) {
+          score += 30; // Early season hype
+          debugInfo.push('Early season: +30');
+        }
+
+        // Debug log for key games
+        if ((game.homeTeam?.name?.includes('Ohio State') && game.awayTeam?.name?.includes('Texas')) ||
+            (game.homeTeam?.name?.includes('Kansas State') && game.awayTeam?.name?.includes('Iowa State'))) {
+          console.log(`🔍 ${game.awayTeam?.name} @ ${game.homeTeam?.name} (Ranks: #${awayRank} @ #${homeRank})`);
+          console.log(`   Scoring: ${debugInfo.join(', ')}`);
+          console.log(`   Total Score: ${score}`);
+        }
 
         return score;
       };
@@ -814,16 +840,31 @@ export async function registerRoutes(app: Express): Promise<Server> {
       let featuredGame = allUpcomingGames[0];
       let bestScore = 0;
 
+      // Debug scoring for top games
+      const gameScores = [];
       for (const game of allUpcomingGames) {
         const currentScore = calculateGameImportance(game);
+        gameScores.push({
+          game: `${game.awayTeam.name} @ ${game.homeTeam.name}`,
+          score: currentScore,
+          homeRank: game.homeTeam?.rank,
+          awayRank: game.awayTeam?.rank
+        });
+
         if (currentScore > bestScore) {
           bestScore = currentScore;
           featuredGame = game;
         }
       }
 
-      // Log the selection for debugging (remove in production)
-      console.log(`Featured Game Selected: ${featuredGame.awayTeam.name} @ ${featuredGame.homeTeam.name} (Score: ${bestScore})`);
+      // Log the top 5 games for debugging
+      gameScores.sort((a, b) => b.score - a.score);
+      console.log('🏆 Top 5 Featured Game Candidates:');
+      gameScores.slice(0, 5).forEach((item, idx) => {
+        console.log(`${idx + 1}. ${item.game} (Score: ${item.score}, Ranks: #${item.awayRank || 'NR'} @ #${item.homeRank || 'NR'})`);
+      });
+
+      console.log(`\n🎯 Featured Game Selected: ${featuredGame.awayTeam.name} @ ${featuredGame.homeTeam.name} (Score: ${bestScore})`);
 
       res.json(featuredGame);
     } catch (error) {
@@ -3642,7 +3683,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         .select()
         .from(blogPosts)
         .where(eq(blogPosts.published, true))
-        .orderBy(desc(blogPosts.publishedAt));
+        .orderBy(desc(blogPosts.createdAt));
 
       res.json(posts);
     } catch (error) {
@@ -3657,7 +3698,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         .select()
         .from(blogPosts)
         .where(and(eq(blogPosts.published, true), eq(blogPosts.featured, true)))
-        .orderBy(desc(blogPosts.publishedAt))
+        .orderBy(desc(blogPosts.createdAt))
         .limit(3);
 
       res.json(posts);
@@ -3691,6 +3732,133 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error('Failed to fetch blog post:', error);
       res.status(500).json({ error: 'Failed to fetch blog post' });
+    }
+  });
+
+  // Blog Management API Endpoints (Admin Only)
+
+  // Get all blog posts for admin (including unpublished)
+  app.get("/api/admin/blog/posts", requireAdminAuth, async (req, res) => {
+    try {
+      const posts = await db
+        .select()
+        .from(blogPosts)
+        .orderBy(desc(blogPosts.createdAt));
+
+      res.json(posts);
+    } catch (error) {
+      console.error('Failed to fetch admin blog posts:', error);
+      res.status(500).json({ error: 'Failed to fetch blog posts' });
+    }
+  });
+
+  // Create new blog post
+  app.post("/api/admin/blog/posts", requireAdminAuth, async (req, res) => {
+    try {
+      const { title, excerpt, content, category, tags, featured, published, seoTitle, seoDescription } = req.body;
+
+      // Generate slug from title
+      const slug = title
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, '-')
+        .replace(/(^-|-$)/g, '');
+
+      const [newPost] = await db
+        .insert(blogPosts)
+        .values({
+          title,
+          slug,
+          excerpt,
+          content,
+          category,
+          tags: tags || [],
+          featured: featured || false,
+          published: published || false,
+          seoTitle: seoTitle || title,
+          seoDescription: seoDescription || excerpt
+        })
+        .returning();
+
+      res.json(newPost);
+    } catch (error) {
+      console.error('Failed to create blog post:', error);
+      res.status(500).json({ error: 'Failed to create blog post' });
+    }
+  });
+
+  // Update blog post
+  app.put("/api/admin/blog/posts/:id", requireAdminAuth, async (req, res) => {
+    try {
+      const { id } = req.params;
+      const { title, excerpt, content, category, tags, featured, published, seoTitle, seoDescription } = req.body;
+
+      // Generate slug from title if title changed
+      const slug = title
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, '-')
+        .replace(/(^-|-$)/g, '');
+
+      const updateData: any = {
+        title,
+        slug,
+        excerpt,
+        content,
+        category,
+        tags: tags || [],
+        featured: featured || false,
+        published: published || false,
+        updatedAt: new Date(),
+        seoTitle: seoTitle || title,
+        seoDescription: seoDescription || excerpt
+      };
+
+      // Set publishedAt if publishing for first time
+      if (published) {
+        const [existingPost] = await db
+          .select({ published: blogPosts.published, publishedAt: blogPosts.publishedAt })
+          .from(blogPosts)
+          .where(eq(blogPosts.id, parseInt(id)));
+
+        if (existingPost && !existingPost.published && !existingPost.publishedAt) {
+          updateData.publishedAt = new Date();
+        }
+      }
+
+      const [updatedPost] = await db
+        .update(blogPosts)
+        .set(updateData)
+        .where(eq(blogPosts.id, parseInt(id)))
+        .returning();
+
+      if (!updatedPost) {
+        return res.status(404).json({ error: 'Post not found' });
+      }
+
+      res.json(updatedPost);
+    } catch (error) {
+      console.error('Failed to update blog post:', error);
+      res.status(500).json({ error: 'Failed to update blog post' });
+    }
+  });
+
+  // Delete blog post
+  app.delete("/api/admin/blog/posts/:id", requireAdminAuth, async (req, res) => {
+    try {
+      const { id } = req.params;
+
+      const [deletedPost] = await db
+        .delete(blogPosts)
+        .where(eq(blogPosts.id, parseInt(id)))
+        .returning();
+
+      if (!deletedPost) {
+        return res.status(404).json({ error: 'Post not found' });
+      }
+
+      res.json({ message: 'Post deleted successfully' });
+    } catch (error) {
+      console.error('Failed to delete blog post:', error);
+      res.status(500).json({ error: 'Failed to delete blog post' });
     }
   });
 
