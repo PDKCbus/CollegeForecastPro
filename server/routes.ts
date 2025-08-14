@@ -3815,11 +3815,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Set publishedAt if publishing for first time
       if (published) {
         const [existingPost] = await db
-          .select({ published: blogPosts.published, publishedAt: blogPosts.publishedAt })
+          .select({ published: blogPosts.published })
           .from(blogPosts)
           .where(eq(blogPosts.id, parseInt(id)));
 
-        if (existingPost && !existingPost.published && !existingPost.publishedAt) {
+        if (existingPost && !existingPost.published) {
           updateData.publishedAt = new Date();
         }
       }
