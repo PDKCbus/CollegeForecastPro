@@ -3811,7 +3811,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         seoTitle: seoTitle || title,
         seoDescription: seoDescription || excerpt
       };
-      
+
       // Set publishedAt if publishing for first time
       if (published) {
         const [existingPost] = await db
