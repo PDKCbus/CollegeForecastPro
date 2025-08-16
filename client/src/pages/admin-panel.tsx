@@ -59,6 +59,26 @@ interface RicksPick {
   isLocked: boolean;
 }
 
+interface BlogPost {
+  id: number;
+  title: string;
+  slug: string;
+  excerpt: string;
+  content: string;
+  author: string;
+  category: string;
+  tags: string[];
+  featuredImageUrl: string | null;
+  published: boolean;
+  featured: boolean;
+  viewCount: number;
+  createdAt: string;
+  updatedAt: string;
+  publishedAt: string | null;
+  seoTitle: string | null;
+  seoDescription: string | null;
+}
+
 export default function AdminPanel() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [authToken, setAuthToken] = useState<string | null>(null);
@@ -68,6 +88,9 @@ export default function AdminPanel() {
   const [selectedWeek, setSelectedWeek] = useState(1);
   const [selectedSeason, setSelectedSeason] = useState(2025);
   const [isLoading, setIsLoading] = useState(false);
+  const [blogPosts, setBlogPosts] = useState<BlogPost[]>([]);
+  const [editingPost, setEditingPost] = useState<BlogPost | null>(null);
+  const [showBlogForm, setShowBlogForm] = useState(false);
   const { toast } = useToast();
 
   // Check for existing session on load
@@ -83,13 +106,95 @@ export default function AdminPanel() {
   useEffect(() => {
     if (isAuthenticated && authToken) {
       loadGamesForPicks();
+      loadBlogPosts();
     }
   }, [isAuthenticated, authToken, selectedWeek, selectedSeason]);
+
+  const loadBlogPosts = async () => {
+    try {
+      const response = await fetch(`/api/admin/blog/posts`, {
+        method: 'GET',
+        headers: { 'Authorization': `Bearer ${authToken}` }
+      });
+      if (!response.ok) throw new Error('Failed to fetch blog posts');
+      const data = await response.json();
+      setBlogPosts(data);
+    } catch (error) {
+      console.error('Failed to load blog posts:', error);
+      toast({
+        title: "Error",
+        description: "Failed to load blog posts",
+        variant: "destructive"
+      });
+    }
+  };
+
+  const saveBlogPost = async (postData: Partial<BlogPost>) => {
+    try {
+      const isEdit = editingPost?.id;
+      const url = isEdit ? `/api/admin/blog/posts/${editingPost.id}` : '/api/admin/blog/posts';
+      const method = isEdit ? 'PUT' : 'POST';
+
+      const response = await fetch(url, {
+        method,
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${authToken}`
+        },
+        body: JSON.stringify(postData)
+      });
+
+      if (!response.ok) throw new Error('Failed to save blog post');
+
+      toast({
+        title: "Success",
+        description: `Blog post ${isEdit ? 'updated' : 'created'} successfully`,
+      });
+
+      loadBlogPosts();
+      setEditingPost(null);
+      setShowBlogForm(false);
+    } catch (error) {
+      console.error('Failed to save blog post:', error);
+      toast({
+        title: "Error",
+        description: `Failed to ${isEdit ? 'update' : 'create'} blog post`,
+        variant: "destructive"
+      });
+    }
+  };
+
+  const deleteBlogPost = async (id: number) => {
+    if (!window.confirm('Are you sure you want to delete this blog post?')) return;
+
+    try {
+      const response = await fetch(`/api/admin/blog/posts/${id}`, {
+        method: 'DELETE',
+        headers: { 'Authorization': `Bearer ${authToken}` }
+      });
+
+      if (!response.ok) throw new Error('Failed to delete blog post');
+
+      toast({
+        title: "Success",
+        description: "Blog post deleted successfully",
+      });
+
+      loadBlogPosts();
+    } catch (error) {
+      console.error('Failed to delete blog post:', error);
+      toast({
+        title: "Error",
+        description: "Failed to delete blog post",
+        variant: "destructive"
+      });
+    }
+  };
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
-    
+
     try {
       const response = await fetch('/api/admin/login', {
         method: 'POST',
@@ -102,7 +207,7 @@ export default function AdminPanel() {
       }
 
       const data = await response.json();
-      
+
       if (data.success) {
         setAuthToken(data.token);
         setIsAuthenticated(true);
@@ -133,7 +238,7 @@ export default function AdminPanel() {
     } catch (error) {
       // Continue with logout even if server request fails
     }
-    
+
     setIsAuthenticated(false);
     setAuthToken(null);
     localStorage.removeItem('adminToken');
@@ -152,13 +257,13 @@ export default function AdminPanel() {
       });
       return;
     }
-    
+
     setIsLoading(true);
     try {
       const gamesResponse = await fetch(`/api/admin/games-for-picks?season=${selectedSeason}&week=${selectedWeek}`, {
         headers: { 'Authorization': `Bearer ${authToken}` }
       });
-      
+
       if (!gamesResponse.ok) {
         if (gamesResponse.status === 401) {
           // Token expired, need to re-login
@@ -174,17 +279,17 @@ export default function AdminPanel() {
         }
         throw new Error('Failed to fetch games');
       }
-      
+
       const gamesData = await gamesResponse.json();
       console.log('Loaded games:', gamesData.games?.length || 0);
       setGames(gamesData.games || []);
-      
+
       // Load existing picks for this week
       try {
         const picksResponse = await fetch(`/api/admin/ricks-picks/${selectedWeek}?season=${selectedSeason}`, {
           headers: { 'Authorization': `Bearer ${authToken}` }
         });
-        
+
         if (picksResponse.ok) {
           const picksData = await picksResponse.json();
           const picksMap: Record<number, RicksPick> = {};
@@ -197,7 +302,7 @@ export default function AdminPanel() {
         console.log('No existing picks found, starting fresh');
         setCurrentPicks({});
       }
-      
+
     } catch (error) {
       console.error('Load games error:', error);
       toast({
@@ -219,29 +324,29 @@ export default function AdminPanel() {
       });
       return;
     }
-    
+
     console.log('Saving pick:', { gameId, pickData });
-    
+
     try {
       const response = await fetch('/api/admin/ricks-pick', {
         method: 'POST',
         body: JSON.stringify({ gameId, ...pickData }),
-        headers: { 
+        headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${authToken}` 
+          'Authorization': `Bearer ${authToken}`
         }
       });
 
       console.log('Save response status:', response.status);
       const data = await response.json();
       console.log('Save response data:', data);
-      
+
       if (response.ok && data.success) {
         setCurrentPicks(prev => ({
           ...prev,
           [gameId]: { ...prev[gameId], ...pickData, gameId, id: data.pick.id }
         }));
-        
+
         toast({
           title: "Pick Saved",
           description: "Rick's pick has been saved successfully",
@@ -251,9 +356,10 @@ export default function AdminPanel() {
       }
     } catch (error) {
       console.error('Save pick error:', error);
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
       toast({
         title: "Save Failed",
-        description: `Could not save Rick's pick: ${error.message}`,
+        description: `Could not save Rick's pick: ${errorMessage}`,
         variant: "destructive",
       });
     }
@@ -301,6 +407,11 @@ export default function AdminPanel() {
                 {isLoading ? 'Logging in...' : 'Login'}
               </Button>
             </form>
+            <div className="mt-4 p-3 bg-slate-100 rounded-lg text-sm text-slate-600">
+              <strong>Default credentials:</strong><br />
+              Username: rick<br />
+              Password: RicksPicks2025!
+            </div>
           </CardContent>
         </Card>
       </div>
@@ -332,6 +443,7 @@ export default function AdminPanel() {
         <Tabs defaultValue="picks" className="space-y-6">
           <TabsList>
             <TabsTrigger value="picks">Make Picks</TabsTrigger>
+            <TabsTrigger value="blog">Blog Management</TabsTrigger>
             <TabsTrigger value="history">Pick History</TabsTrigger>
             <TabsTrigger value="settings">Settings</TabsTrigger>
           </TabsList>
@@ -380,10 +492,10 @@ export default function AdminPanel() {
             {/* Games List */}
             <div className="grid gap-6">
               {games.map(game => (
-                <GamePickCard 
-                  key={game.id} 
-                  game={game} 
-                  currentPick={currentPicks[game.id]} 
+                <GamePickCard
+                  key={game.id}
+                  game={game}
+                  currentPick={currentPicks[game.id]}
                   onSavePick={(pickData) => savePick(game.id, pickData)}
                 />
               ))}
@@ -391,6 +503,88 @@ export default function AdminPanel() {
                 <Card>
                   <CardContent className="text-center py-12">
                     <p className="text-slate-500">No games found for Week {selectedWeek} of {selectedSeason}</p>
+                  </CardContent>
+                </Card>
+              )}
+            </div>
+          </TabsContent>
+
+          <TabsContent value="blog" className="space-y-6">
+            {/* Blog Header */}
+            <div className="flex justify-between items-center">
+              <div>
+                <h2 className="text-2xl font-bold">Blog Management</h2>
+                <p className="text-slate-600">Create and manage blog posts for Rick's Picks</p>
+              </div>
+              <Button onClick={() => { setEditingPost(null); setShowBlogForm(true); }}>
+                <Plus className="w-4 h-4 mr-2" />
+                New Post
+              </Button>
+            </div>
+
+            {/* Blog Form Modal */}
+            {showBlogForm && (
+              <BlogPostForm
+                post={editingPost}
+                onSave={saveBlogPost}
+                onCancel={() => { setEditingPost(null); setShowBlogForm(false); }}
+              />
+            )}
+
+            {/* Blog Posts List */}
+            <div className="grid gap-4">
+              {blogPosts.map(post => (
+                <Card key={post.id}>
+                  <CardContent className="p-6">
+                    <div className="flex justify-between items-start">
+                      <div className="flex-1">
+                        <div className="flex items-center gap-2 mb-2">
+                          <h3 className="text-lg font-semibold">{post.title}</h3>
+                          {post.published ? (
+                            <Badge className="bg-green-100 text-green-800">Published</Badge>
+                          ) : (
+                            <Badge variant="secondary">Draft</Badge>
+                          )}
+                          {post.featured && (
+                            <Badge className="bg-yellow-100 text-yellow-800">Featured</Badge>
+                          )}
+                        </div>
+                        <p className="text-slate-600 mb-2">{post.excerpt}</p>
+                        <div className="flex items-center gap-4 text-sm text-slate-500">
+                          <span>Category: {post.category}</span>
+                          <span>Views: {post.viewCount}</span>
+                          <span>Created: {new Date(post.createdAt).toLocaleDateString()}</span>
+                          {post.publishedAt && (
+                            <span>Published: {new Date(post.publishedAt).toLocaleDateString()}</span>
+                          )}
+                        </div>
+                      </div>
+                      <div className="flex gap-2">
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => { setEditingPost(post); setShowBlogForm(true); }}
+                        >
+                          <Eye className="w-4 h-4 mr-1" />
+                          Edit
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="destructive"
+                          onClick={() => deleteBlogPost(post.id)}
+                        >
+                          <Trash2 className="w-4 h-4 mr-1" />
+                          Delete
+                        </Button>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+              {blogPosts.length === 0 && (
+                <Card>
+                  <CardContent className="text-center py-12">
+                    <p className="text-slate-500">No blog posts found. Create your first post!</p>
                   </CardContent>
                 </Card>
               )}
@@ -427,14 +621,14 @@ export default function AdminPanel() {
 }
 
 // Individual Game Pick Card Component
-function GamePickCard({ 
-  game, 
-  currentPick, 
-  onSavePick 
-}: { 
-  game: AdminGame; 
-  currentPick?: RicksPick; 
-  onSavePick: (pickData: Partial<RicksPick>) => void; 
+function GamePickCard({
+  game,
+  currentPick,
+  onSavePick
+}: {
+  game: AdminGame;
+  currentPick?: RicksPick;
+  onSavePick: (pickData: Partial<RicksPick>) => void;
 }) {
   const [formData, setFormData] = useState({
     spreadPick: currentPick?.spreadPick || '',
@@ -459,7 +653,7 @@ function GamePickCard({
     if (team.abbreviation && team.abbreviation !== 'UNK') {
       return team.abbreviation;
     }
-    
+
     // Generate abbreviation from team name
     const name = team.name || 'TEAM';
     if (name.includes(' ')) {
@@ -493,7 +687,7 @@ function GamePickCard({
   const getSpreadDisplay = () => {
     if (!game.spread) return "N/A";
     const favoredTeam = game.spread > 0 ? game.awayTeam : game.homeTeam;
-    
+
     // Better abbreviation fallback - don't show UNK
     let teamAbbr = favoredTeam.abbreviation;
     if (!teamAbbr || teamAbbr === 'UNK') {
@@ -507,7 +701,7 @@ function GamePickCard({
         teamAbbr = name.slice(0, 4).toUpperCase();
       }
     }
-    
+
     return `${teamAbbr} -${Math.abs(game.spread).toFixed(1)}`;
   };
 
@@ -516,8 +710,8 @@ function GamePickCard({
       return <span className="text-base">🏟️</span>;
     }
 
-    const hasWeatherData = game.temperature !== null || 
-                          game.windSpeed !== null || 
+    const hasWeatherData = game.temperature !== null ||
+                          game.windSpeed !== null ||
                           game.weatherCondition !== null ||
                           game.precipitation !== null;
 
@@ -543,7 +737,7 @@ function GamePickCard({
     } else if (condition.includes('cloud')) {
       return <span className="text-base text-gray-400">☁️</span>;
     }
-    
+
     return null;
   };
 
@@ -558,14 +752,14 @@ function GamePickCard({
             <div>{formatTime(game.startDate)} ET</div>
           </div>
         </div>
-        
+
         {/* Away Team */}
         <div className="flex justify-between items-center mb-4">
           <div className="flex items-center space-x-3">
-            <img 
-              src={game.awayTeam.logoUrl || ""} 
-              alt={game.awayTeam.name} 
-              className="w-12 h-12 object-contain" 
+            <img
+              src={game.awayTeam.logoUrl || ""}
+              alt={game.awayTeam.name}
+              className="w-12 h-12 object-contain"
             />
             <div>
               <div className="font-semibold text-white">{game.awayTeam.name}</div>
@@ -578,16 +772,16 @@ function GamePickCard({
           </div>
           <div className="font-bold text-xl text-white">{formatTeamRecord(game.awayTeam.wins || 0, game.awayTeam.losses || 0)}</div>
         </div>
-        
+
         <div className="text-center text-white/60 text-sm mb-4">@</div>
-        
+
         {/* Home Team */}
         <div className="flex justify-between items-center mb-4">
           <div className="flex items-center space-x-3">
-            <img 
-              src={game.homeTeam.logoUrl || ""} 
-              alt={game.homeTeam.name} 
-              className="w-12 h-12 object-contain" 
+            <img
+              src={game.homeTeam.logoUrl || ""}
+              alt={game.homeTeam.name}
+              className="w-12 h-12 object-contain"
             />
             <div>
               <div className="font-semibold text-white">{game.homeTeam.name}</div>
@@ -600,7 +794,7 @@ function GamePickCard({
           </div>
           <div className="font-bold text-xl text-white">{formatTeamRecord(game.homeTeam.wins || 0, game.homeTeam.losses || 0)}</div>
         </div>
-        
+
         {/* Betting Info */}
         <div className="flex justify-center space-x-4 pt-4 border-t border-slate-700">
           <div className="text-center px-3 py-2 bg-slate-700 rounded text-sm">
@@ -624,24 +818,24 @@ function GamePickCard({
             <Label className="text-base font-medium">Spread Pick</Label>
             <div className="grid grid-cols-3 gap-2">
               <Button
-                variant={formData.spreadPick === `${getTeamAbbr(game.homeTeam)} ${game.spread > 0 ? '+' : ''}${game.spread}` ? "default" : "outline"}
-                onClick={() => setFormData(prev => ({ 
-                  ...prev, 
-                  spreadPick: `${getTeamAbbr(game.homeTeam)} ${game.spread > 0 ? '+' : ''}${game.spread}` 
+                variant={formData.spreadPick === `${getTeamAbbr(game.homeTeam)} ${(game.spread || 0) > 0 ? '+' : ''}${game.spread || 0}` ? "default" : "outline"}
+                onClick={() => setFormData(prev => ({
+                  ...prev,
+                  spreadPick: `${getTeamAbbr(game.homeTeam)} ${(game.spread || 0) > 0 ? '+' : ''}${game.spread || 0}`
                 }))}
                 className="text-sm"
               >
-                {getTeamAbbr(game.homeTeam)} {game.spread > 0 ? '+' : ''}{game.spread}
+                {getTeamAbbr(game.homeTeam)} {(game.spread || 0) > 0 ? '+' : ''}{game.spread || 0}
               </Button>
               <Button
-                variant={formData.spreadPick === `${getTeamAbbr(game.awayTeam)} ${game.spread < 0 ? '+' : ''}${-game.spread}` ? "default" : "outline"}
-                onClick={() => setFormData(prev => ({ 
-                  ...prev, 
-                  spreadPick: `${getTeamAbbr(game.awayTeam)} ${game.spread < 0 ? '+' : ''}${-game.spread}` 
+                variant={formData.spreadPick === `${getTeamAbbr(game.awayTeam)} ${(game.spread || 0) < 0 ? '+' : ''}${-(game.spread || 0)}` ? "default" : "outline"}
+                onClick={() => setFormData(prev => ({
+                  ...prev,
+                  spreadPick: `${getTeamAbbr(game.awayTeam)} ${(game.spread || 0) < 0 ? '+' : ''}${-(game.spread || 0)}`
                 }))}
                 className="text-sm"
               >
-                {getTeamAbbr(game.awayTeam)} {game.spread < 0 ? '+' : ''}{-game.spread}
+                {getTeamAbbr(game.awayTeam)} {(game.spread || 0) < 0 ? '+' : ''}{-(game.spread || 0)}
               </Button>
               <Button
                 variant={formData.spreadPick === 'NO PLAY' ? "default" : "outline"}
@@ -710,6 +904,174 @@ function GamePickCard({
           <Save className="h-4 w-4 mr-2" />
           Save Pick
         </Button>
+      </CardContent>
+    </Card>
+  );
+}
+
+// Blog Post Form Component
+function BlogPostForm({
+  post,
+  onSave,
+  onCancel
+}: {
+  post: BlogPost | null;
+  onSave: (postData: Partial<BlogPost>) => void;
+  onCancel: () => void;
+}) {
+  const [formData, setFormData] = useState({
+    title: post?.title || '',
+    excerpt: post?.excerpt || '',
+    content: post?.content || '',
+    category: post?.category || 'Analysis',
+    tags: post?.tags?.join(', ') || '',
+    featured: post?.featured || false,
+    published: post?.published || false,
+    seoTitle: post?.seoTitle || '',
+    seoDescription: post?.seoDescription || ''
+  });
+
+  const categories = ['Analysis', 'Strategy', 'Previews', 'News'];
+
+  const handleSave = () => {
+    const tagsArray = formData.tags
+      .split(',')
+      .map(tag => tag.trim())
+      .filter(tag => tag.length > 0);
+
+    onSave({
+      ...formData,
+      tags: tagsArray,
+      seoTitle: formData.seoTitle || formData.title,
+      seoDescription: formData.seoDescription || formData.excerpt
+    });
+  };
+
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle>{post ? 'Edit Blog Post' : 'Create New Blog Post'}</CardTitle>
+        <CardDescription>
+          {post ? 'Update your blog post details' : 'Fill out the form to create a new blog post'}
+        </CardDescription>
+      </CardHeader>
+      <CardContent className="space-y-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="space-y-2">
+            <Label htmlFor="title">Title *</Label>
+            <Input
+              id="title"
+              value={formData.title}
+              onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+              placeholder="Enter post title"
+              required
+            />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="category">Category *</Label>
+            <Select value={formData.category} onValueChange={(value) => setFormData({ ...formData, category: value })}>
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {categories.map(category => (
+                  <SelectItem key={category} value={category}>{category}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+        </div>
+
+        <div className="space-y-2">
+          <Label htmlFor="excerpt">Excerpt *</Label>
+          <Textarea
+            id="excerpt"
+            value={formData.excerpt}
+            onChange={(e) => setFormData({ ...formData, excerpt: e.target.value })}
+            placeholder="Brief description of the post"
+            className="min-h-[80px]"
+            required
+          />
+        </div>
+
+        <div className="space-y-2">
+          <Label htmlFor="content">Content *</Label>
+          <Textarea
+            id="content"
+            value={formData.content}
+            onChange={(e) => setFormData({ ...formData, content: e.target.value })}
+            placeholder="Write your blog post content in Markdown format"
+            className="min-h-[300px] font-mono"
+            required
+          />
+          <p className="text-sm text-slate-500">
+            You can use Markdown formatting (## headers, **bold**, *italic*, etc.)
+          </p>
+        </div>
+
+        <div className="space-y-2">
+          <Label htmlFor="tags">Tags</Label>
+          <Input
+            id="tags"
+            value={formData.tags}
+            onChange={(e) => setFormData({ ...formData, tags: e.target.value })}
+            placeholder="Enter tags separated by commas"
+          />
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="space-y-2">
+            <Label htmlFor="seoTitle">SEO Title</Label>
+            <Input
+              id="seoTitle"
+              value={formData.seoTitle}
+              onChange={(e) => setFormData({ ...formData, seoTitle: e.target.value })}
+              placeholder="SEO optimized title (defaults to post title)"
+            />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="seoDescription">SEO Description</Label>
+            <Input
+              id="seoDescription"
+              value={formData.seoDescription}
+              onChange={(e) => setFormData({ ...formData, seoDescription: e.target.value })}
+              placeholder="SEO meta description (defaults to excerpt)"
+            />
+          </div>
+        </div>
+
+        <div className="flex gap-4">
+          <div className="flex items-center space-x-2">
+            <input
+              type="checkbox"
+              id="featured"
+              checked={formData.featured}
+              onChange={(e) => setFormData({ ...formData, featured: e.target.checked })}
+              className="rounded border-gray-300"
+            />
+            <Label htmlFor="featured">Featured Post</Label>
+          </div>
+          <div className="flex items-center space-x-2">
+            <input
+              type="checkbox"
+              id="published"
+              checked={formData.published}
+              onChange={(e) => setFormData({ ...formData, published: e.target.checked })}
+              className="rounded border-gray-300"
+            />
+            <Label htmlFor="published">Publish Immediately</Label>
+          </div>
+        </div>
+
+        <div className="flex gap-3 justify-end">
+          <Button variant="outline" onClick={onCancel}>
+            Cancel
+          </Button>
+          <Button onClick={handleSave} disabled={!formData.title || !formData.excerpt || !formData.content}>
+            <Save className="w-4 h-4 mr-2" />
+            {post ? 'Update Post' : 'Create Post'}
+          </Button>
+        </div>
       </CardContent>
     </Card>
   );

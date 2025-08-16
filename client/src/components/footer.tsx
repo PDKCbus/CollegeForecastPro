@@ -64,15 +64,6 @@ export function Footer() {
                   </Link>
                 </li>
                 <li>
-                  <Link 
-                    href="/analysis" 
-                    className="text-white/70 hover:text-white transition-colors"
-                    onClick={() => window.scrollTo(0, 0)}
-                  >
-                    Analysis
-                  </Link>
-                </li>
-                <li>
                   <Link
                     href="/blog"
                     className="text-white/70 hover:text-white transition-colors"
