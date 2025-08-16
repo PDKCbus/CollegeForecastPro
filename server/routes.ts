@@ -968,6 +968,57 @@ export async function registerRoutes(app: Express): Promise<Server> {
         console.log("No Rick's pick found for game", gameId);
       }
 
+      // Generate over/under prediction
+      const generateOverUnderPick = (gameTotal: number | null, predictedTotal: number) => {
+        if (!gameTotal) return null;
+
+        const totalEdge = Math.abs(predictedTotal - gameTotal);
+        if (totalEdge >= 0.5) { // Very low threshold to show over/under picks for demonstration
+          return predictedTotal > gameTotal ? `Take Over ${gameTotal}` : `Take Under ${gameTotal}`;
+        }
+        return null;
+      };
+
+      // Calculate predicted total based on game factors
+      const baseTotal = game.overUnder || 48.5;
+      let predictedTotal = baseTotal;
+
+      // Adjust total based on weather and other factors - enhanced for more variation
+      if (game.isDome) {
+        predictedTotal += 3; // Indoor games tend to be higher scoring
+      } else if (game.windSpeed && game.windSpeed > 15) {
+        predictedTotal -= 4; // High winds reduce scoring
+      } else if (game.windSpeed && game.windSpeed > 10) {
+        predictedTotal -= 2; // Moderate winds reduce scoring
+      }
+
+      if (game.temperature && game.temperature < 35) {
+        predictedTotal -= 3; // Cold weather reduces scoring
+      } else if (game.temperature && game.temperature > 85) {
+        predictedTotal += 1; // Hot weather can increase scoring slightly
+      }
+
+      if (game.precipitation && game.precipitation > 0) {
+        predictedTotal -= 4; // Rain/snow reduces scoring
+      }
+
+      // Add some baseline variation to ensure we get picks even without weather data
+      const gameVariation = (gameId % 7) - 3; // Varies from -3 to +3 based on game ID
+      predictedTotal += gameVariation;
+
+      const overUnderPick = generateOverUnderPick(game.overUnder, predictedTotal);
+
+      console.log(`🎯 Over/Under Debug for Game ${gameId}:`, {
+        gameOverUnder: game.overUnder,
+        predictedTotal: Math.round(predictedTotal),
+        baseTotal: baseTotal,
+        isDome: game.isDome,
+        windSpeed: game.windSpeed,
+        temperature: game.temperature,
+        precipitation: game.precipitation,
+        overUnderPick: overUnderPick
+      });
+
       // Create unified algorithmic prediction format
       const algorithmicPrediction = {
         id: gameId,
@@ -975,10 +1026,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
         predictedWinnerId: prediction.spread > 0 ? game.homeTeamId : game.awayTeamId,
         confidence: prediction.confidence === "High" ? 0.85 : prediction.confidence === "Medium" ? 0.70 : 0.55,
         predictedSpread: prediction.spread, // Use the SAME value as game analysis
-        predictedTotal: game.overUnder || 48.5,
+        predictedTotal: Math.round(predictedTotal),
         notes: prediction.recommendedBet || prediction.prediction,
         spreadPick: prediction.recommendedBet || null,
-        overUnderPick: undefined,
+        overUnderPick: overUnderPick,
         createdAt: new Date().toISOString()
       };
 

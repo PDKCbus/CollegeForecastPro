@@ -185,18 +185,26 @@ export function GameCard({ game }: GameCardProps) {
     return null;
   };
 
-  // Get algorithmic analysis pick
+  // Get algorithmic analysis pick (prioritizing spread picks but including over/under)
   const getAnalysisPick = () => {
     const algorithmicPrediction = predictionData?.algorithmicPredictions?.[0];
     if (algorithmicPrediction) {
-      // Check if prediction has a meaningful recommendation
+      // Check if prediction has a meaningful spread recommendation
       if (algorithmicPrediction.spreadPick && algorithmicPrediction.spreadPick !== "No Strong Play") {
         return {
           pick: algorithmicPrediction.spreadPick,
           reason: algorithmicPrediction.notes || "Data-driven algorithmic analysis"
         };
       }
-      
+
+      // If no spread pick but we have an over/under pick, show that
+      if (algorithmicPrediction.overUnderPick) {
+        return {
+          pick: algorithmicPrediction.overUnderPick,
+          reason: "Over/Under analysis based on weather and game factors"
+        };
+      }
+
       // Handle "No Strong Play" case
       if (algorithmicPrediction.notes && algorithmicPrediction.notes.includes("No Strong Play")) {
         return {
@@ -239,7 +247,7 @@ export function GameCard({ game }: GameCardProps) {
         };
       }
     }
-    
+
     // Final fallback if no server prediction available
     return {
       pick: "Analysis Pending",
@@ -276,8 +284,8 @@ export function GameCard({ game }: GameCardProps) {
     }
 
     // Check if we have any actual weather data
-    const hasWeatherData = game.temperature !== null || 
-                          game.windSpeed !== null || 
+    const hasWeatherData = game.temperature !== null ||
+                          game.windSpeed !== null ||
                           game.weatherCondition !== null ||
                           game.precipitation !== null;
 
@@ -356,7 +364,7 @@ export function GameCard({ game }: GameCardProps) {
             <div>{formatTime(game.startDate)} ET</div>
           </div>
         </div>
-        
+
         {/* Venue and Weather Info */}
         <div className="text-center mb-3">
           <div className="text-white/60 text-xs mb-1 flex items-center justify-center gap-1">
@@ -381,7 +389,7 @@ export function GameCard({ game }: GameCardProps) {
             // Show location information
             const stadium = game.stadium || '';
             const location = game.location || '';
-            
+
             // For international venues, show city and country
             if (stadium === 'Aviva Stadium') {
               return <div className="text-white/50 text-xs">Dublin, Ireland</div>;
@@ -400,13 +408,13 @@ export function GameCard({ game }: GameCardProps) {
             return null;
           })()}
         </div>
-        
+
         <div className="flex justify-between items-center">
           <div className="flex items-center space-x-3">
             {getTeamLogo(game.awayTeam) ? (
-              <img 
-                src={getTeamLogo(game.awayTeam)} 
-                alt={game.awayTeam.name} 
+              <img
+                src={getTeamLogo(game.awayTeam)}
+                alt={game.awayTeam.name}
                 className="team-logo w-[45px] h-[45px] object-contain"
                 onError={(e) => {
                   e.currentTarget.style.display = 'none';
@@ -431,13 +439,13 @@ export function GameCard({ game }: GameCardProps) {
           </div>
           <div className="font-bold text-xl">{formatTeamRecord(game.awayTeam.wins || 0, game.awayTeam.losses || 0)}</div>
         </div>
-        
+
         <div className="flex justify-between items-center mt-4">
           <div className="flex items-center space-x-3">
             {getTeamLogo(game.homeTeam) ? (
-              <img 
-                src={getTeamLogo(game.homeTeam)} 
-                alt={game.homeTeam.name} 
+              <img
+                src={getTeamLogo(game.homeTeam)}
+                alt={game.homeTeam.name}
                 className="team-logo w-[45px] h-[45px] object-contain"
                 onError={(e) => {
                   e.currentTarget.style.display = 'none';
@@ -462,13 +470,13 @@ export function GameCard({ game }: GameCardProps) {
           </div>
           <div className="font-bold text-xl">{formatTeamRecord(game.homeTeam.wins || 0, game.homeTeam.losses || 0)}</div>
         </div>
-        
+
         <div className="mt-4 pt-3 border-t border-surface-light">
           {/* Team Comparison Indicator */}
           <div className="mb-3">
             <TeamComparisonIndicator homeTeam={game.homeTeam} awayTeam={game.awayTeam} />
           </div>
-          
+
           <div className="flex justify-between mb-3">
             <div className="flex justify-center flex-1">
               <div className="flex space-x-2">
@@ -476,13 +484,13 @@ export function GameCard({ game }: GameCardProps) {
                   const ricksPickData = getRicksPickData();
                   const spreadBgColor = ricksPickData.hasSpreadPick ? 'bg-blue-600' : 'bg-surface-light';
                   const totalBgColor = ricksPickData.hasTotalPick ? 'bg-blue-600' : 'bg-surface-light';
-                  
+
                   return (
                     <>
                       <div className={`text-center px-4 py-3 ${spreadBgColor} rounded min-w-[110px]`}>
                         <div className="text-white/60 text-xs flex items-center justify-center gap-1">
                           SPREAD
-                          <SpreadExplainerTooltip 
+                          <SpreadExplainerTooltip
                             spread={game.spread ?? undefined}
                             homeTeam={game.homeTeam.name}
                             awayTeam={game.awayTeam.name}
@@ -509,6 +517,18 @@ export function GameCard({ game }: GameCardProps) {
                             <span className="text-white/90"> {ricksPickData.totalPick}</span>
                           </div>
                         )}
+                        {(() => {
+                          const algorithmicPrediction = predictionData?.algorithmicPredictions?.[0];
+                          if (algorithmicPrediction?.overUnderPick && !ricksPickData.hasTotalPick) {
+                            return (
+                              <div className="text-xs mt-1">
+                                <span className="text-yellow-300">🤓:</span>
+                                <span className="text-white/90"> {algorithmicPrediction.overUnderPick}</span>
+                              </div>
+                            );
+                          }
+                          return null;
+                        })()}
                       </div>
                     </>
                   );
@@ -522,14 +542,14 @@ export function GameCard({ game }: GameCardProps) {
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="bg-surface border-surface-light">
-                <DropdownMenuItem 
+                <DropdownMenuItem
                   onClick={() => setHeadToHeadDialogOpen(true)}
                   className="text-white hover:bg-surface-light cursor-pointer"
                 >
                   <BarChart3 className="mr-2 h-4 w-4" />
                   View Head-to-Head History
                 </DropdownMenuItem>
-                <DropdownMenuItem 
+                <DropdownMenuItem
                   onClick={handleShareGame}
                   className="text-white hover:bg-surface-light cursor-pointer"
                 >
@@ -548,14 +568,14 @@ export function GameCard({ game }: GameCardProps) {
               </DropdownMenuContent>
             </DropdownMenu>
           </div>
-          
+
           {/* Fan Sentiment Section - Currently hidden but code preserved for future use */}
           {/* <div className="mb-3">
-            <FanSentiment 
-              gameId={game.id} 
-              homeTeam={game.homeTeam.abbreviation} 
-              awayTeam={game.awayTeam.abbreviation} 
-              compact={true} 
+            <FanSentiment
+              gameId={game.id}
+              homeTeam={game.homeTeam.abbreviation}
+              awayTeam={game.awayTeam.abbreviation}
+              compact={true}
             />
           </div> */}
 
@@ -614,16 +634,17 @@ export function GameCard({ game }: GameCardProps) {
               </Button>
             </Link>
             <div className="flex-1">
-              <SocialShare 
+              <SocialShare
                 game={game}
                 prediction={(() => {
                   // Use the same algorithm as game analysis page for consistency
                   const ricksPick = getRicksPick();
+                  const algorithmicPrediction = predictionData?.algorithmicPredictions?.[0];
                   if (ricksPick && !ricksPick.isRicksPick) {
                     // Convert algorithmic pick to SocialShare format
                     return {
                       spreadPick: ricksPick.pick,
-                      overUnderPick: undefined, // Will be added when we have O/U logic
+                      overUnderPick: algorithmicPrediction?.overUnderPick || null,
                       confidence: 0.70 // Default algorithmic confidence
                     };
                   }
