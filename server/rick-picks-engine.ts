@@ -236,7 +236,7 @@ export class RicksPicksPredictionEngine {
       const adjustedSpread = game.spread + factors.weatherFactor + factors.conferenceFactor + factors.bettingMarketFactor + factors.travelFactor;
       const spreadEdge = Math.abs(adjustedSpread - game.spread);
       
-      if (spreadEdge >= 2.0) { // Minimum 2-point edge for play
+      if (spreadEdge >= 0.5) { // Minimum 0.5-point edge for play
         if (adjustedSpread > game.spread) {
           prediction.spreadPick = `TAKE ${game.awayTeam.name} +${Math.abs(game.spread)}`;
         } else {

@@ -1860,8 +1860,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
               const ourSpread = Math.random() > 0.5 ? spread + (Math.random() * 6 - 3) : spread; // Slight variation for demo
               const spreadDiff = Math.abs(ourSpread - vegasSpread);
 
-              // Only make recommendations when there's significant edge (2+ points)
-              if (spreadDiff >= 2) {
+              // Only make recommendations when there's significant edge (0.5+ points)
+              if (spreadDiff >= 0.5) {
                 const vegasFavorite = vegasSpread < 0 ? homeTeam.name : awayTeam.name;
                 const vegasUnderdog = vegasSpread < 0 ? awayTeam.name : homeTeam.name;
                 const points = Math.abs(vegasSpread);

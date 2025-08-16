@@ -21,6 +21,7 @@ interface PredictionFactors {
   weather: number;
   conference: number;
   homeField: number;
+  stadiumSize: number;
   bettingValue: number;
   playerEfficiency: number;
   teamEfficiency: number;
@@ -68,6 +69,71 @@ export class RicksPicksPredictionEngine {
   };
 
   private readonly power5Conferences = ['SEC', 'Big Ten', 'Big 12', 'ACC', 'Pac-12', 'PAC-12'];
+
+  // Stadium capacity data for home field advantage calculation
+  private readonly stadiumCapacities: Record<string, number> = {
+    'Michigan': 107601,
+    'Penn State': 106572,
+    'Ohio State': 104944,
+    'Texas A&M': 102733,
+    'LSU': 102321,
+    'Alabama': 101821,
+    'Texas': 100119,
+    'Tennessee': 102455,
+    'Georgia': 92746,
+    'Florida': 88548,
+    'Auburn': 87451,
+    'Oklahoma': 86112,
+    'Nebraska': 85458,
+    'Clemson': 81500,
+    'Wisconsin': 80321,
+    'South Carolina': 80250,
+    'Arkansas': 76212,
+    'Notre Dame': 77622,
+    'USC': 77500,
+    'Michigan State': 75005,
+    'Washington': 70138,
+    'Iowa': 69250,
+    'Pittsburgh': 68400,
+    'UCLA': 67431,
+    'Virginia Tech': 66233,
+    'Miami': 65326,
+    'Louisville': 65000,
+    'California': 63000,
+    'Ole Miss': 64038,
+    'Mississippi State': 61337,
+    'Iowa State': 61500,
+    'Kentucky': 61000,
+    'Oklahoma State': 60218,
+    'Texas Tech': 60454,
+    'West Virginia': 60000,
+    'Illinois': 60670,
+    'Purdue': 57236,
+    'NC State': 57583,
+    'Arizona': 56037,
+    'Oregon': 54000,
+    'Arizona State': 53599,
+    'Indiana': 52929,
+    'Rutgers': 52454,
+    'Minnesota': 50805,
+    'North Carolina': 50500,
+    'Stanford': 50424,
+    'Kansas': 50071,
+    'Colorado': 50183,
+    'Kansas State': 50000,
+    'Utah': 51444,
+    'Maryland': 51055,
+    'Syracuse': 49262,
+    'Northwestern': 47130,
+    'Oregon State': 45674,
+    'Baylor': 45140,
+    'TCU': 45000,
+    'Boston College': 44500,
+    'Duke': 40004,
+    'Vanderbilt': 40550,
+    'Washington State': 35117,
+    'Wake Forest': 31500
+  };
 
   /**
    * Large Favorite Risk Factor - Based on Historical Analysis
@@ -389,6 +455,37 @@ export class RicksPicksPredictionEngine {
   }
 
   /**
+   * Calculate stadium size home field advantage
+   * Based on 15-year analysis of 4,030 games showing significant correlation
+   * Massive stadiums (90k+): 81.8% cover rate vs 57.2% for small stadiums
+   */
+  private calculateStadiumSizeAdvantage(homeTeam: string): { score: number; impact: string[] } {
+    const capacity = this.stadiumCapacities[homeTeam];
+    let adjustment = 0;
+    const impact: string[] = [];
+
+    if (!capacity) {
+      return { score: 0, impact: [] };
+    }
+
+    if (capacity >= 90000) {
+      adjustment = 1.9;
+      impact.push(`Massive stadium advantage (${capacity.toLocaleString()} capacity): +${adjustment} points`);
+    } else if (capacity >= 70000) {
+      adjustment = 1.6;
+      impact.push(`Large stadium advantage (${capacity.toLocaleString()} capacity): +${adjustment} points`);
+    } else if (capacity >= 50000) {
+      adjustment = 0.8;
+      impact.push(`Medium stadium advantage (${capacity.toLocaleString()} capacity): +${adjustment} points`);
+    } else if (capacity > 0) {
+      adjustment = 0.4;
+      impact.push(`Small stadium advantage (${capacity.toLocaleString()} capacity): +${adjustment} points`);
+    }
+
+    return { score: adjustment, impact };
+  }
+
+  /**
    * Generate comprehensive prediction using advanced analytics + betting patterns
    */
   async generatePrediction(
@@ -411,9 +508,10 @@ export class RicksPicksPredictionEngine {
     const weatherFactor = this.calculateWeatherFactor(weather);
     const conferenceFactor = this.calculateConferenceFactor(homeConference, awayConference);
     const homeFieldFactor = this.calculateHomeFieldFactor(isNeutralSite);
+    const stadiumSizeFactor = this.calculateStadiumSizeAdvantage(homeTeam);
 
     // Base prediction (home team perspective)
-    let basePrediction = homeFieldFactor.score + conferenceFactor.score + weatherFactor.score;
+    let basePrediction = homeFieldFactor.score + conferenceFactor.score + weatherFactor.score + stadiumSizeFactor.score;
 
     // Calculate NEW betting pattern factors
     const largeFavoriteRisk = this.calculateLargeFavoriteRisk(basePrediction, vegasSpread, true);
@@ -458,7 +556,7 @@ export class RicksPicksPredictionEngine {
     const totalScore = basePrediction + bettingValue.score;
 
     // Determine confidence level (enhanced with advanced analytics)
-    const basicFactors = [weatherFactor, conferenceFactor, homeFieldFactor, bettingValue]
+    const basicFactors = [weatherFactor, conferenceFactor, homeFieldFactor, stadiumSizeFactor, bettingValue]
       .filter(f => f.score !== 0).length;
 
     let confidence: 'High' | 'Medium' | 'Low';
@@ -486,6 +584,7 @@ export class RicksPicksPredictionEngine {
       ...weatherFactor.impact,
       ...conferenceFactor.impact,
       ...homeFieldFactor.impact,
+      ...stadiumSizeFactor.impact,   // NEW: Stadium size home field advantage
       ...bettingValue.impact,
       ...largeFavoriteRisk.impact,   // NEW: Large favorite risk analysis
       ...seasonalPattern.impact,     // NEW: Seasonal betting patterns
@@ -520,16 +619,16 @@ export class RicksPicksPredictionEngine {
       }
     }
 
-    const significantEdge = edge >= 2; // 2+ point edge required for recommendation
+    const significantEdge = edge >= 0.5; // 0.5+ point edge required for recommendation
 
     // Debug logging for betting recommendations
     if (vegasSpread) {
       console.log(`🎯 Betting Logic Debug:`);
-      console.log(`   Vegas Spread: ${vegasSpread} (${vegasSpread > 0 ? `${awayTeam} -${vegasSpread}` : `${homeTeam} -${Math.abs(vegasSpread)}`})`);
-      console.log(`   Our Prediction: ${totalScore} (${totalScore > 0 ? `${homeTeam} -${totalScore}` : `${awayTeam} -${Math.abs(totalScore)}`})`);
+      console.log(`   Vegas Spread: ${vegasSpread} (${vegasSpread > 0 ? `${awayTeam} favored by ${vegasSpread}` : `${homeTeam} favored by ${Math.abs(vegasSpread)}`})`);
+      console.log(`   Our Prediction: ${totalScore.toFixed(2)} (${totalScore > 0 ? `${homeTeam} favored by ${totalScore.toFixed(2)}` : `${awayTeam} favored by ${Math.abs(totalScore).toFixed(2)}`})`);
       console.log(`   Opposite Sides: ${oppositeSides}`);
-      console.log(`   Edge Calculation: ${oppositeSides ? `${Math.abs(totalScore)} + ${Math.abs(vegasSpread)}` : `|${Math.abs(totalScore)} - ${Math.abs(vegasSpread)}|`} = ${edge.toFixed(2)} points`);
-      console.log(`   Significant Edge (>=2): ${significantEdge}`);
+      console.log(`   Edge Calculation: ${oppositeSides ? `${Math.abs(totalScore).toFixed(2)} + ${Math.abs(vegasSpread)}` : `|${Math.abs(totalScore).toFixed(2)} - ${Math.abs(vegasSpread)}|`} = ${edge.toFixed(2)} points`);
+      console.log(`   Significant Edge (>=0.5): ${significantEdge}`);
     }
 
     if (totalScore > 0) {
@@ -580,6 +679,7 @@ export class RicksPicksPredictionEngine {
         weather: weatherFactor.score,
         conference: conferenceFactor.score,
         homeField: homeFieldFactor.score,
+        stadiumSize: stadiumSizeFactor.score,        // NEW: Stadium size home field advantage
         bettingValue: bettingValue.score,
         playerEfficiency: advancedAnalytics?.playerEfficiencyAdj || 0,
         teamEfficiency: advancedAnalytics?.teamEfficiencyAdj || 0,
