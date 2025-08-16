@@ -1,11 +1,13 @@
 import { useQuery, useMutation } from "@/lib/queryClient";
 import { HistoricalGameCard } from "@/components/historical-game-card";
 import { FilterBar } from "@/components/filter-bar";
+import { PageBanner } from "@/components/page-banner";
 import { useState, useEffect } from "react";
 import React from "react";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { apiRequest, queryClient } from "@/lib/queryClient";
+import { Database, TrendingUp, BarChart3 } from "lucide-react";
 
 
 
@@ -105,17 +107,26 @@ export default function Historical() {
   }
 
   return (
-    <div className="max-w-6xl mx-auto p-6">
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold text-white mb-2">Historical Games</h1>
-        <p className="text-white/70">Review past games with actual results vs Vegas spreads</p>
-        {historicalData?.filters && (
-          <div className="mt-2 text-sm text-white/60">
-            Showing {historicalData.filters.season} Season, Week {historicalData.filters.week}
-            {pagination && ` • ${pagination.total} games found`}
-          </div>
-        )}
-      </div>
+    <div className="min-h-screen bg-gray-900">
+      <PageBanner
+        title="Historical Games"
+        subtitle="Comprehensive analysis of 15+ years of college football data with betting insights"
+        features={[
+          { icon: Database, text: "15+ Years of Data" },
+          { icon: TrendingUp, text: "Performance Analytics" },
+          { icon: BarChart3, text: "Vegas vs Results" }
+        ]}
+      />
+
+      <div className="max-w-6xl mx-auto p-6">
+        <div className="mb-8">
+          {historicalData?.filters && (
+            <div className="mt-2 text-sm text-gray-600">
+              Showing {historicalData.filters.season} Season, Week {historicalData.filters.week}
+              {pagination && ` • ${pagination.total} games found`}
+            </div>
+          )}
+        </div>
 
 
 
@@ -225,6 +236,7 @@ export default function Historical() {
           </Button>
         </div>
       )}
+      </div>
     </div>
   );
 }

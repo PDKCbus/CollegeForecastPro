@@ -89,14 +89,14 @@ function BlogList({
       <div className="container mx-auto px-4 py-16">
         <div className="text-center">
           <h1 className="text-2xl font-bold text-red-600 mb-4">Error Loading Blog</h1>
-          <p className="text-gray-600">Unable to load blog posts. Please try again later.</p>
+          <p className="text-gray-300">Unable to load blog posts. Please try again later.</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-900">
       {/* Hero Section */}
       <section className="bg-gradient-to-r from-blue-900 to-blue-700 text-white py-16">
         <div className="container mx-auto px-4">
@@ -130,7 +130,7 @@ function BlogList({
       </section>
 
       {/* Search and Filter */}
-      <section className="bg-white border-b">
+      <section className="bg-gray-800 border-b">
         <div className="container mx-auto px-4 py-8">
           <div className="flex flex-col md:flex-row gap-4 items-center justify-between">
             <div className="relative flex-1 max-w-md">
@@ -221,7 +221,7 @@ function BlogList({
               <h2 className="text-2xl font-bold mb-6">
                 {searchTerm || selectedCategory !== "all" ? "Search Results" : "Latest Articles"}
                 {filteredPosts.length > 0 && (
-                  <span className="text-base font-normal text-gray-600 ml-2">
+                  <span className="text-base font-normal text-gray-300 ml-2">
                     ({filteredPosts.length} {filteredPosts.length === 1 ? "article" : "articles"})
                   </span>
                 )}
@@ -246,7 +246,7 @@ function BlogList({
                 <div className="text-center py-12">
                   <Search className="w-16 h-16 text-gray-300 mx-auto mb-4" />
                   <h3 className="text-lg font-semibold mb-2">No articles found</h3>
-                  <p className="text-gray-600 mb-4">
+                  <p className="text-gray-300 mb-4">
                     {searchTerm ? `No articles match "${searchTerm}"` : "No articles in this category"}
                   </p>
                   <Button
@@ -330,7 +330,7 @@ function BlogList({
                     <button
                       key={category}
                       onClick={() => setSelectedCategory(category)}
-                      className={`w-full text-left px-3 py-2 rounded hover:bg-gray-100 transition-colors capitalize ${
+                      className={`w-full text-left px-3 py-2 rounded hover:bg-gray-700 transition-colors capitalize ${
                         selectedCategory === category ? 'bg-blue-50 text-blue-600' : ''
                       }`}
                     >
@@ -439,7 +439,7 @@ function SingleBlogPost({ slug }: { slug: string }) {
           <h1 className="text-2xl font-bold text-red-600 mb-4">
             {error?.message === "Post not found" ? "Article Not Found" : "Error Loading Article"}
           </h1>
-          <p className="text-gray-600 mb-8">
+          <p className="text-gray-300 mb-8">
             {error?.message === "Post not found"
               ? "The article you're looking for doesn't exist or has been removed."
               : "Unable to load the article. Please try again later."
@@ -455,7 +455,7 @@ function SingleBlogPost({ slug }: { slug: string }) {
   }
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-gray-900">
       {/* Header */}
       <section className="bg-surface border-b border-border">
         <div className="container mx-auto px-4 py-8">

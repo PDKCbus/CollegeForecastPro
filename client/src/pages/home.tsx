@@ -1,4 +1,5 @@
 import { Hero } from "@/components/hero";
+import { PageBanner } from "@/components/page-banner";
 import { FilterBar } from "@/components/filter-bar-alt";
 import { FeaturedGame } from "@/components/featured-game";
 import { GameCard } from "@/components/game-card";
@@ -10,6 +11,7 @@ import { HeaderAd, InContentAd } from "@/components/google-ads";
 import { useQuery } from "@/lib/queryClient";
 import { useState, useEffect } from "react";
 import { FilterOption, GameWithTeams } from "@/lib/types";
+import { TrendingUp, Target, Brain } from "lucide-react";
 
 export default function Home() {
   const [selectedWeek, setSelectedWeek] = useState("Week 1");
@@ -153,7 +155,15 @@ export default function Home() {
 
   return (
     <>
-      <Hero />
+      <PageBanner
+        title="Rick's Picks Football"
+        subtitle="Elite college football analytics powered by 15+ years of data and advanced algorithms"
+        features={[
+          { icon: TrendingUp, text: "Data-Driven Predictions" },
+          { icon: Target, text: "Betting Insights" },
+          { icon: Brain, text: "Expert Analysis" }
+        ]}
+      />
 
       {/* Header Ad - Top of page after hero */}
       <div className="container mx-auto px-4 pt-8">

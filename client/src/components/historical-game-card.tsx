@@ -85,7 +85,7 @@ export function HistoricalGameCard({ game }: HistoricalGameCardProps) {
     // Show dome indicator if confirmed dome venue
     if (isDome) {
       return (
-        <div className="flex items-center gap-1 text-sm text-gray-600">
+        <div className="flex items-center gap-1 text-sm text-gray-800">
           <span className="text-base">🏟️</span>
           <span>Dome</span>
         </div>
@@ -129,7 +129,7 @@ export function HistoricalGameCard({ game }: HistoricalGameCardProps) {
     }
 
     return (
-      <div className="flex items-center gap-1 text-sm text-gray-600">
+      <div className="flex items-center gap-1 text-sm text-gray-800">
         <span className="text-base">{icon}</span>
         <span>{label}</span>
       </div>
@@ -177,14 +177,14 @@ export function HistoricalGameCard({ game }: HistoricalGameCardProps) {
   };
 
   return (
-    <div className="p-4 bg-gray-50 rounded-lg border border-gray-200 hover:border-gray-300 transition-colors">
-      <Card className="w-full bg-white border-0 shadow-sm hover:shadow-md transition-shadow">
+    <div className="p-4 bg-gray-700 rounded-lg border border-gray-600 hover:border-gray-500 transition-colors">
+      <Card className="w-full bg-gray-200 border-0 shadow-sm hover:shadow-md transition-shadow">
         <CardContent className="p-4">
           {/* Header */}
           <div className="flex items-center justify-between mb-3">
             <div className="flex items-center gap-2">
-              <Calendar className="w-4 h-4 text-gray-500" />
-              <span className="text-sm font-medium text-gray-700">{formatDate(game.startDate)}</span>
+              <Calendar className="w-4 h-4 text-gray-800" />
+              <span className="text-sm font-medium text-gray-900">{formatDate(game.startDate)}</span>
               <Badge variant="secondary" className="bg-amber-100 text-amber-800 text-xs">
                 <Trophy className="w-3 h-3 mr-1" />
                 Historical Result
@@ -192,7 +192,7 @@ export function HistoricalGameCard({ game }: HistoricalGameCardProps) {
             </div>
             <div className="flex items-center gap-2">
               {getWeatherDisplay()}
-              <span className="text-xs text-gray-500">Week {game.week}</span>
+              <span className="text-xs text-gray-800">Week {game.week}</span>
             </div>
           </div>
 
@@ -229,7 +229,7 @@ export function HistoricalGameCard({ game }: HistoricalGameCardProps) {
                   </span>
                   <TeamPerformanceIndicators team={game.awayTeam as any} variant="inline" maxIndicators={1} />
                 </div>
-                <div className="text-xs text-gray-500 mt-0.5">
+                <div className="text-xs text-gray-800 mt-0.5">
                   {game.awayTeam.conference}
                 </div>
               </div>
@@ -242,7 +242,7 @@ export function HistoricalGameCard({ game }: HistoricalGameCardProps) {
                 <span className="text-gray-400 mx-2">-</span>
                 <span className={homeWon ? "text-green-600" : ""}>{homeScore}</span>
               </div>
-              <div className="text-xs text-gray-500">Final</div>
+              <div className="text-xs text-gray-800">Final</div>
             </div>
 
             {/* Home Team */}
@@ -259,7 +259,7 @@ export function HistoricalGameCard({ game }: HistoricalGameCardProps) {
                     </span>
                   )}
                 </div>
-                <div className="text-xs text-gray-500 mt-0.5 text-right">
+                <div className="text-xs text-gray-800 mt-0.5 text-right">
                   {game.homeTeam.conference}
                 </div>
               </div>
@@ -290,14 +290,14 @@ export function HistoricalGameCard({ game }: HistoricalGameCardProps) {
                 {/* Spread Results */}
                 {spread !== 0 && (
                   <div className="text-center">
-                    <div className="text-xs text-gray-500 mb-1">SPREAD</div>
+                    <div className="text-xs text-gray-800 mb-1">SPREAD</div>
                     <div className="font-medium text-sm mb-1 text-gray-900">
                       {spread > 0 ? `${game.awayTeam.name} +${spread}` : `${game.homeTeam.name} ${spread}`}
                     </div>
                     <div className="flex justify-center">
                       {getSpreadBadge()}
                     </div>
-                    <div className="text-xs text-gray-500 mt-1">
+                    <div className="text-xs text-gray-800 mt-1">
                       Margin: by {Math.abs(actualMargin)}
                     </div>
                   </div>
@@ -306,12 +306,12 @@ export function HistoricalGameCard({ game }: HistoricalGameCardProps) {
                 {/* Over/Under Results */}
                 {overUnder !== 0 && (
                   <div className="text-center">
-                    <div className="text-xs text-gray-500 mb-1">O/U</div>
+                    <div className="text-xs text-gray-800 mb-1">O/U</div>
                     <div className="font-medium text-sm mb-1 text-gray-900">{overUnder}</div>
                     <div className="flex justify-center">
                       {getOverUnderBadge()}
                     </div>
-                    <div className="text-xs text-gray-500 mt-1">
+                    <div className="text-xs text-gray-800 mt-1">
                       Total: {totalPoints} ({Math.abs(totalPoints - overUnder)} {wentOver ? 'over' : 'under'})
                     </div>
                   </div>
