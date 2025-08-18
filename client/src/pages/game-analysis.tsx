@@ -93,6 +93,15 @@ export default function GameAnalysis() {
     enabled: !!selectedGameId,
   });
 
+  // Fetch actual algorithmic predictions
+  const { data: gamePredictions } = useQuery<{
+    algorithmicPredictions: any[];
+    ricksPersonalPicks?: any;
+  }>({
+    queryKey: [`/api/predictions/game/${selectedGameId}`],
+    enabled: !!selectedGameId,
+  });
+
   // Safely find the selected game
   const selectedGame = useMemo(() => {
     if (upcomingGames && Array.isArray(upcomingGames) && selectedGameId) {
@@ -362,7 +371,7 @@ export default function GameAnalysis() {
           {/* Game Narrative */}
           <GameNarrative
             game={selectedGame}
-            prediction={analysis?.predictiveMetrics}
+            prediction={gamePredictions?.algorithmicPredictions?.[0] || analysis?.predictiveMetrics}
             weather={{
               temperature: 72,
               condition: "Clear",

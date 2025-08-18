@@ -32,7 +32,16 @@ export function GameNarrative({ game, prediction, weather, injuries }: GameNarra
     const homeTeam = game.homeTeam?.name || "Home Team";
     const awayTeam = game.awayTeam?.name || "Away Team";
     const spread = prediction?.gameSpread || game.spread;
-    const recommendation = prediction?.predictionBet || "Analysis Pending";
+
+    // Prioritize Rick's manual picks over algorithmic predictions
+    let recommendation = "Analysis Pending";
+    if (prediction?.spreadPick) {
+      recommendation = prediction.spreadPick;
+    } else if (prediction?.overUnderPick) {
+      recommendation = prediction.overUnderPick;
+    } else if (prediction?.predictionBet) {
+      recommendation = prediction.predictionBet;
+    }
 
     // Weather narrative
     let weatherNarrative = "";
@@ -116,11 +125,11 @@ The key to success in college football betting lies in identifying where public 
         {/* Weather & Conditions Bar */}
         {weather && (
           <div className="flex items-center gap-4 p-3 bg-blue-50 rounded-lg">
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 text-gray-800">
               {getWeatherIcon(weather.condition)}
               <span className="font-medium">{weather.temperature}°F</span>
             </div>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 text-gray-800">
               <Wind className="w-4 h-4" />
               <span>{weather.windSpeed} mph</span>
             </div>
@@ -146,7 +155,7 @@ The key to success in college football betting lies in identifying where public 
               <h3 className="font-semibold text-green-800">🤓 Rick's Betting Recommendation</h3>
             </div>
             <p className="text-green-700 font-medium mb-1">
-              {prediction.predictionBet || "Analysis Pending"}
+              {prediction?.spreadPick || prediction?.overUnderPick || prediction?.predictionBet || "Analysis Pending"}
             </p>
             <p className="text-xs text-green-600">
               Confidence: {prediction.confidence || "Medium"} | Algorithm-powered analysis
@@ -156,7 +165,7 @@ The key to success in college football betting lies in identifying where public 
 
         {/* Main Narrative */}
         <div className="prose prose-sm max-w-none">
-          <div className="text-gray-700 leading-relaxed whitespace-pre-line">
+          <div className="text-gray-600 leading-relaxed whitespace-pre-line">
             {generateNarrative()}
           </div>
         </div>
