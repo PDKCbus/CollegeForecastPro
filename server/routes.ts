@@ -1237,8 +1237,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(500).json({ message: "CFBD API key not configured" });
       }
 
-      // Fetch 2025 Week 1 games
-      const gamesResponse = await fetch("https://api.collegefootballdata.com/games?year=2025&week=1&seasonType=regular", {
+      // Get current college football week dynamically
+      const { year, week, seasonType } = getCurrentCollegeFootballWeek();
+
+      // Fetch current week games
+      const gamesResponse = await fetch(`https://api.collegefootballdata.com/games?year=${year}&week=${week}&seasonType=${seasonType}`, {
         headers: {
           "Authorization": `Bearer ${apiKey}`
         }
@@ -1251,10 +1254,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       const games = await gamesResponse.json();
-      console.log(`Found ${games.length} games for 2025 Week 1`);
+      console.log(`Found ${games.length} games for ${year} ${seasonType} Week ${week}`);
 
       // Fetch betting lines for these games
-      const linesResponse = await fetch("https://api.collegefootballdata.com/lines?year=2025&week=1&seasonType=regular", {
+      const linesResponse = await fetch(`https://api.collegefootballdata.com/lines?year=${year}&week=${week}&seasonType=${seasonType}`, {
         headers: {
           "Authorization": `Bearer ${apiKey}`
         }
@@ -1444,33 +1447,50 @@ export async function registerRoutes(app: Express): Promise<Server> {
     });
   });
 
-  // Get Rick's overall record statistics - authentic current season data
+  // Get Rick's overall record statistics - authentic current season data with dual tracking
   app.get("/api/ricks-record", async (req, res) => {
     try {
-      // Current 2025 season statistics (season hasn't started yet)
-      const seasonStats = {
-        spread: {
-          wins: 0,
-          losses: 0,
-          total: 0,
-          percentage: 0.0
-        },
-        overUnder: {
-          wins: 0,
-          losses: 0,
-          total: 0,
-          percentage: 0.0
-        },
-        totalGames: 0,
-        currentStreak: 0,
-        bestTeam: "Ohio State", // User's favorite team as placeholder
-        bestTeamRecord: "0-0"
-      };
+      const { performanceTracker } = await import('./performance-tracker');
 
-      res.json(seasonStats);
+      // Get real performance data from tracker
+      const performance = await performanceTracker.getSeasonPerformance(2025);
+
+      res.json(performance);
     } catch (error) {
       console.error("Error calculating Rick's record:", error);
       res.status(500).json({ message: "Failed to calculate Rick's record" });
+    }
+  });
+
+  // Performance Tracking APIs
+  app.post("/api/admin/update-performance", requireAdminAuth, async (req, res) => {
+    try {
+      const { performanceTracker } = await import('./performance-tracker');
+
+      console.log('🎯 Manual performance update triggered by admin...');
+      await performanceTracker.runWeeklyUpdate();
+
+      res.json({
+        message: "Performance tracking update completed",
+        note: "All completed games have been processed for both Rick's picks and algorithm picks"
+      });
+    } catch (error) {
+      console.error("Performance update error:", error);
+      res.status(500).json({ message: "Failed to update performance tracking" });
+    }
+  });
+
+  app.get("/api/performance/week/:season/:week", async (req, res) => {
+    try {
+      const { performanceTracker } = await import('./performance-tracker');
+      const season = parseInt(req.params.season);
+      const week = parseInt(req.params.week);
+
+      const weeklyUpdate = await performanceTracker.updateWeeklyPerformance(season, week);
+      res.json(weeklyUpdate);
+    } catch (error) {
+      console.error("Weekly performance error:", error);
+      res.status(500).json({ message: "Failed to get weekly performance" });
     }
   });
 
@@ -1667,7 +1687,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Auto-sync scheduler with smart caching
+  // Auto-sync scheduler with smart caching - DISABLED TO PREVENT DUPLICATES
+  // The weekly-sync-scheduler.ts now handles all automated syncing properly
   let lastSyncTime = 0;
   let lastGameCheckTime = 0;
   const SYNC_INTERVAL = 4 * 60 * 60 * 1000; // 4 hours
@@ -1678,7 +1699,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const now = Date.now();
 
-      // Regular 4-hour sync with smart caching
+      // Regular 4-hour sync with duplicate skip logic
       if (now - lastSyncTime > SYNC_INTERVAL) {
         dataSyncLogger.logAutoSyncTrigger("Regular 4-hour scheduled update");
         console.log("Auto-syncing: Regular 4-hour update");
@@ -1713,19 +1734,74 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   }
 
+  // Helper function to determine current college football week using actual ESPN schedule
+  function getCurrentCollegeFootballWeek() {
+    const now = new Date();
+    const year = now.getFullYear();
+
+    // 2025 College Football Season Schedule (based on ESPN)
+    const seasonSchedule = [
+      { week: 1, start: new Date(2025, 7, 23), end: new Date(2025, 8, 1) },   // Aug 23 - Sep 1
+      { week: 2, start: new Date(2025, 8, 2), end: new Date(2025, 8, 7) },    // Sep 2 - 7
+      { week: 3, start: new Date(2025, 8, 8), end: new Date(2025, 8, 14) },   // Sep 8 - 14
+      { week: 4, start: new Date(2025, 8, 15), end: new Date(2025, 8, 21) },  // Sep 15 - 21
+      { week: 5, start: new Date(2025, 8, 22), end: new Date(2025, 8, 28) },  // Sep 22 - 28
+      { week: 6, start: new Date(2025, 8, 29), end: new Date(2025, 9, 5) },   // Sep 29 - Oct 5
+      { week: 7, start: new Date(2025, 9, 6), end: new Date(2025, 9, 12) },   // Oct 6 - 12
+      { week: 8, start: new Date(2025, 9, 13), end: new Date(2025, 9, 19) },  // Oct 13 - 19
+      { week: 9, start: new Date(2025, 9, 20), end: new Date(2025, 9, 26) },  // Oct 20 - 26
+      { week: 10, start: new Date(2025, 9, 27), end: new Date(2025, 10, 2) }, // Oct 27 - Nov 2
+      { week: 11, start: new Date(2025, 10, 3), end: new Date(2025, 10, 9) }, // Nov 3 - 9
+      { week: 12, start: new Date(2025, 10, 10), end: new Date(2025, 10, 16) }, // Nov 10 - 16
+      { week: 13, start: new Date(2025, 10, 17), end: new Date(2025, 10, 23) }, // Nov 17 - 23
+      { week: 14, start: new Date(2025, 10, 24), end: new Date(2025, 10, 30) }, // Nov 24 - 30
+      { week: 15, start: new Date(2025, 11, 1), end: new Date(2025, 11, 7) },  // Dec 1 - 7
+    ];
+
+    // Find the current week based on today's date
+    for (const weekInfo of seasonSchedule) {
+      if (now >= weekInfo.start && now <= weekInfo.end) {
+        return { year, week: weekInfo.week, seasonType: 'regular' };
+      }
+    }
+
+    // If we're before the season, return week 1
+    if (now < seasonSchedule[0].start) {
+      return { year, week: 1, seasonType: 'regular' };
+    }
+
+    // Check if we're in conference championship week (Week 16: Dec 8-13)
+    const ccgStart = new Date(2025, 11, 8);  // Dec 8
+    const ccgEnd = new Date(2025, 11, 13);   // Dec 13
+    if (now >= ccgStart && now <= ccgEnd) {
+      return { year, week: 16, seasonType: 'regular' };
+    }
+
+    // Check if we're in bowl season (Dec 13 - Jan 20)
+    const bowlStart = new Date(2025, 11, 13); // Dec 13
+    const bowlEnd = new Date(2026, 0, 20);    // Jan 20
+    if (now >= bowlStart && now <= bowlEnd) {
+      return { year, week: 1, seasonType: 'postseason' };
+    }
+
+    // Default fallback to current regular season week
+    return { year, week: 15, seasonType: 'regular' };
+  }
+
   async function syncCurrentWeekData() {
     const apiKey = process.env.CFBD_API_KEY;
     if (!apiKey) return;
 
     try {
-      dataSyncLogger.logSyncStart("CURRENT_WEEK_SYNC", "Latest completed games from 2024 season");
+      const { year, week, seasonType } = getCurrentCollegeFootballWeek();
+      dataSyncLogger.logSyncStart("CURRENT_WEEK_SYNC", `Current and upcoming games from ${year} ${seasonType} season, Week ${week}`);
 
-      // Since 2025 season hasn't started, fetch recent completed games from 2024 for demonstration
+      // Fetch current games dynamically based on calculated week
       const [gamesResponse, linesResponse] = await Promise.all([
-        fetch(`https://api.collegefootballdata.com/games?year=2024&week=16&seasonType=regular`, {
+        fetch(`https://api.collegefootballdata.com/games?year=${year}&week=${week}&seasonType=${seasonType}`, {
           headers: { "Authorization": `Bearer ${apiKey}` }
         }),
-        fetch(`https://api.collegefootballdata.com/lines?year=2024&week=16&seasonType=regular`, {
+        fetch(`https://api.collegefootballdata.com/lines?year=${year}&week=${week}&seasonType=${seasonType}`, {
           headers: { "Authorization": `Bearer ${apiKey}` }
         })
       ]);
@@ -1811,47 +1887,40 @@ export async function registerRoutes(app: Express): Promise<Server> {
             overUnder = selectedLine?.overUnder || null;
           }
 
-          // PERMANENT DUPLICATE PREVENTION: Check for existing game by CFBD ID AND by matchup
-          const existingGameById = await storage.getGame(game.id);
-
-          // Also check for duplicate matchups (same teams, same date)
-          const existingGames = await storage.getUpcomingGames(500); // Get all upcoming to check duplicates
-          const duplicateMatchup = existingGames.find(g =>
-            g.homeTeamId === homeTeam.id &&
-            g.awayTeamId === awayTeam.id &&
-            Math.abs(new Date(g.startDate).getTime() - new Date(game.startDate).getTime()) < 86400000 // Same day
-          );
-
-          if (existingGameById || duplicateMatchup) {
-            // Update existing game with latest betting lines (use existing game ID)
-            const gameToUpdate = existingGameById || duplicateMatchup;
-            console.log(`🔄 Updating existing game: ${homeTeam.name} vs ${awayTeam.name}`);
-            await storage.updateGame(gameToUpdate.id, {
-              spread: spread,
-              overUnder: overUnder,
-              startDate: new Date(game.startDate || "2025-08-30T12:00:00Z"),
-            });
-          } else {
-            // Create new game with CFBD ID to prevent duplicates
-            const newGame = await storage.createGame({
-              id: game.id, // Use CFBD game ID
+          // Try to create the game with proper duplicate handling
+          let newGame;
+          try {
+            newGame = await storage.createGame({
               homeTeamId: homeTeam.id,
               awayTeamId: awayTeam.id,
-              startDate: new Date(game.startDate || "2025-08-30T12:00:00Z"),
+              startDate: new Date(game.startDate || `${year}-08-24T12:00:00Z`),
               stadium: game.venue || null,
               location: game.venue || null,
               spread: spread,
               overUnder: overUnder,
-              season: 2025,
-              week: 1,
+              season: game.season || year,
+              week: game.week || week,
               isConferenceGame: game.conferenceGame || false,
-              completed: false,
-              homeTeamScore: null,
-              awayTeamScore: null,
+              completed: game.completed || false,
+              homeTeamScore: game.homePoints || null,
+              awayTeamScore: game.awayPoints || null,
               isRivalryGame: false,
               isFeatured: i === 0
             });
 
+            console.log(`✅ Created new game: ${homeTeam.name} vs ${awayTeam.name} (ID: ${newGame.id})`);
+          } catch (gameCreationError: any) {
+            if (gameCreationError.message && gameCreationError.message.includes('unique constraint')) {
+              console.log(`⏭️  Skipping duplicate game: ${homeTeam.name} vs ${awayTeam.name}`);
+              continue;
+            } else {
+              // Re-throw unexpected errors
+              throw gameCreationError;
+            }
+          }
+
+          // Only create prediction if game was successfully created
+          if (newGame) {
             // Generate intelligent algorithmic pick based on actual prediction vs Vegas line
             let algorithmicNotes = "";
 
@@ -3216,18 +3285,42 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Rick's Picks API (Admin Protected)
+  // Rick's Picks API (Admin Protected) - Now with pagination
   app.get("/api/admin/games-for-picks", async (req, res) => {
     try {
       const { requireAdminAuth } = await import("./admin-auth");
       requireAdminAuth(req, res, async () => {
         try {
-          const { season = '2025', week } = req.query;
+          const { season = '2025', week, page = '0', limit = '12' } = req.query;
+          const pageNum = parseInt(page as string) || 0;
+          const limitNum = parseInt(limit as string) || 12;
+          const offset = pageNum * limitNum;
 
           // Get upcoming games for current week if no week specified
           const currentWeek = week ? parseInt(week as string) : 1; // Default to Week 1
 
-          // Get games with betting data - prioritize games with spreads/totals for admin picks
+          // First, get the total count for pagination
+          const totalCountResult = await db
+            .select({ count: sql`COUNT(*)` })
+            .from(games)
+            .where(
+              and(
+                eq(games.season, parseInt(season as string)),
+                eq(games.week, currentWeek),
+                eq(games.completed, false),
+                // REQUIRE betting data for Rick's picks - both spread AND total
+                and(
+                  isNotNull(games.spread),
+                  isNotNull(games.overUnder)
+                ),
+                // Filter out old/invalid games by date
+                gte(games.startDate, new Date('2025-08-20'))
+              )
+            );
+
+          const total = parseInt(totalCountResult[0]?.count || '0');
+
+          // Get games with betting data - paginated
           const gamesList = await db
             .select()
             .from(games)
@@ -3246,7 +3339,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
               )
             )
             .orderBy(games.startDate)
-            .limit(30); // Focus on games Rick can actually make picks on
+            .limit(limitNum)
+            .offset(offset);
 
           // Enrich with team data
           const upcomingGames = await Promise.all(
@@ -3311,7 +3405,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
             }
           }));
 
-          res.json({ games: transformedGames });
+          console.log(`📊 Admin games for picks: Page ${pageNum}, ${transformedGames.length}/${total} games returned`);
+
+          res.json({
+            games: transformedGames,
+            pagination: {
+              page: pageNum,
+              limit: limitNum,
+              total: total,
+              hasMore: (pageNum + 1) * limitNum < total,
+              totalPages: Math.ceil(total / limitNum)
+            },
+            filters: {
+              season: parseInt(season as string),
+              week: currentWeek
+            }
+          });
         } catch (error) {
           console.error("❌ Failed to fetch games for picks:", error);
           res.status(500).json({ error: "Failed to fetch games" });

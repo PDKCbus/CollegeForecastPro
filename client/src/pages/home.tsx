@@ -6,7 +6,7 @@ import { GameCard } from "@/components/game-card";
 import { FeatureHighlights } from "@/components/feature-highlights";
 import { CTASection } from "@/components/cta-section";
 import { SeasonStatsSection } from "@/components/season-stats-section";
-import { HeaderAd, InContentAd } from "@/components/google-ads";
+
 // Removed content sections imports
 import { useQuery } from "@/lib/queryClient";
 import { useState, useEffect } from "react";
@@ -165,11 +165,6 @@ export default function Home() {
         ]}
       />
 
-      {/* Header Ad - Top of page after hero */}
-      <div className="container mx-auto px-4 pt-8">
-        <HeaderAd />
-      </div>
-
       <main className="container mx-auto px-4 py-8 md:py-12">
         <FilterBar
           weeks={weeks}
@@ -210,9 +205,6 @@ export default function Home() {
             </div>
           )}
         </section>
-
-        {/* In-Content Ad - Between featured game and game list */}
-        <InContentAd />
 
         {/* Today's Top Picks Section */}
         <section className="mb-8 md:mb-12 text-center">
