@@ -1887,10 +1887,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
             overUnder = selectedLine?.overUnder || null;
           }
 
-          // Try to create the game with proper duplicate handling
+          // Use RawPGStorage for robust duplicate prevention with UPSERT
+          const { RawPGStorage } = await import('./raw-pg-storage');
+          const rawPG = new RawPGStorage();
           let newGame;
           try {
-            newGame = await storage.createGame({
+            // Use database-level duplicate prevention with ON CONFLICT
+            // This is now safe thanks to the unique constraint we added
+
+            newGame = await rawPG.createGameRaw({
               homeTeamId: homeTeam.id,
               awayTeamId: awayTeam.id,
               startDate: new Date(game.startDate || `${year}-08-24T12:00:00Z`),
@@ -1908,15 +1913,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
               isFeatured: i === 0
             });
 
-            console.log(`✅ Created new game: ${homeTeam.name} vs ${awayTeam.name} (ID: ${newGame.id})`);
+            console.log(`✅ Upserted game: ${homeTeam.name} vs ${awayTeam.name} (ID: ${newGame.id})`);
           } catch (gameCreationError: any) {
-            if (gameCreationError.message && gameCreationError.message.includes('unique constraint')) {
-              console.log(`⏭️  Skipping duplicate game: ${homeTeam.name} vs ${awayTeam.name}`);
-              continue;
+            if (gameCreationError.message?.includes('unique constraint') ||
+                gameCreationError.message?.includes('duplicate key')) {
+              console.log(`⏭️  Skipping duplicate: ${homeTeam.name} vs ${awayTeam.name}`);
             } else {
-              // Re-throw unexpected errors
-              throw gameCreationError;
+              console.log(`⚠️  Error creating game ${homeTeam.name} vs ${awayTeam.name}:`, gameCreationError.message);
             }
+            continue;
           }
 
           // Only create prediction if game was successfully created
