@@ -65,6 +65,15 @@ export function Footer() {
                 </li>
                 <li>
                   <Link
+                    href="/analysis"
+                    className="text-white/70 hover:text-white transition-colors"
+                    onClick={() => window.scrollTo(0, 0)}
+                  >
+                    Analysis
+                  </Link>
+                </li>
+                <li>
+                  <Link
                     href="/blog"
                     className="text-white/70 hover:text-white transition-colors"
                     onClick={() => window.scrollTo(0, 0)}
@@ -79,6 +88,15 @@ export function Footer() {
               <h4 className="text-white font-bold mb-4">Resources</h4>
               <ul className="space-y-2">
                 <li><a href="https://collegefootballdata.com" target="_blank" rel="noopener noreferrer" className="text-white/70 hover:text-white transition-colors">College Football Data</a></li>
+                <li>
+                  <Link
+                    href="/about"
+                    className="text-white/70 hover:text-white transition-colors"
+                    onClick={() => window.scrollTo(0, 0)}
+                  >
+                    About
+                  </Link>
+                </li>
                 <li>
                   <Link
                     href="/faq"

@@ -17,6 +17,8 @@ export function Header() {
         return "blog";
       case "/faq":
         return "faq";
+      case "/about":
+        return "about";
       default:
         return "upcoming";
     }
@@ -44,6 +46,9 @@ export function Header() {
             </Link>
             <Link href="/faq" className={`px-3 py-2 font-medium rounded-md hover:bg-surface transition-colors ${currentTab === "faq" ? "text-white" : "text-white/60"}`}>
               FAQ
+            </Link>
+            <Link href="/about" className={`px-3 py-2 font-medium rounded-md hover:bg-surface transition-colors ${currentTab === "about" ? "text-white" : "text-white/60"}`}>
+              About
             </Link>
           </div>
         </div>

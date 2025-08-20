@@ -16,6 +16,7 @@ import GameAnalysis from "@/pages/game-analysis";
 import SeasonStats from "@/pages/season-stats";
 import AdminPanel from "@/pages/admin-panel";
 import FAQ from "@/pages/faq";
+import About from "@/pages/about";
 import { Contact } from "@/pages/Contact";
 import PrivacyPolicy from "@/pages/privacy-policy";
 import TermsOfService from "@/pages/terms-of-service";
@@ -35,6 +36,7 @@ function Router() {
       <Route path="/season-stats" component={SeasonStats} />
       <Route path="/admin" component={AdminPanel} />
       <Route path="/faq" component={FAQ} />
+      <Route path="/about" component={About} />
       <Route path="/contact" component={Contact} />
       <Route path="/privacy-policy" component={PrivacyPolicy} />
       <Route path="/terms-of-service" component={TermsOfService} />
