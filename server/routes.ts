@@ -3296,7 +3296,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const { requireAdminAuth } = await import("./admin-auth");
       requireAdminAuth(req, res, async () => {
         try {
-          const { season = '2025', week, page = '0', limit = '12' } = req.query;
+          const { season = '2025', week, page = '0', limit = '50' } = req.query;
           const pageNum = parseInt(page as string) || 0;
           const limitNum = parseInt(limit as string) || 12;
           const offset = pageNum * limitNum;
