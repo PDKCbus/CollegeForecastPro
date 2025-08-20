@@ -1,6 +1,6 @@
 import { db } from "./db";
 import { games, teams } from "@shared/schema";
-import { eq } from "drizzle-orm";
+import { eq, and } from "drizzle-orm";
 
 interface CFBDGame {
   id: number;
@@ -65,10 +65,17 @@ export async function sync2025Games() {
           continue;
         }
 
-        // Check if game already exists
+        // Check if game matchup already exists (prevent duplicates by teams/week/season)
         const existingGames = await db.select()
           .from(games)
-          .where(eq(games.id, cfbdGame.id))
+          .where(
+            and(
+              eq(games.homeTeamId, homeTeamId),
+              eq(games.awayTeamId, awayTeamId),
+              eq(games.season, cfbdGame.season),
+              eq(games.week, cfbdGame.week)
+            )
+          )
           .limit(1);
 
         const gameData = {
@@ -92,15 +99,19 @@ export async function sync2025Games() {
         };
 
         if (existingGames.length > 0) {
-          // Update existing game
+          // Update existing game (keep existing ID, update other data)
+          const existingGame = existingGames[0];
           await db.update(games)
-            .set(gameData)
-            .where(eq(games.id, cfbdGame.id));
-          console.log(`✅ Updated game: ${cfbdGame.awayTeam} @ ${cfbdGame.homeTeam}`);
+            .set({
+              ...gameData,
+              id: existingGame.id // Keep the existing database ID
+            })
+            .where(eq(games.id, existingGame.id));
+          console.log(`✅ Updated existing game: ${cfbdGame.awayTeam} @ ${cfbdGame.homeTeam} (ID: ${existingGame.id})`);
         } else {
           // Insert new game
           await db.insert(games).values(gameData);
-          console.log(`➕ Added new game: ${cfbdGame.awayTeam} @ ${cfbdGame.homeTeam}`);
+          console.log(`➕ Added new game: ${cfbdGame.awayTeam} @ ${cfbdGame.homeTeam} (CFBD ID: ${cfbdGame.id})`);
         }
 
         synced++;
