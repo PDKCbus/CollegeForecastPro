@@ -1,12 +1,12 @@
 import { syncRankingsToProduction } from './simple-rankings-sync';
-import { getBettingLinesSync } from './betting-lines-sync';
+import { getBettingLinesManager } from './betting-lines-manager';
 import { getWeatherSync } from './weather-sync';
 import { dataSyncLogger } from './data-sync-logger';
 
 export class WeeklyScheduleSync {
   private static instance: WeeklyScheduleSync | null = null;
   private isRunning: boolean = false;
-  private bettingSync = getBettingLinesSync();
+  private bettingSync = getBettingLinesManager();
   private weatherSync = getWeatherSync();
 
   private constructor() {}
@@ -77,7 +77,7 @@ export class WeeklyScheduleSync {
 
     console.log('✅ Weekly schedule sync system initialized');
     console.log('📅 Schedule:');
-    console.log('   Monday 6 AM: Rankings + Betting Lines');
+    console.log('   Monday 6 AM: Update Historical Games + Collect New Week + Rankings + Betting Lines');
     console.log('   Thursday 6 PM: Mid-week Betting Adjustments');
     console.log('   Friday 12 PM: Final Lines + Weather');
     console.log('   Saturday 8 AM: Game Day Updates');
@@ -86,19 +86,31 @@ export class WeeklyScheduleSync {
 
   private async mondaySync(): Promise<void> {
     try {
-      console.log('📅 MONDAY SYNC: Rankings + Opening Lines');
+      console.log('📅 MONDAY SYNC: Post-Weekend Comprehensive Update');
       dataSyncLogger.logAutoSyncTrigger('Monday weekly sync started');
 
-      // 1. Sync current rankings
+      // 1. Update completed games from weekend to historical status
+      console.log('🏁 Monday: Updating completed games to historical status...');
+      const { updateCompletedGames } = await import('../weekly-2025-collector');
+      const completedCount = await updateCompletedGames();
+      console.log(`   ✅ Marked ${completedCount} games as completed/historical`);
+
+      // 2. Collect new week games (Week 2, 3, etc.)
+      console.log('🏈 Monday: Collecting new week games...');
+      const { collectWeeklyGames } = await import('../weekly-2025-collector');
+      await collectWeeklyGames();
+      console.log('   ✅ New week games collected');
+
+      // 3. Sync current rankings
       console.log('🏆 Monday: Syncing current rankings...');
       await syncRankingsToProduction();
 
-      // 2. Get opening betting lines for the week
+      // 4. Get opening betting lines for the week
       console.log('💰 Monday: Syncing opening betting lines...');
       await this.bettingSync.mondayBettingLinesRefresh();
 
-      dataSyncLogger.logSyncComplete('MONDAY_SYNC', 'Monday sync completed: rankings + opening lines');
-      console.log('✅ Monday sync completed successfully');
+      dataSyncLogger.logSyncComplete('MONDAY_SYNC', 'Monday sync completed: games updated + new week collected + rankings + opening lines');
+      console.log('✅ Monday comprehensive sync completed successfully');
 
     } catch (error) {
       console.error('❌ Monday sync failed:', error);
