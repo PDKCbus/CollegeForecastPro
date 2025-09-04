@@ -1,5 +1,5 @@
 import { syncRankingsToProduction } from './simple-rankings-sync';
-import { getBettingLinesManager } from './betting-lines-manager';
+import { getBettingLinesSync } from './betting-lines-sync';
 import { getWeatherSync } from './weather-sync';
 import { dataSyncLogger } from './data-sync-logger';
 
