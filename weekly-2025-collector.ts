@@ -61,24 +61,118 @@ async function updateCompletedGames(): Promise<number> {
     WHERE season = 2025 
       AND completed = false 
       AND start_date < ${cutoffTime}
-      AND home_score IS NOT NULL 
-      AND away_score IS NOT NULL
-      AND home_score > 0
-      AND away_score > 0
+      AND home_team_score IS NOT NULL
+      AND away_team_score IS NOT NULL
+      AND home_team_score > 0
+      AND away_team_score > 0
     RETURNING id
   `;
-  
+
   console.log(`   ✅ Marked ${updatedGames.length} games as completed\n`);
   return updatedGames.length;
 }
 
 async function collectWeeklyGames() {
-  console.log('📅 Weekly 2025 Season Collection & Update Starting...\n');
+  console.log('🎯 WEEKLY COLLECTION: Starting 2025 season data sync...');
+
+  // CRITICAL: Clean up any existing duplicates before adding new data
+  console.log('🧹 Pre-sync duplicate cleanup...');
+  await cleanupDuplicatesForCurrentWeek();
+
+  const currentWeek = await getCurrentWeek();
+  const weeksToCollect = await getWeeksToCollect(currentWeek);
+
+  console.log(`📅 Current week: ${currentWeek}`);
+  console.log(`📋 Collecting weeks: ${weeksToCollect.join(', ')}`);
+
+  const collector = new RobustSeasonCollector({
+    year: 2025,
+    maxGamesPerBatch: 25,
+    delayBetweenBatches: 2000,
+    maxTimeoutRetries: 3
+  });
+
+  for (const week of weeksToCollect) {
+    const existingCount = await checkExistingGames(week);
+    console.log(`\n🔍 Week ${week}: ${existingCount} existing games`);
+
+    if (existingCount > 0) {
+      console.log(`   ⚠️ Games already exist for week ${week}, skipping to prevent duplicates`);
+      continue;
+    }
+
+    try {
+      console.log(`   🏈 Collecting Week ${week} games...`);
+      const { games, lines } = await collector.collectWeekData(week);
+      console.log(`   📊 Collected ${games.length} games for week ${week}`);
+
+      // Actually insert the games into the database
+      const result = await collector.processGamesBatch(games, lines, week);
+      console.log(`   💾 Inserted ${result.inserted} games, ${result.withBetting} with betting lines`);
+
+      const newCount = await checkExistingGames(week);
+      console.log(`   ✅ Week ${week} complete: ${newCount} games now in database`);
+
+    } catch (error) {
+      console.error(`   ❌ Week ${week} collection failed:`, error);
+    }
+  }
+
+  // Update completion status for finished games
+  const completedCount = await updateCompletedGames();
+
+  console.log('\n🎯 WEEKLY COLLECTION SUMMARY:');
+  console.log(`   ✓ Processed weeks: ${weeksToCollect.join(', ')}`);
+  console.log(`   ✓ Games marked complete: ${completedCount}`);
+  console.log('   ✓ No duplicates created (pre-existence checks passed)');
+}
+
+async function cleanupDuplicatesForCurrentWeek(): Promise<void> {
+  try {
+    const currentWeek = await getCurrentWeek();
+
+    // Remove duplicates for current week, keeping the lowest ID for each matchup
+    const cleanupResult = await sql`
+      WITH duplicate_analysis AS (
+        SELECT
+          id,
+          home_team_id,
+          away_team_id,
+          season,
+          week,
+          ROW_NUMBER() OVER (
+            PARTITION BY home_team_id, away_team_id, season, week
+            ORDER BY id
+          ) as rn
+        FROM games
+        WHERE season = 2025 AND week = ${currentWeek}
+      ),
+      duplicates_to_remove AS (
+        SELECT id FROM duplicate_analysis WHERE rn > 1
+      )
+      DELETE FROM games
+      WHERE id IN (SELECT id FROM duplicates_to_remove)
+      AND NOT EXISTS (
+        SELECT 1 FROM ricks_picks WHERE game_id = games.id
+      )
+    `;
+
+    if (cleanupResult.length > 0) {
+      console.log(`   🧹 Cleaned up ${cleanupResult.length} duplicate games for week ${currentWeek}`);
+    }
+
+  } catch (error) {
+    console.error('   ⚠️ Duplicate cleanup failed:', error);
+  }
+}
+
+// Legacy function - kept for backwards compatibility
+async function collectWeeklyGamesLegacy() {
   console.log('🗓️  Recommended schedule: Tuesday mornings to catch Monday holiday games\n');
-  
+
   // Step 1: Update completed games from previous weeks
   const completedCount = await updateCompletedGames();
-  
+
   // Step 2: Update preseason rankings for Week 1 predictions
   console.log('📊 Updating preseason rankings for authentic Week 1 predictions...');
   try {
@@ -98,58 +192,64 @@ async function collectWeeklyGames() {
   } catch (error) {
     console.log('   ⚠️ Weather enrichment skipped:', (error as Error).message);
   }
-  
+
   // Step 4: Collect upcoming games
   const currentWeek = await getCurrentWeek();
   const weeksToCollect = await getWeeksToCollect(currentWeek);
-  
+
   console.log(`Current week: ${currentWeek}`);
   console.log(`Weeks to collect: ${weeksToCollect.join(', ')}\n`);
-  
-  const collector = new RobustSeasonCollector();
+
+  const collector = new RobustSeasonCollector({
+    year: 2025,
+    maxGamesPerBatch: 25,
+    delayBetweenBatches: 2000,
+    maxTimeoutRetries: 3
+  });
   let totalNewGames = 0;
-  
+
   for (const week of weeksToCollect) {
     console.log(`\n📅 Processing Week ${week}...`);
-    
+
     const existingGames = await checkExistingGames(week);
     console.log(`   Existing games in week ${week}: ${existingGames}`);
-    
+
     if (existingGames > 0) {
       console.log(`   Week ${week} already has games, checking for updates...`);
     }
-    
+
     try {
       // Use the robust collector to get games for this specific week
-      const newGames = await collector.collectWeek(2025, week);
-      totalNewGames += newGames;
-      
+      const { games, lines } = await collector.collectWeekData(week);
+      const result = await collector.processGamesBatch(games, lines, week);
+      totalNewGames += result.inserted;
+
       console.log(`   ✅ Week ${week} collection complete: ${newGames} games processed`);
-      
+
     } catch (error) {
       console.error(`   ❌ Error collecting week ${week}:`, error);
     }
-    
+
     // Small delay between weeks
     await new Promise(resolve => setTimeout(resolve, 1000));
   }
-  
+
   console.log(`\n✅ Weekly collection & update complete!`);
   console.log(`   Games marked as completed: ${completedCount}`);
   console.log(`   Total new games processed: ${totalNewGames}`);
-  
+
   // Verify final counts
   const finalCounts = await sql`
-    SELECT 
+    SELECT
       COUNT(CASE WHEN completed = false THEN 1 END) as upcoming_games,
       COUNT(CASE WHEN completed = true THEN 1 END) as completed_games
-    FROM games 
+    FROM games
     WHERE season = 2025
   `;
-  
+
   console.log(`   Total upcoming 2025 games: ${finalCounts[0].upcoming_games}`);
   console.log(`   Total completed 2025 games: ${finalCounts[0].completed_games}`);
-  
+
   return {
     currentWeek,
     weeksCollected: weeksToCollect,
@@ -161,7 +261,7 @@ async function collectWeeklyGames() {
 }
 
 // Auto-run if called directly
-if (require.main === module) {
+if (import.meta.url === `file://${process.argv[1]}`) {
   collectWeeklyGames().catch(console.error);
 }
 
