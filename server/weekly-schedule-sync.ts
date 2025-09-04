@@ -6,7 +6,7 @@ import { dataSyncLogger } from './data-sync-logger';
 export class WeeklyScheduleSync {
   private static instance: WeeklyScheduleSync | null = null;
   private isRunning: boolean = false;
-  private bettingSync = getBettingLinesManager();
+  private bettingSync = getBettingLinesSync();
   private weatherSync = getWeatherSync();
 
   private constructor() {}
