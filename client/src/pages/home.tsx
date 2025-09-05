@@ -14,7 +14,24 @@ import { FilterOption, GameWithTeams } from "@/lib/types";
 import { TrendingUp, Target, Brain } from "lucide-react";
 
 export default function Home() {
-  const [selectedWeek, setSelectedWeek] = useState("Week 1");
+  // Calculate current week dynamically (Sep 4, 2025 = Week 2)
+  const getCurrentWeek = () => {
+    const now = new Date();
+    const seasonSchedule = [
+      { week: 1, start: new Date(2025, 7, 23), end: new Date(2025, 8, 1) },   // Aug 23 - Sep 1
+      { week: 2, start: new Date(2025, 8, 2), end: new Date(2025, 8, 7) },    // Sep 2 - 7
+      { week: 3, start: new Date(2025, 8, 8), end: new Date(2025, 8, 14) },   // Sep 8 - 14
+    ];
+
+    for (const weekInfo of seasonSchedule) {
+      if (now >= weekInfo.start && now <= weekInfo.end) {
+        return `Week ${weekInfo.week}`;
+      }
+    }
+    return "Week 1"; // fallback
+  };
+
+  const [selectedWeek, setSelectedWeek] = useState(getCurrentWeek());
   const [activeFilter, setActiveFilter] = useState("all");
   const [teamFilter, setTeamFilter] = useState("");
   const [selectedConference, setSelectedConference] = useState("");

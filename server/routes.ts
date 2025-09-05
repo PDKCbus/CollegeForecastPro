@@ -1841,7 +1841,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
         let processedCount = 0;
 
-        for (let i = 0; i < Math.min(games.length, 10); i++) {
+        for (let i = 0; i < games.length; i++) {
           const game = games[i];
 
           // Find or create teams
