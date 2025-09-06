@@ -30,8 +30,8 @@ export async function sync2025Games() {
       throw new Error('CFBD_API_KEY required for games sync');
     }
 
-    // Fetch 2025 season games - Week 1 (current week)
-    const url = `https://api.collegefootballdata.com/games?year=2025&week=1&seasonType=regular`;
+    // Fetch 2025 season games - Week 2 (current week)
+    const url = `https://api.collegefootballdata.com/games?year=2025&week=2&seasonType=regular`;
     console.log(`🌐 Fetching 2025 games: ${url}`);
 
     const response = await fetch(url, {
@@ -46,7 +46,7 @@ export async function sync2025Games() {
     }
 
     const cfbdGames: CFBDGame[] = await response.json();
-    console.log(`📊 Received ${cfbdGames.length} games for 2025 Week 1`);
+    console.log(`📊 Received ${cfbdGames.length} games for 2025 Week 2`);
 
     // Get all teams for mapping
     const allTeams = await db.select().from(teams);
