@@ -1,4 +1,5 @@
-const { Pool } = require('pg');
+import pg from 'pg';
+const { Pool } = pg;
 
 async function debugUpcomingGames() {
   const pool = new Pool({
