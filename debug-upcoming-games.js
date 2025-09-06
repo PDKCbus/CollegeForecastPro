@@ -47,10 +47,18 @@ async function debugUpcomingGames() {
       SELECT COUNT(*) as count
       FROM games
       WHERE start_date >= NOW() AND completed = false
-      ORDER BY start_date
-      LIMIT 10
     `);
     console.log('\nGames matching storage query:', storageQueryResult.rows[0].count);
+
+    // Test the exact query PostgresStorage uses
+    const exactQuery = await pool.query(`
+      SELECT * FROM games
+      WHERE start_date >= NOW() AND completed = false
+      ORDER BY start_date
+      LIMIT 10
+      OFFSET 0
+    `);
+    console.log('Exact storage query returns:', exactQuery.rows.length, 'games');
 
   } catch (error) {
     console.error('Error:', error);
