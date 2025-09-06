@@ -87,58 +87,52 @@ export class PostgresStorage implements IStorage {
       .from(games)
       .where(and(
         gte(games.startDate, now),
-        or(isNotNull(games.spread), isNotNull(games.overUnder))
+        eq(games.completed, false)
       ))
       .orderBy(asc(games.startDate))
-      .limit(limit * 2) // Get extra to handle deduplication
+      .limit(limit)
       .offset(offset);
 
-    const gamesWithTeams: GameWithTeams[] = [];
-    const seenMatchups = new Set<string>();
-    
-    for (const game of gameResults) {
-      // ANTI-DUPLICATE PROTECTION: Create unique matchup key
-      const matchupKey = `${game.homeTeamId}-${game.awayTeamId}-${game.startDate?.toISOString()}`;
-      
-      if (seenMatchups.has(matchupKey)) {
-        continue; // Skip duplicate games silently
-      }
-      seenMatchups.add(matchupKey);
-      
-      const homeTeam = await this.getTeam(game.homeTeamId);
-      const awayTeam = await this.getTeam(game.awayTeamId);
-      const predictions = await this.getPredictionsByGame(game.id);
+    // Optimized: get all teams in one query using IN clause
+    const teamIds = gameResults.flatMap(game => [game.homeTeamId, game.awayTeamId]);
+    const uniqueTeamIds = [...new Set(teamIds)];
 
-      // Get Rick's picks for this game
-      let ricksPicks = [];
-      try {
-        const picks = await db
-          .select()
-          .from(ricksPicks)
-          .where(eq(ricksPicks.gameId, game.id));
-        ricksPicks = picks;
-      } catch (error) {
-        // No picks found, continue
-      }
+    if (uniqueTeamIds.length === 0) {
+      return [];
+    }
+
+    const allTeams = await db.select()
+      .from(teams)
+      .where(or(...uniqueTeamIds.map(id => eq(teams.id, id))));
+
+    const teamMap = new Map(allTeams.map(team => [team.id, team]));
+
+    const gamesWithTeams: GameWithTeams[] = [];
+
+    for (const game of gameResults) {
+      const homeTeam = teamMap.get(game.homeTeamId);
+      const awayTeam = teamMap.get(game.awayTeamId);
 
       if (homeTeam && awayTeam) {
         gamesWithTeams.push({
           ...game,
           homeTeam,
           awayTeam,
-          prediction: predictions[0] || undefined,
-          ricksPicks: ricksPicks
+          prediction: undefined
         });
-        
-        // Stop once we have enough unique games
-        if (gamesWithTeams.length >= limit) {
-          break;
-        }
       }
     }
 
-    // Sort by highest ranking (lowest ranking number = higher rank)
+    // Sort by betting lines first, then by highest ranking
     return gamesWithTeams.sort((a, b) => {
+      // First priority: games with betting lines (spread or over/under)
+      const aHasBettingLines = a.spread !== null || a.overUnder !== null;
+      const bHasBettingLines = b.spread !== null || b.overUnder !== null;
+
+      if (aHasBettingLines && !bHasBettingLines) return -1;
+      if (!aHasBettingLines && bHasBettingLines) return 1;
+
+      // Second priority: highest ranking (lowest ranking number = higher rank)
       const aHighestRank = Math.min(a.homeTeam.rank || 999, a.awayTeam.rank || 999);
       const bHighestRank = Math.min(b.homeTeam.rank || 999, b.awayTeam.rank || 999);
       return aHighestRank - bHighestRank;
@@ -146,33 +140,83 @@ export class PostgresStorage implements IStorage {
   }
 
   async getGamesByWeek(season: number, week: number): Promise<GameWithTeams[]> {
+    console.log(`🔍 getGamesByWeek called with season: ${season}, week: ${week}`);
+
     const gameResults = await db.select()
       .from(games)
       .where(and(
-        eq(games.season, season), 
+        eq(games.season, season),
         eq(games.week, week),
-        or(isNotNull(games.spread), isNotNull(games.overUnder))
+        eq(games.completed, false)
       ))
-      .orderBy(desc(games.startDate));
+      .orderBy(asc(games.startDate));
+
+    console.log(`📊 Found ${gameResults.length} games for Week ${week} of ${season}`);
+
+    if (gameResults.length > 0) {
+      console.log(`📋 First game sample:`, {
+        id: gameResults[0].id,
+        homeTeamId: gameResults[0].homeTeamId,
+        awayTeamId: gameResults[0].awayTeamId,
+        startDate: gameResults[0].startDate
+      });
+    }
+
+    // Optimized: get all teams in one query using IN clause
+    const teamIds = gameResults.flatMap(game => [game.homeTeamId, game.awayTeamId]);
+    const uniqueTeamIds = [...new Set(teamIds)];
+
+    console.log(`🏈 Need to fetch ${uniqueTeamIds.length} unique teams`);
+
+    if (uniqueTeamIds.length === 0) {
+      return [];
+    }
+
+    const allTeams = await db.select()
+      .from(teams)
+      .where(or(...uniqueTeamIds.map(id => eq(teams.id, id))));
+
+    console.log(`✅ Found ${allTeams.length} teams in database`);
+
+    const teamMap = new Map(allTeams.map(team => [team.id, team]));
 
     const gamesWithTeams: GameWithTeams[] = [];
+    let skippedGames = 0;
     for (const game of gameResults) {
-      const homeTeam = await this.getTeam(game.homeTeamId);
-      const awayTeam = await this.getTeam(game.awayTeamId);
-      const predictions = await this.getPredictionsByGame(game.id);
+      const homeTeam = teamMap.get(game.homeTeamId);
+      const awayTeam = teamMap.get(game.awayTeamId);
 
       if (homeTeam && awayTeam) {
         gamesWithTeams.push({
           ...game,
           homeTeam,
           awayTeam,
-          prediction: predictions[0] || undefined
+          prediction: undefined
         });
+      } else {
+        skippedGames++;
+        if (skippedGames <= 3) {
+          console.log(`⚠️ Skipping game ${game.id}: homeTeam=${!!homeTeam} (${game.homeTeamId}), awayTeam=${!!awayTeam} (${game.awayTeamId})`);
+        }
       }
     }
 
-    // Sort by highest ranking (lowest ranking number = higher rank)
+    if (skippedGames > 0) {
+      console.log(`⚠️ Total games skipped due to missing teams: ${skippedGames}`);
+    }
+
+    console.log(`🎮 Returning ${gamesWithTeams.length} games with complete team data`);
+
+    // Sort by betting lines first, then by highest ranking
     return gamesWithTeams.sort((a, b) => {
+      // First priority: games with betting lines (spread or over/under)
+      const aHasBettingLines = a.spread !== null || a.overUnder !== null;
+      const bHasBettingLines = b.spread !== null || b.overUnder !== null;
+
+      if (aHasBettingLines && !bHasBettingLines) return -1;
+      if (!aHasBettingLines && bHasBettingLines) return 1;
+
+      // Second priority: highest ranking (lowest ranking number = higher rank)
       const aHighestRank = Math.min(a.homeTeam.rank || 999, a.awayTeam.rank || 999);
       const bHighestRank = Math.min(b.homeTeam.rank || 999, b.awayTeam.rank || 999);
       return aHighestRank - bHighestRank;
